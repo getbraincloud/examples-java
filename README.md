@@ -2,7 +2,7 @@
 
 This is a simple matching game for Android using the brainCloud client in Java. 
 
-### To Play 
+## To Play 
 
 Do one of the following:
 
@@ -16,7 +16,7 @@ start automatically.
 
 Note : brainCloud push notifications do not work with the Android Studio emulators. 
 
-### Demonstrates
+## Demonstrates
 
 - Setting up your Java app using the brainCloudWrapper
 - Authentication
@@ -24,7 +24,7 @@ Note : brainCloud push notifications do not work with the Android Studio emulato
 - Reading and incrementing stats
 - Awarding achievements 
 
-### Setting Up your Own Project
+# Setting Up your Own Project
 
 ## Integrate with brainCloud
 
