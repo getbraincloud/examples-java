@@ -8,7 +8,7 @@ Do one of the following:
 
 1. Download the latest version of Android Studio here : https://developer.android.com/studio/ 
 Then connect your Android device to the computer, press run in Android Studio, and select your device.
-This will build the porject then run it off your device.  
+This will build the project then run it off your device.  
 
 2. Take the APK file in BasicJava/app/build/outputs/apk/debug and drag it into your installs on your
 device OR e-mail the APK file to yourself as an attachment, open it on your device and the install will 
