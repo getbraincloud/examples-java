@@ -2,7 +2,7 @@
 
 This is a simple matching game for Android using the brainCloud client in Java. 
 
-## To Play 
+### To Play 
 
 Do one of the following:
 
@@ -16,7 +16,7 @@ start automatically.
 
 Note : brainCloud push notifications do not work with the Android Studio emulators. 
 
-## Demonstrates
+### Demonstrates
 
 - Setting up your Java app using the brainCloudWrapper
 - Authentication
@@ -24,9 +24,9 @@ Note : brainCloud push notifications do not work with the Android Studio emulato
 - Reading and incrementing stats
 - Awarding achievements 
 
-# Setting Up your Own Project
+## Setting Up your Own Project
 
-## Integrate with brainCloud
+### Integrate with brainCloud
 
 To integrate your Android Studio project to use the brainCloud client,
 follow the steps here : http://18.220.113.13/apidocs/tutorials/android-java-tutorials/getting-started-with-android-java/
@@ -34,6 +34,6 @@ follow the steps here : http://18.220.113.13/apidocs/tutorials/android-java-tuto
 You can find the Java client Libs that you will need to add to your project
 here : https://github.com/getbraincloud/braincloud-java
 
-## Setup push notifications through Firebase
+### Setup push notifications through Firebase
 To set up your app so that it can be sent push notifications through Firebase, and our brainCloud client
 follow the steps here : https://getbraincloud.com/apidocs/portal-usage/push-notification-setup-firebase/
