@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "638303068597",
+    "firebase_url": "https://basic-java-c6d90.firebaseio.com",
+    "project_id": "basic-java-c6d90",
+    "storage_bucket": "basic-java-c6d90.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638303068597:android:af13ef8fcc4c302a",
+        "android_client_info": {
+          "package_name": "com.braincloud.basic_java"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "638303068597-fm8l3na4aoa54iqkqlk2hdp20krbonuc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfDN0mwpzADs1M55BVuM2-YcaF8D5hqaU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
