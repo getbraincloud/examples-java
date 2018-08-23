@@ -250,7 +250,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             //increment losses on braincloud.
             try {
                 JSONObject obj = new JSONObject();
-                obj.put("Loss", 1);
+                obj.put("Lose", 1);
                 Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
             }
             catch(JSONException e) {
@@ -363,9 +363,9 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 //JSONObject entries = new JsonParser()
 
         //    }
-         //   catch(JSONException e) {
-         //       e.printStackTrace();
-        //    }
+            catch(JSONException e) {
+                e.printStackTrace();
+            //}
         //}
     }
 
