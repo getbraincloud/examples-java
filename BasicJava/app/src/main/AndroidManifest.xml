@@ -10,10 +10,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        android:screenOrientation="portrait"
 
         <activity android:name=".Login">
-
+            android:screenOrientation="portrait"
             <!-- Set custom d
 efault icon. This is used when no icon is set for incoming notification messages.
 See README(https://goo.gl/l4GJaQ) for more. -->
@@ -33,7 +32,7 @@ See README(https://goo.gl/l4GJaQ) for more. -->
             </intent-filter>
         </activity>
         <activity android:name=".theGame"></activity>
-
+        android:screenOrientation="portrait"
         <service
             android:name=".MyFirebaseMessagingService"
             android:stopWithTask="false">

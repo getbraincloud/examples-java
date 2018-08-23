@@ -13,10 +13,8 @@ import android.widget.TextView;
 //braincloud specific includes.
 import com.bitheads.braincloud.client.*;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.messaging.FirebaseMessagingService;
 
 import org.json.JSONObject;
 
@@ -25,6 +23,7 @@ import javax.xml.transform.Result;
 public class Login extends AppCompatActivity implements  IServerCallback
 {
     IServerCallback theCallback;
+
     //Create brainCloud Wrapper.
     public static BCClient _bc;
 

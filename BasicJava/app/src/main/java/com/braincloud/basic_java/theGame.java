@@ -1,26 +1,15 @@
 package com.braincloud.basic_java;
 
-import android.content.Intent;
 import android.os.CountDownTimer;
-import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.Set;
 
 import android.os.Bundle;
-import android.util.JsonReader;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.bitheads.braincloud.client.IServerCallback;
@@ -38,7 +27,8 @@ public class theGame extends AppCompatActivity implements IServerCallback
     Button card1, card2, card3, card4, card5, card6, card7, card8, card9, card10, card11, card12;
     //want to keep track of the first and second i press
     Button[] cardChoices;
-    int chances = 25;
+    int chances = 20;
+    int winsForAchievement = 0;
 
     //use a map to easily find the value on a card based on its name
     Map<String, Integer> cardValues;
@@ -53,6 +43,8 @@ public class theGame extends AppCompatActivity implements IServerCallback
 
         //set the callback
         theGameCallback = this;
+
+        CheckAchievements();
 
         //read the stats off braincloud and display them in the text. (the callback success will update the ui)
         Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
@@ -286,7 +278,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 && !card11.isEnabled()
                 && !card12.isEnabled())
         {
-            //increment wins on braincloud. They got all the matches. 
+            //increment wins on braincloud. They got all the matches.
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("Win", 1);
@@ -300,7 +292,9 @@ public class theGame extends AppCompatActivity implements IServerCallback
     }
     void ResetGame()
     {
-        chances = 25;
+        chances = 20;
+
+        CheckAchievements();
 
         TextView chancestext = findViewById(R.id.chancesTextView);
         chancestext.setText("Chances Left: " + chances);
@@ -385,6 +379,8 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 String numWins = stats.getString("Win");
                 TextView wintext = findViewById(R.id.winTextView);
                 wintext.setText("Career Wins: " + numWins);
+                winsForAchievement = Integer.parseInt(numWins);
+
                 //Lose
                 String numLose = stats.getString("Lose");
                 TextView losetext = findViewById(R.id.lossTextView);
@@ -399,5 +395,17 @@ public class theGame extends AppCompatActivity implements IServerCallback
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
     {
         //in the case the callback was bad.
+    }
+
+    //just a simple example of awarding an achievement on BrainCloud.
+    public void CheckAchievements()
+    {
+        if(winsForAchievement >= 5)
+        {
+            //very bare bones, but can pass in much more to affect specific values of the achievement when you award it. 
+            String[] achievementArr = new String[1];
+            achievementArr[0] = "Win5Games";
+            Login._bc.GetWrapper().getGamificationService().awardAchievements(achievementArr, theGameCallback);
+        }
     }
 }
