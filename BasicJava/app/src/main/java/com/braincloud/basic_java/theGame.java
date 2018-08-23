@@ -363,8 +363,8 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 //JSONObject entries = new JsonParser()
 
         //    }
-            catch(JSONException e) {
-                e.printStackTrace();
+            //catch(JSONException e) {
+               // e.printStackTrace();
             //}
         //}
     }
