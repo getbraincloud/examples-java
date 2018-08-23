@@ -29,7 +29,7 @@ Note : brainCloud push notifications do not work with the Android Studio emulato
 ### Integrate with brainCloud
 
 To integrate your Android Studio project to use the brainCloud client,
-follow the steps here : http://18.220.113.13/apidocs/tutorials/android-java-tutorials/getting-started-with-android-java/
+follow the steps here : https://getbraincloud.com/apidocs/tutorials/android-java-tutorials/getting-started-with-android-java/
 
 You can find the Java client Libs that you will need to add to your project
 here : https://github.com/getbraincloud/braincloud-java
