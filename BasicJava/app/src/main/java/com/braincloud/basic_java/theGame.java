@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.Set;
 
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,10 +34,16 @@ public class theGame extends AppCompatActivity implements IServerCallback
 {
     IServerCallback theCallback;
 
+    //need cards which will be buttons
     Button card1, card2, card3, card4, card5, card6, card7, card8, card9, card10, card11, card12;
+    //want to keep track of the first and second i press
     Button[] cardChoices;
     int chances = 25;
+
+    //use a map to easily find the value on a card based on its name
     Map<String, Integer> cardValues;
+
+    //the callback that this class will work with
     IServerCallback theGameCallback;
 
     @Override
@@ -44,10 +51,13 @@ public class theGame extends AppCompatActivity implements IServerCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_the_game);
 
-        //theGameCallback = this;
+        //set the callback
+        theGameCallback = this;
 
-        //Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
+        //read the stats off braincloud and display them in the text. (the callback success will update the ui)
+        Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
 
+        //handle local ui
         TextView chancestext = findViewById(R.id.chancesTextView);
         chancestext.setText("Chances Left: " + chances);
 
@@ -100,7 +110,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             cardValues.put(temp, points[i]);
         }
 
-        //for the buttons the player presses
+        //check when buttons are pressed
         card1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -186,6 +196,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
         });
     }
 
+    //a simple shuffle algorithm
     void Shuffle(int[] arr, int numShuffles)
     {
         for(int k = 0; k < numShuffles; k++)
@@ -226,7 +237,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             }
             else
             {
-                //otherwise they were not equal and I need to set the buttons back to null and text to nothing.
+                //otherwise they were not equal and I need to set the buttons back to null and text to nothing. then lower their chances left.
                 cardChoices[0].setText("");
                 cardChoices[1].setText("");
                 cardChoices[0] = null;
@@ -247,7 +258,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
 
         if(chances <= 0)
         {
-            //increment losses on braincloud.
+            //increment losses on braincloud. They did not get all the matches before running out of chances.
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("Lose", 1);
@@ -275,7 +286,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 && !card11.isEnabled()
                 && !card12.isEnabled())
         {
-            //increment wins
+            //increment wins on braincloud. They got all the matches. 
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("Win", 1);
@@ -293,6 +304,9 @@ public class theGame extends AppCompatActivity implements IServerCallback
 
         TextView chancestext = findViewById(R.id.chancesTextView);
         chancestext.setText("Chances Left: " + chances);
+
+        //read the new stats off braincloud and display them in the text.
+        Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
 
         //Reset the game
         card1.setEnabled(true);
@@ -357,20 +371,33 @@ public class theGame extends AppCompatActivity implements IServerCallback
     //callback functions
     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData)
     {
-       // if(serviceOperation.equals(ServiceOperation.READ))
-       // {
-        //    try {
-                //JSONObject entries = new JsonParser()
+        //compare the service operation so the call back knows what operations to perform
+        if(serviceOperation.equals(ServiceOperation.READ))
+        {
+            try {
+                //read the data passed back by braincloud and parse it down
+                JSONObject jsonReader = new JSONObject(jsonData.toString());
+                JSONObject data = jsonReader.getJSONObject("data");
+                JSONObject stats = data.getJSONObject("statistics");
 
-        //    }
-            //catch(JSONException e) {
-               // e.printStackTrace();
-            //}
-        //}
+                //update the ui based on the stats
+                //Wins
+                String numWins = stats.getString("Win");
+                TextView wintext = findViewById(R.id.winTextView);
+                wintext.setText("Career Wins: " + numWins);
+                //Lose
+                String numLose = stats.getString("Lose");
+                TextView losetext = findViewById(R.id.lossTextView);
+                losetext.setText("Career Losses: " + numLose);
+            }
+            catch(JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
     {
-
+        //in the case the callback was bad.
     }
 }
