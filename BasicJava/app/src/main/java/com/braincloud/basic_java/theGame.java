@@ -248,6 +248,14 @@ public class theGame extends AppCompatActivity implements IServerCallback
         if(chances <= 0)
         {
             //increment losses on braincloud.
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("Loss", 1);
+                Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
+            }
+            catch(JSONException e) {
+                e.printStackTrace();
+            }
             //reset the game
             ResetGame();
         }
@@ -267,26 +275,24 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 && !card11.isEnabled()
                 && !card12.isEnabled())
         {
-          ResetGame();
+            //increment wins
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("Win", 1);
+                Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
+            }
+            catch(JSONException e) {
+                e.printStackTrace();
+            }
+            ResetGame();
         }
     }
     void ResetGame()
     {
         chances = 25;
+
         TextView chancestext = findViewById(R.id.chancesTextView);
         chancestext.setText("Chances Left: " + chances);
-
-        //increment wins
-        //try {
-        //    JSONObject obj = new JSONObject();
-        //    obj.put("Wins", 1);
-        //    Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
-        //    TextView congrats = findViewById(R.id.congratsTextView);
-        //    congrats.setText("");
-        //}
-        //catch(JSONException e) {
-        //    e.printStackTrace();
-        //}
 
         //Reset the game
         card1.setEnabled(true);

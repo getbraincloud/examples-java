@@ -42,8 +42,6 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //set the callback to this class
         theCallback = this;
 
-        //firebaseToken = FirebaseInstanceId.getInstance().getInstanceId().getResult().toString();
-
         //get a reference to the button of the app
         Button loginButton = findViewById(R.id.loginButton);
 
