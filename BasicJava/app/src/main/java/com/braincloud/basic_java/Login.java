@@ -72,11 +72,13 @@ public class Login extends AppCompatActivity implements  IServerCallback
                     public void onSuccess(InstanceIdResult instanceIdResult) {
                         MyFirebaseMessagingService.FirebaseTokenID = instanceIdResult.getToken();
                         Log.e("NEW_TOKEN", MyFirebaseMessagingService.FirebaseTokenID );
+
+
+                        //set the device up to receive pushnotifications
+                        _bc.GetWrapper().getPushNotificationService().registerPushNotificationToken(Platform.GooglePlayAndroid, MyFirebaseMessagingService.FirebaseTokenID, theCallback);
                     }
                 });
 
-                //set the device up to receive pushnotifications
-                _bc.GetWrapper().getPushNotificationService().registerPushNotificationToken(Platform.GooglePlayAndroid, MyFirebaseMessagingService.FirebaseTokenID, theCallback);
             }
         });
     }
