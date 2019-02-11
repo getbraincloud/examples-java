@@ -754,6 +754,30 @@ public class GroupService {
     }
 
     /**
+     * Set whether a group is open (true) or closed (false).
+     *
+     * Service Name - group
+     * Service Operation - SET_GROUP_OPEN
+     *
+     * @param groupId ID of the group.
+     * @param isOpenGroup true if group is open; false if closed
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void setGroupOpen(String groupId, boolean isOpenGroup, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.isOpenGroup.name(), isOpenGroup);
+
+            ServerCall sc = new ServerCall(ServiceName.group,
+                    ServiceOperation.SET_GROUP_OPEN, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
      * Updates a group's data.
      *
      * Service Name - group

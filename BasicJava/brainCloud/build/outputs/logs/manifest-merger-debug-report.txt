@@ -1,45 +1,45 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-12:12
 	package
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:2:5-38
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:2:5-38
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
 	android:versionName
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:5-31
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:5-31
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:11-69
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:11-69
 	android:versionCode
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:3:5-28
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:3:5-28
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
 uses-sdk
-ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
-INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
+ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:6:5-8:41
 	android:targetSdkVersion
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:8:9-38
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:8:9-38
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:7:9-34
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
-		INJECTED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:7:9-34
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml
 uses-permission#android.permission.INTERNET
-ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:10:5-67
+ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:10:5-67
 	android:name
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:10:22-64
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:10:22-64
 uses-permission#android.permission.READ_EXTERNAL_STORAGE
-ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:11:5-80
+ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:11:5-80
 	android:name
-		ADDED from C:\Users\ryanr\BasicJava\brainCloud\src\main\AndroidManifest.xml:11:22-77
+		ADDED from C:\Users\ryanr\JavaExample\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:11:22-77

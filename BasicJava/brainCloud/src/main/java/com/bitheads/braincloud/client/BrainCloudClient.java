@@ -1,9 +1,14 @@
 package com.bitheads.braincloud.client;
 
+import com.bitheads.braincloud.client.IRTTCallback;
+import com.bitheads.braincloud.client.IRTTConnectCallback;
 import com.bitheads.braincloud.comms.BrainCloudRestClient;
+import com.bitheads.braincloud.comms.RTTComms;
 import com.bitheads.braincloud.comms.ServerCall;
+import com.bitheads.braincloud.services.AppStoreService;
 import com.bitheads.braincloud.services.AsyncMatchService;
 import com.bitheads.braincloud.services.AuthenticationService;
+import com.bitheads.braincloud.services.ChatService;
 import com.bitheads.braincloud.services.DataStreamService;
 import com.bitheads.braincloud.services.EntityService;
 import com.bitheads.braincloud.services.EventService;
@@ -15,24 +20,31 @@ import com.bitheads.braincloud.services.GlobalEntityService;
 import com.bitheads.braincloud.services.GlobalStatisticsService;
 import com.bitheads.braincloud.services.GroupService;
 import com.bitheads.braincloud.services.IdentityService;
+import com.bitheads.braincloud.services.LobbyService;
 import com.bitheads.braincloud.services.MailService;
+import com.bitheads.braincloud.services.MessagingService;
 import com.bitheads.braincloud.services.MatchMakingService;
 import com.bitheads.braincloud.services.OneWayMatchService;
 import com.bitheads.braincloud.services.PlaybackStreamService;
 import com.bitheads.braincloud.services.PlayerStateService;
 import com.bitheads.braincloud.services.PlayerStatisticsEventService;
 import com.bitheads.braincloud.services.PlayerStatisticsService;
+import com.bitheads.braincloud.services.PresenceService;
 import com.bitheads.braincloud.services.ProductService;
 import com.bitheads.braincloud.services.ProfanityService;
 import com.bitheads.braincloud.services.PushNotificationService;
 import com.bitheads.braincloud.services.RedemptionCodeService;
+import com.bitheads.braincloud.services.RTTRegistrationService;
 import com.bitheads.braincloud.services.S3HandlingService;
 import com.bitheads.braincloud.services.ScriptService;
 import com.bitheads.braincloud.services.SocialLeaderboardService;
 import com.bitheads.braincloud.services.TimeService;
 import com.bitheads.braincloud.services.TournamentService;
+import com.bitheads.braincloud.services.VirtualCurrencyService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -46,17 +58,21 @@ public class BrainCloudClient {
     private String _appId;
     private Platform _releasePlatform;
     private String _appVersion;
+    private Map _secretMap = new HashMap();
     private String _countryCode;
     private String _languageCode;
     private double _timeZoneOffset;
 
 
-    private final static String BRAINCLOUD_VERSION = "3.7.0";
+    private final static String BRAINCLOUD_VERSION = "3.11.0";
 
     private BrainCloudRestClient _restClient;
+    private RTTComms _rttComms;
 
+    private AppStoreService _appStoreService = new AppStoreService(this);
     private AuthenticationService _authenticationService = new AuthenticationService(this);
     private AsyncMatchService _asyncMatchService = new AsyncMatchService(this);
+    private ChatService _chatService = new ChatService(this);
     private DataStreamService _dataStreamService = new DataStreamService(this);
     private EntityService _entityService = new EntityService(this);
     private EventService _eventService = new EventService(this);
@@ -68,22 +84,27 @@ public class BrainCloudClient {
     private GlobalStatisticsService _globalStatisticsService = new GlobalStatisticsService(this);
     private GroupService _groupService = new GroupService(this);
     private IdentityService _identityService = new IdentityService(this);
+    private LobbyService _lobbyService = new LobbyService(this);
     private MailService _mailService = new MailService(this);
+    private MessagingService _messagingService = new MessagingService(this);
     private MatchMakingService _matchMakingService = new MatchMakingService(this);
     private OneWayMatchService _oneWayMatchService = new OneWayMatchService(this);
     private PlaybackStreamService _playbackStreamService = new PlaybackStreamService(this);
     private PlayerStateService _playerStateService = new PlayerStateService(this);
     private PlayerStatisticsService _playerStatisticsService = new PlayerStatisticsService(this);
     private PlayerStatisticsEventService _playerStatisticsEventService = new PlayerStatisticsEventService(this);
+    private PresenceService _presenceService = new PresenceService(this);
     private ProductService _productService = new ProductService(this);
     private ProfanityService _profanityService = new ProfanityService(this);
     private PushNotificationService _pushNotificationService = new PushNotificationService(this);
     private RedemptionCodeService _redemptionCodeService = new RedemptionCodeService(this);
+    private RTTRegistrationService _rttService = new RTTRegistrationService(this);
     private S3HandlingService _s3HandlingService = new S3HandlingService(this);
     private ScriptService _scriptService = new ScriptService(this);
     private SocialLeaderboardService _socialLeaderboardService = new SocialLeaderboardService(this);
     private TimeService _timeService = new TimeService(this);
     private TournamentService _tournamentService = new TournamentService(this);
+    private VirtualCurrencyService _virtualCurrencyService = new VirtualCurrencyService(this);
 
     private static BrainCloudClient instance = null;
 
@@ -91,6 +112,7 @@ public class BrainCloudClient {
 
     public BrainCloudClient() {
         _restClient = new BrainCloudRestClient(this);
+        _rttComms = new RTTComms(this);
     }
 
     /**
@@ -116,19 +138,8 @@ public class BrainCloudClient {
         return _restClient;
     }
 
-    /**
-     * Initializes the brainCloud client with your app information. This method
-     * must be called before any API method is invoked.
-     *
-     * @param appId
-     *            The app id
-     * @param secretKey
-     *            The app secret
-     * @param appVersion
-     *            The app version (e.g. "1.0.0").
-     */
-    public void initialize(String appId, String secretKey, String appVersion) {
-        initialize(appId, secretKey, appVersion, DEFAULT_SERVER_URL);
+    public RTTComms getRTTComms() {
+        return _rttComms;
     }
 
     /**
@@ -141,12 +152,27 @@ public class BrainCloudClient {
      *            The app secret
      * @param appVersion
      *            The app version (e.g. "1.0.0").
-     * @param serverUrl
-     *              The server url (e.g. "https://sharedprod.braincloudservers.com").
      */
-    public void initialize(String appId, String secretKey, String appVersion, String serverUrl) {
+    public void initialize(String appId, String secretKey, String appVersion) {
+        initialize(DEFAULT_SERVER_URL, appId, secretKey, appVersion);
+    }
+
+    /**
+     * Method initializes the BrainCloudClient.
+     *
+     * @param serverURL
+     *            
+     * @param secretKey
+     *            The app id
+     * @param appId
+     *            The map of appId to secret
+     * @param appVersion
+     *            The app version (e.g. "1.0.0").
+     */
+    public void initialize(String serverURL, String appId, String secretKey, String appVersion)
+    {
         String error = null;
-        if (isNullOrEmpty(serverUrl))
+        if (isNullOrEmpty(serverURL))
             error = "serverUrl was null or empty";
         else if (isNullOrEmpty(secretKey))
             error = "secretKey was null or empty";
@@ -155,7 +181,6 @@ public class BrainCloudClient {
         else if (isNullOrEmpty(appVersion))
             error = "appVersion was null or empty";
 
-
         if (error != null) {
             System.out.println("ERROR | Failed to initialize brainCloud - " + error);
             return;
@@ -163,6 +188,7 @@ public class BrainCloudClient {
 
         _appId = appId;
         _appVersion = appVersion;
+        _secretMap.put(_appId, secretKey);
         _releasePlatform = Platform.GooglePlayAndroid;
 
         Locale locale = Locale.getDefault();
@@ -173,8 +199,70 @@ public class BrainCloudClient {
         _timeZoneOffset = ((double) timeZone.getRawOffset()) / (1000.0 * 60.0 * 60.0);
 
         _restClient.initialize(
-                serverUrl.endsWith("/dispatcherv2") ? serverUrl : serverUrl + "/dispatcherv2",
+                serverURL.endsWith("/dispatcherv2") ? serverURL : serverURL + "/dispatcherv2",
                 appId, secretKey);
+    }
+
+    /**
+     * Method initializes the BrainCloudClient.
+     *
+     * @param appId
+     *            The app id
+     * @param secretMap
+     *            The map of appId to secret
+     * @param appVersion
+     *            The app version (e.g. "1.0.0").
+     */
+    public void initializeWithApps(String appId, Map<String, String> secretMap, String appVersion)
+    {
+        initializeWithApps(DEFAULT_SERVER_URL, appId, secretMap, appVersion);
+    }
+
+    /**
+     * Method initializes the BrainCloudClient.
+     *
+     * @param serverUrl
+     *            
+     * @param appId
+     *            The app id
+     * @param secretMap
+     *            The map of appId to secret
+     * @param appVersion
+     *            The app version (e.g. "1.0.0").
+     */
+    public void initializeWithApps(String serverUrl, String appId, Map<String, String> secretMap, String appVersion)
+    {
+
+        String error = null;
+        if (isNullOrEmpty(serverUrl))
+            error = "serverUrl was null or empty";
+        else if (isNullOrEmpty(appId))
+            error = "appId was null or empty";
+        else if (isNullOrEmpty(secretMap.get(appId)))
+            error = "no matching secret for appId";
+        else if (isNullOrEmpty(appVersion))
+            error = "appVersion was null or empty";
+
+        if (error != null) {
+            System.out.println("ERROR | Failed to initialize brainCloud - " + error);
+            return;
+        }
+
+        _appId = appId;
+        _appVersion = appVersion;
+        _secretMap = secretMap;
+        _releasePlatform = Platform.GooglePlayAndroid;
+
+        Locale locale = Locale.getDefault();
+        if (_countryCode == null || _countryCode.isEmpty()) _countryCode = locale.getCountry();
+        if (_languageCode == null || _languageCode.isEmpty()) _languageCode = locale.getLanguage();
+
+        TimeZone timeZone = TimeZone.getDefault();
+        _timeZoneOffset = ((double) timeZone.getRawOffset()) / (1000.0 * 60.0 * 60.0);
+
+        _restClient.initializeWithApps(
+                serverUrl.endsWith("/dispatcherv2") ? serverUrl : serverUrl + "/dispatcherv2",
+                appId, secretMap);
     }
 
     private static boolean isNullOrEmpty(String param) {
@@ -194,6 +282,7 @@ public class BrainCloudClient {
     }
 
     public void resetCommunication() {
+        _rttComms.disableRTT();
         _restClient.resetCommunication();
     }
 
@@ -202,6 +291,7 @@ public class BrainCloudClient {
      */
     public void runCallbacks() {
         _restClient.runCallbacks();
+        _rttComms.runCallbacks();
     }
 
     /**
@@ -222,6 +312,7 @@ public class BrainCloudClient {
 
     public void enableLogging(boolean shouldEnable) {
         _restClient.enableLogging(shouldEnable);
+        _rttComms.enableLogging(shouldEnable);
     }
 
     /**
@@ -613,6 +704,10 @@ public class BrainCloudClient {
         return _countryCode;
     }
 
+    public String getRTTConnectionId() {
+        return _rttComms.getConnectionId();
+    }
+
     /**
      * Sets the country code sent to brainCloud when a user authenticates.
      * Will override any auto detected country.
@@ -636,6 +731,39 @@ public class BrainCloudClient {
     }
 
     /**
+     * Enables Real Time event for this session.
+     * Real Time events are disabled by default. Usually events
+     * need to be polled using GET_EVENTS. By enabling this, events will
+     * be received instantly when they happen through a TCP connection to an Event Server.
+     *
+     * This function will first call requestClientConnection, then connect to the address
+     *
+     * @param callback The callback.
+     * @param useWebSocket Use web sockets instead of TCP for the internal connections. Default is true
+     */
+    public void enableRTT(IRTTConnectCallback callback, boolean useWebSocket) {
+        _rttComms.enableRTT(callback, useWebSocket);
+    }
+    public void enableRTT(IRTTConnectCallback callback) {
+        enableRTT(callback, true);
+    }
+
+    /**
+     * Disables Real Time event for this session.
+     */
+    public void disableRTT() {
+        _rttComms.disableRTT();
+    }
+
+    /**
+     * Returns true is RTT is enabled
+     */
+    public boolean getRTTEnabled()
+    {
+        return _rttComms.isRTTEnabled();
+    }
+
+    /**
      * Sets the language code sent to brainCloud when a user authenticates.
      * If the language is set to a non-ISO 639-1 standard value the app default will be used instead.
      * Will override any auto detected language.
@@ -645,8 +773,71 @@ public class BrainCloudClient {
         _languageCode = languageCode;
     }
 
+    /**
+     * Listen to real time events.
+     * 
+     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
+     * Only one event callback can be registered at a time. Calling this a second time will override the previous callback.
+     */
+    public void registerRTTEventCallback(IRTTCallback callback) {
+        _rttComms.registerRTTCallback(ServiceName.event.toString(), callback);
+    }
+    public void deregisterRTTEventCallback() {
+        _rttComms.deregisterRTTCallback(ServiceName.event.toString());
+    }
+
+    /**
+     * Listen to real time chat messages.
+     * 
+     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
+     * Only one chat callback can be registered at a time. Calling this a second time will override the previous callback.
+     */
+    public void registerRTTChatCallback(IRTTCallback callback) {
+        _rttComms.registerRTTCallback(ServiceName.chat.toString(), callback);
+    }
+    public void deregisterRTTChatCallback() {
+        _rttComms.deregisterRTTCallback(ServiceName.chat.toString());
+    }
+
+    /**
+     * Listen to real time messaging.
+     * 
+     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
+     * Only one messaging callback can be registered at a time. Calling this a second time will override the previous callback.
+     */
+    public void registerRTTMessagingCallback(IRTTCallback callback) {
+        _rttComms.registerRTTCallback(ServiceName.messaging.toString(), callback);
+    }
+    public void deregisterRTTMessagingCallback() {
+        _rttComms.deregisterRTTCallback(ServiceName.messaging.toString());
+    }
+
+    /**
+     * Listen to real time lobby events.
+     * 
+     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
+     * Only one lobby callback can be registered at a time. Calling this a second time will override the previous callback.
+     */
+    public void registerRTTLobbyCallback(IRTTCallback callback) {
+        _rttComms.registerRTTCallback(ServiceName.lobby.toString(), callback);
+    }
+    public void deregisterRTTLobbyCallback() {
+        _rttComms.deregisterRTTCallback(ServiceName.lobby.toString());
+    }
+
+    /**
+     * Clear all set RTT callbacks
+     */
+    public void deregisterAllCallbacks() {
+        _rttComms.deregisterAllCallbacks();
+    }
+
     public double getTimeZoneOffset() {
         return _timeZoneOffset;
+    }
+
+    public AppStoreService getAppStoreService() {
+        return _appStoreService;
     }
 
     public AuthenticationService getAuthenticationService() {
@@ -655,6 +846,14 @@ public class BrainCloudClient {
 
     public AsyncMatchService getAsyncMatchService() {
         return _asyncMatchService;
+    }
+
+    public ChatService getChatService() {
+        return _chatService;
+    }
+
+    public LobbyService getLobbyService() {
+        return _lobbyService;
     }
 
     public DataStreamService getDataStreamService() {
@@ -705,6 +904,10 @@ public class BrainCloudClient {
         return _mailService;
     }
 
+    public MessagingService getMessagingService() {
+        return _messagingService;
+    }
+
     public MatchMakingService getMatchMakingService() {
         return _matchMakingService;
     }
@@ -729,8 +932,17 @@ public class BrainCloudClient {
         return _playerStatisticsEventService;
     }
 
+    public PresenceService getPresenceService()
+    {
+        return _presenceService;
+    }
+
     public ProductService getProductService() {
         return _productService;
+    }
+
+    public VirtualCurrencyService getVirtualCurrencyService() {
+        return _virtualCurrencyService;
     }
 
     public ProfanityService getProfanityService() {
@@ -743,6 +955,10 @@ public class BrainCloudClient {
 
     public RedemptionCodeService getRedemptionCodeService() {
         return _redemptionCodeService;
+    }
+
+    public RTTRegistrationService getRTTRegistrationService() {
+        return _rttService;
     }
 
     public S3HandlingService getS3HandlingService() {

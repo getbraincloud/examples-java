@@ -15,6 +15,7 @@ public class AuthenticationType {
     public static final AuthenticationType Google = new AuthenticationType("Google");
     public static final AuthenticationType Twitter = new AuthenticationType("Twitter");
     public static final AuthenticationType Parse = new AuthenticationType("Parse");
+    public static final AuthenticationType Handoff = new AuthenticationType("Handoff");
     public static final AuthenticationType External = new AuthenticationType("External");
     public static final AuthenticationType Unknown = new AuthenticationType("Unknown");
 
@@ -54,6 +55,9 @@ public class AuthenticationType {
         }
         if (s.equals(Parse.toString())) {
             return Parse;
+        }
+        if (s.equals(Handoff.toString())) {
+            return Handoff;
         }
         if (s.equals(External.toString())) {
             return External;

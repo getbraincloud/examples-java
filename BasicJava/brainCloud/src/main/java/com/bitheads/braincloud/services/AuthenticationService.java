@@ -7,6 +7,9 @@ import com.bitheads.braincloud.client.ServiceName;
 import com.bitheads.braincloud.client.ServiceOperation;
 import com.bitheads.braincloud.comms.ServerCall;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,17 +23,20 @@ public class AuthenticationService {
 
     private enum Parameter {
         externalId,
+        emailAddress,
         authenticationToken,
         authenticationType,
+        appId,
         gameId,
         forceCreate,
         releasePlatform,
-        version,
+        clientLibVersion,
         externalAuthName,
         profileId,
         anonymousId,
-        upgradeAppId,
+        gameVersion,
         countryCode,
+        serviceParams,
         languageCode,
         timeZoneOffset
     }
@@ -92,6 +98,21 @@ public class AuthenticationService {
      */
     public void authenticateAnonymous(boolean forceCreate, IServerCallback callback) {
         authenticate(_anonymousId, "", AuthenticationType.Anonymous, null, forceCreate, callback);
+    }
+
+    /**
+     * Overloaded for users not using wrapper, they will need to create their own anonId.
+     * Authenticate a user anonymously with brainCloud - used for apps that
+     * don't want to bother the user to login, or for users who are sensitive to
+     * their privacy.
+     *
+     * @param anonymousId 
+     * @param forceCreate Should a new profile be created if it does not exist?
+     * @param callback    The callback handler
+     */
+    public void authenticateAnonymous(String anonymousId, boolean forceCreate, IServerCallback callback) {
+        _anonymousId = anonymousId;
+        authenticateAnonymous(forceCreate, callback);
     }
 
     /**
@@ -230,6 +251,17 @@ public class AuthenticationService {
     }
 
     /**
+     * Authenticate the user using a handoffId and an authentication token.
+     *
+     * @param handoffId   braincloud handoffId generated frim cloud script
+     * @param securityToken The authentication token
+     * @param callback   The callback handler
+     */
+    public void authenticateHandoff(String handoffId, String securityToken, IServerCallback callback) {
+        authenticate(handoffId, securityToken, AuthenticationType.Handoff, null, false, callback);
+    }
+
+    /**
      * Reset Email password - Sends a password reset email to the specified
      * address
      *
@@ -254,6 +286,36 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Reset Email password with service parameters - sends a password reset email to the
+     * specified address
+     *
+     * @param email the email address to send the reset email to
+     * @param serviceParams parameters to send to the email service. see documentation for full
+     *                      list. http://getbraincloud.com/apidocs/apiref/#capi-mail
+     * @param callback The callback handler
+     *
+     * Note the follow error reason codes:
+     * SECURITY_ERROR (40209) - If the email address cannot be found.
+     */
+    public void resetEmailPasswordAdvanced(String email, String serviceParams, IServerCallback callback) {
+        try {
+            String appId = _client.getAppId();
+
+            JSONObject message = new JSONObject();
+            message.put(Parameter.gameId.name(), appId);
+            message.put(Parameter.emailAddress.name(), email);
+            message.put(Parameter.serviceParams.name(), new JSONObject(serviceParams));
+
+            ServerCall serverCall = new ServerCall(
+                    ServiceName.authenticationV2,
+                    ServiceOperation.RESET_EMAIL_PASSWORD_ADVANCED, message,
+                    callback);
+            _client.sendRequest(serverCall);
+        } catch (JSONException ignored) {
+        }
+    }
+
     private void authenticate(
             String externalId,
             String authenticationToken,
@@ -272,8 +334,8 @@ public class AuthenticationService {
             message.put(Parameter.anonymousId.name(), _anonymousId);
             message.put(Parameter.gameId.name(), _client.getAppId());
             message.put(Parameter.releasePlatform.name(), _client.getReleasePlatform());
-            message.put(Parameter.upgradeAppId.name(), _client.getAppVersion());
-            message.put(Parameter.version.name(), _client.getBrainCloudVersion());
+            message.put(Parameter.gameVersion.name(), _client.getAppVersion());
+            message.put(Parameter.clientLibVersion.name(), _client.getBrainCloudVersion());
 
             if (StringUtil.IsOptionalParameterValid(externalAuthName)) {
                 message.put(Parameter.externalAuthName.name(), externalAuthName);

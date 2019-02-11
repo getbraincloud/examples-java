@@ -3,8 +3,10 @@ package com.bitheads.braincloud.client;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.bitheads.braincloud.services.AppStoreService;
 import com.bitheads.braincloud.services.AsyncMatchService;
 import com.bitheads.braincloud.services.AuthenticationService;
+import com.bitheads.braincloud.services.ChatService;
 import com.bitheads.braincloud.services.DataStreamService;
 import com.bitheads.braincloud.services.EntityService;
 import com.bitheads.braincloud.services.EventService;
@@ -16,25 +18,31 @@ import com.bitheads.braincloud.services.GlobalEntityService;
 import com.bitheads.braincloud.services.GlobalStatisticsService;
 import com.bitheads.braincloud.services.GroupService;
 import com.bitheads.braincloud.services.IdentityService;
+import com.bitheads.braincloud.services.LobbyService;
 import com.bitheads.braincloud.services.MailService;
+import com.bitheads.braincloud.services.MessagingService;
 import com.bitheads.braincloud.services.MatchMakingService;
 import com.bitheads.braincloud.services.OneWayMatchService;
 import com.bitheads.braincloud.services.PlaybackStreamService;
 import com.bitheads.braincloud.services.PlayerStateService;
 import com.bitheads.braincloud.services.PlayerStatisticsEventService;
 import com.bitheads.braincloud.services.PlayerStatisticsService;
+import com.bitheads.braincloud.services.PresenceService;
 import com.bitheads.braincloud.services.ProductService;
 import com.bitheads.braincloud.services.ProfanityService;
 import com.bitheads.braincloud.services.PushNotificationService;
 import com.bitheads.braincloud.services.RedemptionCodeService;
+import com.bitheads.braincloud.services.RTTRegistrationService;
 import com.bitheads.braincloud.services.S3HandlingService;
 import com.bitheads.braincloud.services.ScriptService;
 import com.bitheads.braincloud.services.SocialLeaderboardService;
 import com.bitheads.braincloud.services.TimeService;
 import com.bitheads.braincloud.services.TournamentService;
+import com.bitheads.braincloud.services.VirtualCurrencyService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.util.Map;
 
 /**
  * The BrainCloudWrapper provides some convenience functionality to developers when they are
@@ -177,6 +185,16 @@ public class BrainCloudWrapper implements IServerCallback {
     public void initialize(String appId, String secretKey, String appVersion) {
         getClient().initialize(appId, secretKey, appVersion);
     }
+
+    private void initializeWithApps(String url, String appId, Map<String, String> secretMap, String version, String companyName, String appName)
+    {
+        if(_client == null)
+        {
+            _client = new BrainCloudClient();
+        }
+
+        getClient().initializeWithApps(url, appId, secretMap, version);
+    } 
 
     protected void initializeIdentity(boolean isAnonymousAuth) {
 
@@ -560,8 +578,20 @@ public class BrainCloudWrapper implements IServerCallback {
 
 
     // brainCloud Services
+    public AppStoreService getAppStoreService() {
+        return _client.getAppStoreService();
+    }
+
     public AsyncMatchService getAsyncMatchService() {
         return _client.getAsyncMatchService();
+    }
+
+    public AuthenticationService getAuthenticationService() {
+        return _client.getAuthenticationService();
+    }
+
+    public ChatService getChatService() {
+        return _client.getChatService();
     }
 
     public DataStreamService getDataStreamService() {
@@ -608,8 +638,16 @@ public class BrainCloudWrapper implements IServerCallback {
         return _client.getIdentityService();
     }
 
+    public LobbyService getLobbyService() {
+        return _client.getLobbyService();
+    }
+
     public MailService getMailService() {
         return _client.getMailService();
+    }
+
+    public MessagingService getMessagingService() {
+        return _client.getMessagingService();
     }
 
     public MatchMakingService getMatchMakingService() {
@@ -636,8 +674,16 @@ public class BrainCloudWrapper implements IServerCallback {
         return _client.getPlayerStatisticsEventService();
     }
 
+    public PresenceService getPresenceService() {
+        return _client.getPresenceService();
+    }
+
     public ProductService getProductService() {
         return _client.getProductService();
+    }
+
+    public VirtualCurrencyService getVirtualCurrencyService() {
+        return _client.getVirtualCurrencyService();
     }
 
     public ProfanityService getProfanityService() {
@@ -650,6 +696,10 @@ public class BrainCloudWrapper implements IServerCallback {
 
     public RedemptionCodeService getRedemptionCodeService() {
         return _client.getRedemptionCodeService();
+    }
+
+    public RTTRegistrationService getRTTRegistrationService() {
+        return _client.getRTTRegistrationService();
     }
 
     public S3HandlingService getS3HandlingService() {
@@ -671,5 +721,4 @@ public class BrainCloudWrapper implements IServerCallback {
     public TournamentService getTournamentService() {
         return _client.getTournamentService();
     }
-
 }

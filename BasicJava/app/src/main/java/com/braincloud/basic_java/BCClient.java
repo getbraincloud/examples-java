@@ -4,6 +4,7 @@ package com.braincloud.basic_java;
 import android.content.Context;
 import android.os.CountDownTimer;
 
+import com.bitheads.braincloud.comms.*;
 import com.bitheads.braincloud.client.*;
 import com.bitheads.braincloud.services.*;
 
