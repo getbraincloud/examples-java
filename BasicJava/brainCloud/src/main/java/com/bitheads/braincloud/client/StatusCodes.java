@@ -20,5 +20,6 @@ public interface StatusCodes {
      */
     int INTERNAL_SERVER_ERROR = 500;
 
+    int BAD_REQUEST = 400;
     int FORBIDDEN = 403;
 }

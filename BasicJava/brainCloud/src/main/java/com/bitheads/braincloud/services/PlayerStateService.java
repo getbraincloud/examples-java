@@ -182,33 +182,32 @@ public class PlayerStateService {
     }
 
     /**
-     * @deprecated Use updateUserName() instead - Removal after September 1 2017
+     * @deprecated Use updateName() instead - Removal after September 1 2017
      */
-    public void updatePlayerName(String userName,
+    public void updatePlayerName(String name,
                                  IServerCallback callback) {
-        JSONObject data = new JSONObject();
-        try {
-            data.put(Parameter.playerName.name(), userName);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        updateName(name, callback);
+    }
 
-        ServerCall sc = new ServerCall(ServiceName.playerState,
-                ServiceOperation.UPDATE_NAME, data, callback);
-        _client.sendRequest(sc);
+    /**
+     * @deprecated Use updateName() instead - Removal after September 1 2017
+     */
+    public void updateUserName(String name,
+                               IServerCallback callback) {
+        updateName(name, callback);
     }
 
     /**
      * Sets the user's visible name
      *
-     * @param userName The name of the user to be packed
+     * @param name The name to be picked
      * @param callback The callback handler
      */
-    public void updateUserName(String userName,
+    public void updateName(String name,
                                IServerCallback callback) {
         JSONObject data = new JSONObject();
         try {
-            data.put(Parameter.playerName.name(), userName);
+            data.put(Parameter.playerName.name(), name);
         } catch (JSONException e) {
             e.printStackTrace();
         }

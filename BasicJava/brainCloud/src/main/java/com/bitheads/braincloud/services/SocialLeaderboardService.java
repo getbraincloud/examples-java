@@ -95,6 +95,45 @@ public class SocialLeaderboardService {
     }
 
     /**
+     * Method returns the social leaderboard by the. A player's social leaderboard is
+     * comprised of players who are recognized as being your friend. For now,
+     * this applies solely to Facebook connected players who are friends with
+     * the logged in player (who also must be Facebook connected). In the future
+     * this will expand to other identification means (such as Game Centre,
+     * Google circles etc).
+     *
+     * Leaderboards entries contain the player's score and optionally, some
+     * user-defined data associated with the score. The currently logged in
+     * player will also be returned in the social leaderboard.
+     *
+     * Note: If no friends have played the game, the bestScore, createdAt,
+     * updatedAt will contain NULL.
+     *
+     * @param leaderboardId
+     *            The id of the leaderboard to retrieve
+     * @param replaceName
+     *            If true, the currently logged in player's name will be
+     *            replaced by the String "You".
+     * @param versionId the version of the leaderboard
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getSocialLeaderboardByVersion(String leaderboardId, boolean replaceName,
+                                                int versionId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.replaceName.name(), replaceName);
+            data.put(Parameter.versionId.name(), versionId);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_SOCIAL_LEADERBOARD_BY_VERSION, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
      * Reads multiple social leaderboards.
      *
      * @param leaderboardIds Collection of leaderboard IDs.
@@ -526,6 +565,33 @@ public class SocialLeaderboardService {
     }
 
     /**
+     * Retrieve the social leaderboard for a group by version.
+     *
+     * Service Name - leaderboard
+     * Service Operation - GET_GROUP_SOCIAL_LEADERBOARD_BY_VERSION
+     *
+     * @param leaderboardId The leaderboard to retrieve
+     * @param groupId The ID of the group
+     * @param versionId The ID of the group
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getGroupSocialLeaderboardByVersion(String leaderboardId, String groupId, int versionId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.versionId.name(), versionId);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_GROUP_SOCIAL_LEADERBOARD_BY_VERSION, data, callback);
+            _client.sendRequest(sc);
+
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
      * Retrieve the social leaderboard for a list of players.
      *
      * Service Name - leaderboard
@@ -543,6 +609,33 @@ public class SocialLeaderboardService {
 
             ServerCall sc = new ServerCall(ServiceName.leaderboard,
                     ServiceOperation.GET_PLAYERS_SOCIAL_LEADERBOARD, data, callback);
+            _client.sendRequest(sc);
+
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Retrieve the social leaderboard for a list of players by version.
+     *
+     * Service Name - leaderboard
+     * Service Operation - GET_PLAYERS_SOCIAL_LEADERBOARD_BY_VERSION
+     *
+     * @param leaderboardId The leaderboard to retrieve
+     * @param profileIds The IDs of the players
+     * @param versionId The IDs of the players
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getPlayersSocialLeaderboardByVersion(String leaderboardId, String[] profileIds, int versionId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.profileIds.name(), profileIds);
+            data.put(Parameter.versionId.name(), versionId);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_PLAYERS_SOCIAL_LEADERBOARD_BY_VERSION, data, callback);
             _client.sendRequest(sc);
 
         } catch (JSONException je) {

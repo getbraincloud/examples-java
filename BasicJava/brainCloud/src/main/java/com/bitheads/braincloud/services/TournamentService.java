@@ -19,6 +19,7 @@ public class TournamentService {
 
     public enum Parameter {
         leaderboardId,
+        divSetId,
         versionId,
         tournamentCode,
         initialScore,
@@ -61,6 +62,43 @@ public class TournamentService {
     }
 
     /**
+     * Get my divisions
+     *
+     * Service Name - tournament
+     * Service Operation - GET_DIVISIONS_INFO
+     *
+     * @param divSetId The leaderboard for the tournament
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getDivisionInfo(String divSetId, IServerCallback callback)
+    {
+        try{
+            JSONObject data = new JSONObject();
+            data.put(Parameter.divSetId.name(), divSetId);
+
+            ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.GET_DIVISION_INFO, data, callback);
+            _client.sendRequest(sc);
+        }catch (JSONException je)
+        {
+            je.printStackTrace();
+        }
+    }
+    
+    /**
+     * Get my divisions
+     *
+     * Service Name - tournament
+     * Service Operation - GET_MY_DIVISIONS
+     *
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getMyDivisions(IServerCallback callback)
+    {
+        ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.GET_MY_DIVISIONS, null, callback);
+        _client.sendRequest(sc);
+    }
+
+    /**
      * Get tournament status associated with a leaderboard
      *
      * Service Name - tournament
@@ -80,6 +118,35 @@ public class TournamentService {
             ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.GET_TOURNAMENT_STATUS, data, callback);
             _client.sendRequest(sc);
         } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Join the specified division.
+     * If joining tournament requires a fee, it's possible to fail at joining the division
+     *
+     * Service Name - tournament
+     * Service Operation - JOIN_DIVISION
+     *
+     * @param divSetId The leaderboard for the tournament
+     * @param tournamentCode Tournament to join
+     * @param initialScore The initial score for players first joining a division
+     *						  Usually 0, unless leaderboard is LOW_VALUE
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void joinDivision(String divSetId, String tournamentCode, long initialScore, IServerCallback callback)
+    {
+        try{
+            JSONObject data = new JSONObject();
+            data.put(Parameter.divSetId.name(), divSetId);
+            data.put(Parameter.tournamentCode.name(), tournamentCode);
+            data.put(Parameter.initialScore.name(), initialScore);
+
+            ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.JOIN_DIVISION, data, callback);
+            _client.sendRequest(sc);
+        }catch (JSONException je)
+        {
             je.printStackTrace();
         }
     }
@@ -108,6 +175,31 @@ public class TournamentService {
             ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.JOIN_TOURNAMENT, data, callback);
             _client.sendRequest(sc);
         } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Leave the specified division.
+     * Removes player score from tournament leaderboard
+     *
+     * Service Name - tournament
+     * Service Operation - LEAVE_DIVISION_INSTANCE
+     *
+     * @param leaderboardId The leaderboard for the division
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void leaveDivisionInstance(String leaderboardId, IServerCallback callback)
+    {
+        try{
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+
+            ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.LEAVE_DIVISION_INSTANCE, data, callback);
+            _client.sendRequest(sc);
+        }catch (JSONException je)
+        {
             je.printStackTrace();
         }
     }
@@ -262,4 +354,5 @@ public class TournamentService {
             je.printStackTrace();
         }
     }
+
 }

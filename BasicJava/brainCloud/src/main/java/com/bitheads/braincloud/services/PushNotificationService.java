@@ -320,7 +320,7 @@ public class PushNotificationService {
     public void sendRawPushNotificationBatch(String[] profileIds, String fcmContent, String iosContent, String facebookContent, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
-            data.put(Parameter.profileId.name(), profileIds);
+            data.put(Parameter.profileIds.name(), profileIds);
 
             if (StringUtil.IsOptionalParameterValid(fcmContent)) {
                 data.put(Parameter.fcmContent.name(), new JSONObject(fcmContent));

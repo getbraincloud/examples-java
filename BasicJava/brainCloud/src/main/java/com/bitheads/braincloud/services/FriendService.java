@@ -170,10 +170,7 @@ public class FriendService {
     }
 
     /**
-     * Retrieves profile information for the partial matches of the specified text.
-     *
-     * @param searchText Universal ID text on which to search.
-     * @param maxResults Maximum number of results to return.
+     * @deprecated Use findUserByExactUniversalId - Removal after Feb 1, 2019
      */
     public void findUserByUniversalId(String searchText, int maxResults, IServerCallback callback) {
         JSONObject data = new JSONObject();
@@ -185,6 +182,23 @@ public class FriendService {
         }
 
         ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_PLAYER_BY_UNIVERSAL_ID, data, callback);
+        _client.sendRequest(sc);
+    }
+
+    /** Retrieves profile information for the partial matches of the specified text. 
+     * 
+     * @param searchText Universal Id text on which to search
+     * @param maxResults Maximum number of results to return
+     */
+    public void findUserByExactUniversalId(String searchText, IServerCallback callback) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put(Parameter.searchText.name(), searchText);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_USER_BY_EXACT_UNIVERSAL_ID, data, callback);
         _client.sendRequest(sc);
     }
 
@@ -386,6 +400,52 @@ public class FriendService {
         }
 
         ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.GET_USERS_ONLINE_STATUS, data, callback);
+        _client.sendRequest(sc);
+    }
+
+    /**
+     * Retrieves profile information for users whose names starts with search text. 
+     * Optional parameter maxResults allows you to search an amount of names. 
+     *
+     * Service Name - Friend
+     * Service Operation - FIND_USERS_BY_NAME_STARTING_WITH
+     *
+     * @param searchText Collection of profile IDs.
+     * @param maxResults how many names you want to return 
+     * @param callback Method to be invoked when the server response is received.
+     */
+    public void findUsersByNameStartingWith(String searchText, int maxResults, IServerCallback callback) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put(Parameter.searchText.name(), searchText);
+            data.put(Parameter.entityId.name(), maxResults);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_USERS_BY_NAME_STARTING_WITH, data, callback);
+        _client.sendRequest(sc);
+    }
+
+    /**
+     * Retrieves profile information for users whose universal Id starts with search text. 
+     * Optional parameter maxResults allows you to search an amount of names. 
+     *
+     * Service Name - Friend
+     * Service Operation - FIND_USERS_BY_UNIVERSAL_ID_STARTING_WITH
+     *
+     * @param searchText Collection of profile IDs.
+     * @param maxResults how many names you want to return 
+     * @param callback Method to be invoked when the server response is received.
+     */
+    public void findUsersByUniversalIdStartingWith(String searchText, int maxResults, IServerCallback callback) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put(Parameter.searchText.name(), searchText);
+            data.put(Parameter.entityId.name(), maxResults);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_USERS_BY_UNIVERSAL_ID_STARTING_WITH, data, callback);
         _client.sendRequest(sc);
     }
 }

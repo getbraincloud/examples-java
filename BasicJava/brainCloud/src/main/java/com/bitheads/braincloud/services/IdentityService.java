@@ -19,6 +19,7 @@ public class IdentityService {
         authenticationToken,
         profileId,
         appId,
+        gameId,
         forceSingleton,
         includePlayerSummaryData,
         levelName,
@@ -56,7 +57,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Errors to watch for:  SWITCHING_PROFILES - this means that the Facebook identity you provided
-     * already points to a different profile.  You will likely want to offer the player the
+     * already points to a different profile.  You will likely want to offer the player the 
      * choice to *SWITCH* to that profile, or *MERGE* the profiles.
      *
      * To switch profiles, call ClearSavedProfileID() and call AuthenticateFacebook().
@@ -117,7 +118,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Errors to watch for:  SWITCHING_PROFILES - this means that the Facebook identity you provided
-     * already points to a different profile.  You will likely want to offer the player the
+     * already points to a different profile.  You will likely want to offer the player the 
      * choice to *SWITCH* to that profile, or *MERGE* the profiles.
      *
      * To switch profiles, call ClearSavedProfileID() and call this method again.
@@ -156,7 +157,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
-     * disconnecting this identity would result in the profile being anonymous (which means that
+     * disconnecting this identity would result in the profile being anonymous (which means that 
      * the profile wouldn't be retrievable if the user loses their device)
      */
     public void detachGameCenterIdentity(String gameCenterId, boolean continueAnon, IServerCallback callback) {
@@ -239,7 +240,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *.
      * Errors to watch for:  SWITCHING_PROFILES - this means that the email address you provided
-     * already points to a different profile.  You will likely want to offer the player the
+     * already points to a different profile.  You will likely want to offer the player the 
      * choice to *SWITCH* to that profile, or *MERGE* the profiles.
      *
      * To switch profiles, call ClearSavedProfileID() and then call AuthenticateEmailPassword().
@@ -278,7 +279,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
-     * disconnecting this identity would result in the profile being anonymous (which means that
+     * disconnecting this identity would result in the profile being anonymous (which means that 
      * the profile wouldn't be retrievable if the user loses their device)
      */
     public void detachEmailIdentity(String email, boolean continueAnon, IServerCallback callback) {
@@ -300,7 +301,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *.
      * Errors to watch for:  SWITCHING_PROFILES - this means that the email address you provided
-     * already points to a different profile.  You will likely want to offer the player the
+     * already points to a different profile.  You will likely want to offer the player the 
      * choice to *SWITCH* to that profile, or *MERGE* the profiles.
      *
      * To switch profiles, call ClearSavedProfileID() and then call AuthenticateEmailPassword().
@@ -339,7 +340,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
-     * disconnecting this identity would result in the profile being anonymous (which means that
+     * disconnecting this identity would result in the profile being anonymous (which means that 
      * the profile wouldn't be retrievable if the user loses their device)
      */
     public void detachUniversalIdentity(String userId, boolean continueAnon, IServerCallback callback) {
@@ -361,7 +362,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *.
      * Errors to watch for:  SWITCHING_PROFILES - this means that the email address you provided
-     * already points to a different profile.  You will likely want to offer the player the
+     * already points to a different profile.  You will likely want to offer the player the 
      * choice to *SWITCH* to that profile, or *MERGE* the profiles.
      *
      * To switch profiles, call ClearSavedProfileID() and then call AuthenticateSteam().
@@ -400,7 +401,7 @@ public class IdentityService {
      * @returns performs the success callback on success, failure callback on failure
      *
      * Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
-     * disconnecting this identity would result in the profile being anonymous (which means that
+     * disconnecting this identity would result in the profile being anonymous (which means that 
      * the profile wouldn't be retrievable if the user loses their device)
      */
     public void detachSteamIdentity(String steamId, boolean continueAnon, IServerCallback callback) {
@@ -802,7 +803,7 @@ public class IdentityService {
             if (StringUtil.IsOptionalParameterValid(childProfileId)) {
                 data.put(Parameter.profileId.name(), childProfileId);
             }
-            data.put(Parameter.appId.name(), childAppId);
+            data.put(Parameter.gameId.name(), childAppId);
             data.put(Parameter.forceCreate.name(), forceCreate);
             data.put(Parameter.forceSingleton.name(), forceSingleton);
 

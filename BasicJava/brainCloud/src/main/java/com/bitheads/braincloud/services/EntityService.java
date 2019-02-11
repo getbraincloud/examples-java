@@ -20,7 +20,7 @@ public class EntityService {
         maxReturn,
         where,
         orderBy,
-        targetProfileId,
+        targetPlayerId,
         version,
         data
     }
@@ -188,7 +188,7 @@ public class EntityService {
     public void getSharedEntityForPlayerId(String profileId, String entityId, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
             data.put(Parameter.entityId.name(), entityId);
 
             ServerCall sc = new ServerCall(ServiceName.entity,
@@ -216,7 +216,7 @@ public class EntityService {
     public void getSharedEntityForProfileId(String profileId, String entityId, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
             data.put(Parameter.entityId.name(), entityId);
 
             ServerCall sc = new ServerCall(ServiceName.entity,
@@ -238,7 +238,7 @@ public class EntityService {
         try {
 
             JSONObject data = new JSONObject();
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
 
             ServerCall sc = new ServerCall(ServiceName.entity,
                     ServiceOperation.READ_SHARED, data, callback);
@@ -266,7 +266,7 @@ public class EntityService {
         try {
 
             JSONObject data = new JSONObject();
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
 
             ServerCall sc = new ServerCall(ServiceName.entity,
                     ServiceOperation.READ_SHARED, data, callback);
@@ -286,7 +286,7 @@ public class EntityService {
         try {
             JSONObject data = new JSONObject();
 
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
             if (StringUtil.IsOptionalParameterValid(whereJson)) {
                 data.put(Parameter.where.name(), new JSONObject(whereJson));
             }
@@ -319,7 +319,7 @@ public class EntityService {
         try {
             JSONObject data = new JSONObject();
 
-            data.put(Parameter.targetProfileId.name(), profileId);
+            data.put(Parameter.targetPlayerId.name(), profileId);
             if (StringUtil.IsOptionalParameterValid(whereJson)) {
                 data.put(Parameter.where.name(), new JSONObject(whereJson));
             }
@@ -400,7 +400,7 @@ public class EntityService {
             JSONObject data = new JSONObject();
             data.put(Parameter.entityId.name(), entityId);
             data.put(Parameter.entityType.name(), entityType);
-            data.put(Parameter.targetProfileId.name(), targetProfileId);
+            data.put(Parameter.targetPlayerId.name(), targetProfileId);
             data.put(Parameter.version.name(), version);
 
             JSONObject jsonData = new JSONObject(jsonEntityData);
@@ -601,7 +601,7 @@ public class EntityService {
 
             JSONObject data = new JSONObject();
             data.put(Parameter.entityId.name(), entityId);
-            data.put(Parameter.targetProfileId.name(), targetProfileId);
+            data.put(Parameter.targetPlayerId.name(), targetProfileId);
             data.put(Parameter.data.name(), new JSONObject(jsonData));
 
             ServerCall sc = new ServerCall(ServiceName.entity,
