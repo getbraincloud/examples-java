@@ -563,6 +563,48 @@ public class IdentityService {
     }
 
     /**
+     * Attaches a univeral id to the current profile with no login capability.
+     *
+     * Service Name - Identity
+     * Service Operation - AttachNonLoginUniversalId
+     *
+     * @param externalId User id
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void attachNonLoginUniversalId(String externalId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.externalId.name(), externalId);
+
+            ServerCall sc = new ServerCall(ServiceName.identity, ServiceOperation.ATTACH_NONLOGIN_UNIVERSAL, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Updates univeral id of the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - UpdateUniversalIdLogin
+     *
+     * @param externalId User id
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void updateUniversalIdLogin(String externalId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.externalId.name(), externalId);
+
+            ServerCall sc = new ServerCall(ServiceName.identity, ServiceOperation.UPDATE_UNIVERSAL_LOGIN, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
      * Switch to a Parent Profile
      *
      * Service Name - Identity
