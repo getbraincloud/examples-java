@@ -34,7 +34,7 @@ import com.bitheads.braincloud.services.ProductService;
 import com.bitheads.braincloud.services.ProfanityService;
 import com.bitheads.braincloud.services.PushNotificationService;
 import com.bitheads.braincloud.services.RedemptionCodeService;
-import com.bitheads.braincloud.services.RTTRegistrationService;
+import com.bitheads.braincloud.services.RTTService;
 import com.bitheads.braincloud.services.S3HandlingService;
 import com.bitheads.braincloud.services.ScriptService;
 import com.bitheads.braincloud.services.SocialLeaderboardService;
@@ -64,7 +64,7 @@ public class BrainCloudClient {
     private double _timeZoneOffset;
 
 
-    private final static String BRAINCLOUD_VERSION = "3.11.0";
+    private final static String BRAINCLOUD_VERSION = "4.0.0";
 
     private BrainCloudRestClient _restClient;
     private RTTComms _rttComms;
@@ -98,7 +98,7 @@ public class BrainCloudClient {
     private ProfanityService _profanityService = new ProfanityService(this);
     private PushNotificationService _pushNotificationService = new PushNotificationService(this);
     private RedemptionCodeService _redemptionCodeService = new RedemptionCodeService(this);
-    private RTTRegistrationService _rttService = new RTTRegistrationService(this);
+    private RTTService _rttService = new RTTService(this);
     private S3HandlingService _s3HandlingService = new S3HandlingService(this);
     private ScriptService _scriptService = new ScriptService(this);
     private SocialLeaderboardService _socialLeaderboardService = new SocialLeaderboardService(this);
@@ -113,6 +113,11 @@ public class BrainCloudClient {
     public BrainCloudClient() {
         _restClient = new BrainCloudRestClient(this);
         _rttComms = new RTTComms(this);
+    }
+
+    public String getRttConnectionId()
+    {
+        return _rttComms.getConnectionId();
     }
 
     /**
@@ -704,10 +709,6 @@ public class BrainCloudClient {
         return _countryCode;
     }
 
-    public String getRTTConnectionId() {
-        return _rttComms.getConnectionId();
-    }
-
     /**
      * Sets the country code sent to brainCloud when a user authenticates.
      * Will override any auto detected country.
@@ -731,39 +732,6 @@ public class BrainCloudClient {
     }
 
     /**
-     * Enables Real Time event for this session.
-     * Real Time events are disabled by default. Usually events
-     * need to be polled using GET_EVENTS. By enabling this, events will
-     * be received instantly when they happen through a TCP connection to an Event Server.
-     *
-     * This function will first call requestClientConnection, then connect to the address
-     *
-     * @param callback The callback.
-     * @param useWebSocket Use web sockets instead of TCP for the internal connections. Default is true
-     */
-    public void enableRTT(IRTTConnectCallback callback, boolean useWebSocket) {
-        _rttComms.enableRTT(callback, useWebSocket);
-    }
-    public void enableRTT(IRTTConnectCallback callback) {
-        enableRTT(callback, true);
-    }
-
-    /**
-     * Disables Real Time event for this session.
-     */
-    public void disableRTT() {
-        _rttComms.disableRTT();
-    }
-
-    /**
-     * Returns true is RTT is enabled
-     */
-    public boolean getRTTEnabled()
-    {
-        return _rttComms.isRTTEnabled();
-    }
-
-    /**
      * Sets the language code sent to brainCloud when a user authenticates.
      * If the language is set to a non-ISO 639-1 standard value the app default will be used instead.
      * Will override any auto detected language.
@@ -771,65 +739,6 @@ public class BrainCloudClient {
      */
     public void overrideLanguageCode(String languageCode) {
         _languageCode = languageCode;
-    }
-
-    /**
-     * Listen to real time events.
-     * 
-     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
-     * Only one event callback can be registered at a time. Calling this a second time will override the previous callback.
-     */
-    public void registerRTTEventCallback(IRTTCallback callback) {
-        _rttComms.registerRTTCallback(ServiceName.event.toString(), callback);
-    }
-    public void deregisterRTTEventCallback() {
-        _rttComms.deregisterRTTCallback(ServiceName.event.toString());
-    }
-
-    /**
-     * Listen to real time chat messages.
-     * 
-     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
-     * Only one chat callback can be registered at a time. Calling this a second time will override the previous callback.
-     */
-    public void registerRTTChatCallback(IRTTCallback callback) {
-        _rttComms.registerRTTCallback(ServiceName.chat.toString(), callback);
-    }
-    public void deregisterRTTChatCallback() {
-        _rttComms.deregisterRTTCallback(ServiceName.chat.toString());
-    }
-
-    /**
-     * Listen to real time messaging.
-     * 
-     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
-     * Only one messaging callback can be registered at a time. Calling this a second time will override the previous callback.
-     */
-    public void registerRTTMessagingCallback(IRTTCallback callback) {
-        _rttComms.registerRTTCallback(ServiceName.messaging.toString(), callback);
-    }
-    public void deregisterRTTMessagingCallback() {
-        _rttComms.deregisterRTTCallback(ServiceName.messaging.toString());
-    }
-
-    /**
-     * Listen to real time lobby events.
-     * 
-     * Notes: RTT must be enabled for this app, and enableRTT must have been successfully called.
-     * Only one lobby callback can be registered at a time. Calling this a second time will override the previous callback.
-     */
-    public void registerRTTLobbyCallback(IRTTCallback callback) {
-        _rttComms.registerRTTCallback(ServiceName.lobby.toString(), callback);
-    }
-    public void deregisterRTTLobbyCallback() {
-        _rttComms.deregisterRTTCallback(ServiceName.lobby.toString());
-    }
-
-    /**
-     * Clear all set RTT callbacks
-     */
-    public void deregisterAllCallbacks() {
-        _rttComms.deregisterAllCallbacks();
     }
 
     public double getTimeZoneOffset() {
@@ -957,7 +866,7 @@ public class BrainCloudClient {
         return _redemptionCodeService;
     }
 
-    public RTTRegistrationService getRTTRegistrationService() {
+    public RTTService getRTTService() {
         return _rttService;
     }
 

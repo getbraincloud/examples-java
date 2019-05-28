@@ -90,6 +90,20 @@ public class VirtualCurrencyService {
             je.printStackTrace();
         }
     }
+    
+    /**
+     * Resets the player's currency to 0.
+     *
+     * Service Name - VirtualCurrency
+     * Service Operation - ResetCurrency
+     * 
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void resetCurrency(IServerCallback callback) {
+            JSONObject data = new JSONObject();
+            ServerCall sc = new ServerCall(ServiceName.virtualCurrency, ServiceOperation.RESET_PLAYER_VC, data, callback);
+            _client.sendRequest(sc);
+    }
 
     /**
      * Award player the passed-in amount of currency. Returns an object representing the new currency values.

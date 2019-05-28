@@ -29,7 +29,7 @@ public class GlobalEntityService {
         timeToLive,
         context,
         pageOffset,
-        ownerId
+        ownerId,
     }
 
     /**
@@ -406,6 +406,33 @@ public class GlobalEntityService {
             data.put(Parameter.maxReturn.name(), maxReturn);
             ServerCall serverCall = new ServerCall(ServiceName.globalEntity,
                     ServiceOperation.GET_RANDOM_ENTITIES_MATCHING, data, callback); _client.sendRequest(serverCall);
+
+        } catch (JSONException ignored) {
+        }
+    }
+
+    /**
+     * Method updates an existing entity's Indexed ID.
+     *
+     * Service Name - globalEntity
+     * Service Operation - UPDATE_INDEXED_ID
+     *
+     * @param entityId The entity ID
+     * @param version The version of the entity to update
+     * @param entityIndexedId the id index of the entity
+     * @param callback The callback object
+     */
+    public void updateEntityIndexedId(String entityId, int version, String entityIndexedId, IServerCallback callback) {
+        try {
+
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityId.name(), entityId);
+            data.put(Parameter.version.name(), version);
+            data.put(Parameter.entityIndexedId.name(), entityIndexedId);
+
+            ServerCall serverCall = new ServerCall(ServiceName.globalEntity,
+                    ServiceOperation.UPDATE_INDEXED_ID, data, callback);
+            _client.sendRequest(serverCall);
 
         } catch (JSONException ignored) {
         }

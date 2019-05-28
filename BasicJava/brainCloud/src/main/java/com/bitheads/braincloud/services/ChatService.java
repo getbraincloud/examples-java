@@ -239,13 +239,13 @@ public class ChatService {
      * @param recordInHistory true if the message persist in history
      * @param callback The method to be invoked when the server response is received.
      */
-    public void postChatMessage(String channelId, String plain, String rich, Boolean recordInHistory, IServerCallback callback) {
+    public void postChatMessage(String channelId, String text, String rich, Boolean recordInHistory, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.channelId.name(), channelId);
 
             JSONObject content = new JSONObject();
-            content.put(Parameter.plain.name(), plain);
+            content.put(Parameter.text.name(), text);
             content.put(Parameter.rich.name(), new JSONObject(rich != null ? rich : "{}"));
             data.put(Parameter.content.name(), content);
 
@@ -300,7 +300,7 @@ public class ChatService {
      * @param rich custom data.
      * @param callback The method to be invoked when the server response is received.
      */
-    public void updateChatMessage(String channelId, String msgId, int version, String plain, String rich, IServerCallback callback) {
+    public void updateChatMessage(String channelId, String msgId, int version, String text, String rich, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.channelId.name(), channelId);
@@ -308,7 +308,7 @@ public class ChatService {
             data.put(Parameter.version.name(), version);
 
             JSONObject content = new JSONObject();
-            content.put(Parameter.plain.name(), plain);
+            content.put(Parameter.text.name(), text);
             content.put(Parameter.rich.name(), new JSONObject(rich != null ? rich : "{}"));
             data.put(Parameter.content.name(), content);
 
