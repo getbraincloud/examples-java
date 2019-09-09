@@ -34,7 +34,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService
             Notification notification = new NotificationCompat.Builder(this, "Messages")
                     .setContentText(remoteMessage.getData().get("message"))
                     .setContentTitle(remoteMessage.getData().get("title"))
-                    .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
+                    .setSmallIcon(R.drawable.ic_launcher_background)
                     .build();
             manager.notify(0, notification);
 
