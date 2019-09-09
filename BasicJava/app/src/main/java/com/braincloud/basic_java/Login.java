@@ -107,8 +107,6 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //change the app activity
         Intent loadApp = new Intent(getApplication(), theGame.class);
         startActivity(loadApp);
-
-        Log.e("AUTHENTICATED", MyFirebaseMessagingService.FirebaseTokenID );
     }
 
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
