@@ -701,4 +701,121 @@ public class SocialLeaderboardService {
             je.printStackTrace();
         }
     }
+
+    /**
+     * Posts score to Group's leaderboard - Note the user must be a member of the group
+     *
+     * Service Name - leaderboard
+     * Service Operation - POST_GROUP_SCORE
+     *
+     * @param leaderboardId the leaderboard
+     * @param groupId the groups id
+     * @param score the score you want to post
+     * @param jsonData extra json data
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void postScoreToGroupLeaderboard(String leaderboardId, String groupId, int score, String jsonData, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.score.name(), score);
+            if (StringUtil.IsOptionalParameterValid(jsonData)) {
+                data.put(Parameter.data.name(), new JSONObject(jsonData));
+            }
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.POST_GROUP_SCORE, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Removes score from group leaderboard
+     * 
+     * Service Name - leaderboard
+     * Service Operation - REMOVE_GROUP_SCORE
+     *
+     * @param leaderboardId the leaderboard
+     * @param groupId the groups id
+     * @param versionId the version
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void removeGroupScore(String leaderboardId, String groupId, int versionId, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.versionId.name(), versionId);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.REMOVE_GROUP_SCORE, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Retrieve a view of the group leaderbaord surrounding the current group
+     * 
+     * Service Name - leaderboard
+     * Service Operation - GET_GROUP_LEADERBOARD_VIEW
+     *
+     * @param leaderboardId the leaderboard
+     * @param groupId the groups id
+     * @param sort the sort order
+     * @param beforeCount count of players before current player to include
+     * @param afterCount count of the players after current player to include
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getGroupLeaderboardView(String leaderboardId, String groupId, SortOrder sort, int beforeCount, int afterCount, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.sort.name(), sort.name());
+            data.put(Parameter.beforeCount.name(), beforeCount);
+            data.put(Parameter.afterCount.name(), afterCount);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_GROUP_LEADERBOARD_VIEW, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Retrieve a view of the group leaderbaord surrounding the current group by version
+     * 
+     * Service Name - leaderboard
+     * Service Operation - GET_GROUP_LEADERBOARD_VIEW
+     *
+     * @param leaderboardId the leaderboard
+     * @param groupId the groups id
+     * @param versionId
+     * @param sort the sort order
+     * @param beforeCount count of players before current player to include
+     * @param afterCount count of the players after current player to include
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getGroupLeaderboardViewByVersion(String leaderboardId, String groupId, int versionId, SortOrder sort, int beforeCount, int afterCount, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.versionId.name(), versionId);
+            data.put(Parameter.sort.name(), sort.name());
+            data.put(Parameter.beforeCount.name(), beforeCount);
+            data.put(Parameter.afterCount.name(), afterCount);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_GROUP_LEADERBOARD_VIEW, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
 }

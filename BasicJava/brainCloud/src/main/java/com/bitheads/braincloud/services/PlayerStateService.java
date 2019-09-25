@@ -18,7 +18,11 @@ public class PlayerStateService {
         playerName,
         summaryFriendData,
         playerPictureUrl,
-        contactEmail
+        contactEmail,
+        statusName,
+        additionalSecs,
+        details,
+        durationSecs
     }
 
     private BrainCloudClient _client;
@@ -309,6 +313,114 @@ public class PlayerStateService {
 
             ServerCall serverCall = new ServerCall(ServiceName.playerState,
                     ServiceOperation.UPDATE_CONTACT_EMAIL, data, callback);
+            _client.sendRequest(serverCall);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Delete's the specified status
+     *
+     * Service Name - PlayerState
+     * Service Operation - ClearUserStatus
+     *
+     * @param statusName 
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void clearUserStatus(
+            String statusName,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.statusName.name(), statusName);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.CLEAR_USER_STATUS, data, callback);
+            _client.sendRequest(serverCall);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Stack user's statuses
+     *
+     * Service Name - PlayerState
+     * Service Operation - ClearUserStatus
+     *
+     * @param statusName
+     * @param additionalSecs
+     * @param details 
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void extendUserStatus(
+            String statusName,
+            int additionalSecs,
+            String details,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.statusName.name(), statusName);
+            data.put(Parameter.additionalSecs.name(), additionalSecs);
+            JSONObject detailData = new JSONObject(details);
+            data.put(Parameter.details.name(), detailData);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.EXTEND_USER_STATUS, data, callback);
+            _client.sendRequest(serverCall);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get user status
+     *
+     * Service Name - PlayerState
+     * Service Operation - ClearUserStatus
+     *
+     * @param statusName
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getUserStatus(
+            String statusName,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.statusName.name(), statusName);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.GET_USER_STATUS, data, callback);
+            _client.sendRequest(serverCall);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Set timed status for a user
+     *
+     * Service Name - PlayerState
+     * Service Operation - ClearUserStatus
+     *
+     * @param statusName
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void setUserStatus(
+            String statusName,
+            int durationSecs,
+            String details,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.statusName.name(), statusName);
+            data.put(Parameter.durationSecs.name(), durationSecs);
+            JSONObject detailData = new JSONObject(details);
+            data.put(Parameter.details.name(), detailData);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.GET_USER_STATUS, data, callback);
             _client.sendRequest(serverCall);
         } catch (JSONException e) {
             e.printStackTrace();

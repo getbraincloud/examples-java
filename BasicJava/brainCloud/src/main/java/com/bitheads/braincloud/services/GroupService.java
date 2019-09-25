@@ -40,7 +40,9 @@ public class GroupService {
         context,
         pageOffset,
         autoJoinStrategy,
-        where
+        where,
+        summaryData,
+        maxReturn
     }
 
     private BrainCloudClient _client;
@@ -237,6 +239,57 @@ public class GroupService {
                 data.put(Parameter.ownerAttributes.name(), new JSONObject(jsonOwnerAttributes));
             if (StringUtil.IsOptionalParameterValid(jsonDefaultMemberAttributes))
                 data.put(Parameter.defaultMemberAttributes.name(), new JSONObject(jsonDefaultMemberAttributes));
+
+            ServerCall sc = new ServerCall(ServiceName.group,
+                    ServiceOperation.CREATE_GROUP, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Create a group with summaryData.
+     *
+     * Service Name - group
+     * Service Operation - CREATE_GROUP
+     *
+     * @param name Name of the group.
+     * @param groupType Name of the type of group.
+     * @param isOpenGroup true if group is open; false if closed.
+     * @param acl The group's access control list. A null ACL implies default.
+     * @param jsonOwnerAttributes Attributes for the group owner (current player).
+     * @param jsonDefaultMemberAttributes Default attributes for group members.
+     * @param jsonData Custom application data.
+     * @param summaryData summary
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void createGroupWithSummaryData(
+            String name,
+            String groupType,
+            boolean isOpenGroup,
+            GroupACL acl,
+            String jsonData,
+            String jsonOwnerAttributes,
+            String jsonDefaultMemberAttributes,
+            String summaryData,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.name.name(), name);
+            data.put(Parameter.groupType.name(), groupType);
+            data.put(Parameter.isOpenGroup.name(), isOpenGroup);
+
+            if (acl != null)
+                data.put(Parameter.acl.name(), new JSONObject(acl.toJsonString()));
+            if (StringUtil.IsOptionalParameterValid(jsonData))
+                data.put(Parameter.data.name(), new JSONObject(jsonData));
+            if (StringUtil.IsOptionalParameterValid(jsonOwnerAttributes))
+                data.put(Parameter.ownerAttributes.name(), new JSONObject(jsonOwnerAttributes));
+            if (StringUtil.IsOptionalParameterValid(jsonDefaultMemberAttributes))
+                data.put(Parameter.defaultMemberAttributes.name(), new JSONObject(jsonDefaultMemberAttributes));
+            if (StringUtil.IsOptionalParameterValid(summaryData))
+                data.put(Parameter.summaryData.name(), new JSONObject(summaryData));
 
             ServerCall sc = new ServerCall(ServiceName.group,
                     ServiceOperation.CREATE_GROUP, data, callback);
@@ -891,6 +944,65 @@ public class GroupService {
 
             ServerCall sc = new ServerCall(ServiceName.group,
                     ServiceOperation.UPDATE_GROUP_NAME, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Updates a group's summaryData
+     *
+     * Service Name - group
+     * Service Operation - UPDATE_GROUP_SUMMARY_DATA
+     *
+     * @param groupId ID of the group.
+     * @param version version of the group
+     * @param jsonSummaryData summary
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void updateGroupSummaryData(
+            String groupId,
+            int version,
+            String jsonSummaryData,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.groupId.name(), groupId);
+            data.put(Parameter.version.name(), version);
+            if (StringUtil.IsOptionalParameterValid(jsonSummaryData))
+                data.put(Parameter.summaryData.name(), new JSONObject(jsonSummaryData));
+
+            ServerCall sc = new ServerCall(ServiceName.group,
+                    ServiceOperation.UPDATE_GROUP_SUMMARY_DATA, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Gets a list of up to maxReturn randomly selected groups from the server based on the where condition
+     *
+     * Service Name - group
+     * Service Operation - GET_RANDOM_GROUPS_MATCHING
+     *
+     * @param jsonWhere ID of the group.
+     * @param maxReturn max num groups to search
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getRandomGroupsMatching(
+            String jsonWhere,
+            int maxReturn,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            if (StringUtil.IsOptionalParameterValid(jsonWhere))
+                data.put(Parameter.where.name(), new JSONObject(jsonWhere));
+            data.put(Parameter.maxReturn.name(), maxReturn);
+
+            ServerCall sc = new ServerCall(ServiceName.group,
+                    ServiceOperation.GET_RANDOM_GROUPS_MATCHING, data, callback);
             _client.sendRequest(sc);
         } catch (JSONException je) {
             je.printStackTrace();

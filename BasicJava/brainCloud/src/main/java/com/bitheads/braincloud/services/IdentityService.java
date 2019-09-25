@@ -32,7 +32,9 @@ public class IdentityService {
         peer,
         oldEmailAddress,
         newEmailAddress,
-        updateContactEmail
+        updateContactEmail,
+        blockchainConfig,
+        publicKey
     }
 
     private BrainCloudClient _client;
@@ -819,6 +821,49 @@ public class IdentityService {
         } catch (JSONException ignored) {
         }
     }
+
+    /**
+     * Attaches the given block chain public key identity to the current profile.
+     *
+     * Service Name - identity
+     * Service Operation - ATTACH_BLOCKCHAIN_IDENTITY
+     *
+     * @param blockchainConfig
+     * @param publicKey
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void attachBlockchainIdentity(String blockchainConfig, String publicKey, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.blockchainConfig.name(), blockchainConfig);
+            data.put(Parameter.publicKey.name(), publicKey);
+
+            ServerCall sc = new ServerCall(ServiceName.identity, ServiceOperation.ATTACH_BLOCKCHAIN_IDENTITY, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException ignored) {
+        }
+    }
+
+    /**
+     * Detaches the blockchain identity to the current profile.     
+     * Service Name - identity
+     * Service Operation - DETACH_BLOCKCHAIN_IDENTITY
+     *
+     * @param blockchainConfig
+     * @param publicKey
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void detachBlockchainIdentity(String blockchainConfig, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.blockchainConfig.name(), blockchainConfig);
+
+            ServerCall sc = new ServerCall(ServiceName.identity, ServiceOperation.DETACH_BLOCKCHAIN_IDENTITY, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException ignored) {
+        }
+    }
+
 
     /**
      * Returns a list of peer profiles attached to this user

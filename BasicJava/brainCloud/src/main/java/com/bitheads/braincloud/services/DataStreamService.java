@@ -21,7 +21,15 @@ public class DataStreamService {
 
     private enum Parameter {
         eventName,
-        eventProperties
+        eventProperties,
+        crashType,
+        errorMsg,
+        crashJson,
+        crashLog,
+        userName,
+        userEmail,
+        userNotes,
+        userSubmitted
     }
 
     /**
@@ -92,6 +100,40 @@ public class DataStreamService {
 
             ServerCall serverCall = new ServerCall(ServiceName.dataStream,
                     ServiceOperation.CUSTOM_TRACK_EVENT, data, callback);
+            _client.sendRequest(serverCall);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Send crash report
+     *
+     * @param crashType
+     * @param errorMsg
+     * @param crashJson
+     * @param crashLog
+     * @param userName
+     * @param userEmail
+     * @param userNotes
+     * @param userSubmitted
+     */
+    public void submitCrashReport(String crashType, String errorMsg, String crashJson, String crashLog, String userName, String userEmail, String userNotes, Boolean userSubmitted, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.crashType.name(), crashType);
+            data.put(Parameter.errorMsg.name(), errorMsg);
+            JSONObject crashJsonData = new JSONObject(crashJson);
+            data.put(Parameter.crashJson.name(), crashJsonData);
+            data.put(Parameter.crashLog.name(), crashLog);
+            data.put(Parameter.userName.name(), userName);
+            data.put(Parameter.userEmail.name(), userEmail);
+            data.put(Parameter.userNotes.name(), userNotes);
+            data.put(Parameter.userSubmitted.name(), userSubmitted);
+
+            ServerCall serverCall = new ServerCall(ServiceName.dataStream,
+                    ServiceOperation.SEND_CRASH_REPORT, data, callback);
             _client.sendRequest(serverCall);
 
         } catch (JSONException e) {

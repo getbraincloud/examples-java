@@ -371,4 +371,62 @@ public class AsyncMatchService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Marks the given match as abandoned.
+     *
+     * Service Name - AsyncMatch
+     * Service Operation - CompleteMatch
+     *
+     * @param ownerId   Match owner identifier
+     * @param matchId   Match identifier
+     * @param pushContent
+     * @param summary
+     * @param callback  Optional instance of IServerCallback to call when the server response is received.
+     */
+    public void completeMatchWithSummaryData(String ownerId, String matchId, String pushContent, String summary, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.ownerId.name(), ownerId);
+            data.put(Parameter.matchId.name(), matchId);
+            data.put(Parameter.pushContent.name(), pushContent);
+            JSONObject summaryData = new JSONObject(summary);
+            data.put(Parameter.summary.name(), summaryData);
+
+            ServerCall sc = new ServerCall(ServiceName.asyncMatch, ServiceOperation.COMPLETE_MATCH_WITH_SUMMARY_DATA, data, callback);
+            _client.sendRequest(sc);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Marks the given match as abandoned. This call can send a notification message.
+     *
+     * Service Name - AsyncMatch
+     * Service Operation - AbandonMatch
+     *
+     * @param ownerId   Match owner identifier
+     * @param matchId   Match identifier
+     * @param pushContent
+     * @param summary
+     * @param callback  Optional instance of IServerCallback to call when the server response is received.
+     */
+    public void abandonMatchWithSummaryData(String ownerId, String matchId, String pushContent, String summary, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.ownerId.name(), ownerId);
+            data.put(Parameter.matchId.name(), matchId);
+            data.put(Parameter.pushContent.name(), pushContent);
+            JSONObject summaryData = new JSONObject(summary);
+            data.put(Parameter.summary.name(), summaryData);
+
+            ServerCall sc = new ServerCall(ServiceName.asyncMatch, ServiceOperation.COMPLETE_MATCH_WITH_SUMMARY_DATA, data, callback);
+            _client.sendRequest(sc);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
