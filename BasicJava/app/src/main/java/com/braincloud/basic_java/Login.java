@@ -2,6 +2,7 @@ package com.braincloud.basic_java;
 
 //android specific includes
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,10 +10,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 //braincloud specific includes.
 import com.bitheads.braincloud.client.*;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
@@ -44,7 +48,9 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //get a reference to the button of the app
         Button loginButton = findViewById(R.id.loginButton);
 
-        //when this button is clicked create an inline class so that we can keep the keep unique to this class.
+
+
+        //when this button is clicked create an inline class so that we can keep it unique to this class.
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -66,18 +72,26 @@ public class Login extends AppCompatActivity implements  IServerCallback
                 _bc.GetWrapper().authenticateEmailPassword(emailEntered, passwordEntered, true, theCallback);
                 //_bc.GetWrapper().authenticateUniversal(emailEntered, passwordEntered, true, theCallback);
 
+
+
                 //this is the new way to get the firebase token.
-                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( Login.this,  new OnSuccessListener<InstanceIdResult>() {
-                    @Override
-                    public void onSuccess(InstanceIdResult instanceIdResult) {
-                        MyFirebaseMessagingService.FirebaseTokenID = instanceIdResult.getToken();
-                        Log.e("NEW_TOKEN", MyFirebaseMessagingService.FirebaseTokenID );
+                FirebaseInstanceId.getInstance().getInstanceId()
+                        .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                                if (!task.isSuccessful()) {
+                                    Log.w("NEW_TOKEN", "getInstanceId failed", task.getException());
+                                    return;
+                                }
 
+                                // Get new Instance ID token
+                                String token = task.getResult().getToken();
 
-                        //set the device up to receive pushnotifications
-                        _bc.GetWrapper().getPushNotificationService().registerPushNotificationToken(Platform.GooglePlayAndroid, MyFirebaseMessagingService.FirebaseTokenID, theCallback);
-                    }
-                });
+                                Log.i("NEW_TOKEN", token);
+                                _bc.GetWrapper().getPushNotificationService().registerPushNotificationToken(Platform.GooglePlayAndroid, token, theCallback);
+
+                            }
+                        });
 
             }
         });
@@ -93,8 +107,6 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //change the app activity
         Intent loadApp = new Intent(getApplication(), theGame.class);
         startActivity(loadApp);
-
-        Log.e("AUTHENTICATED", MyFirebaseMessagingService.FirebaseTokenID );
     }
 
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
