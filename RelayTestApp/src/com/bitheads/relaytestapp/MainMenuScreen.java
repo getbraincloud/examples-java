@@ -15,6 +15,8 @@ import javax.swing.SwingConstants;
 
 class MainMenuScreen extends Screen
 {
+    private JComboBox _cboProtocol;
+
     public MainMenuScreen()
     {
         // Create the Swing stuff
@@ -35,6 +37,12 @@ class MainMenuScreen extends Screen
         lblTitle.setFont(new Font(font.getName(), Font.PLAIN, 32));
         panel.add(lblTitle);
 
+        // Protocol
+        _cboProtocol = new JComboBox(new String[]{"WEBSOCKET", "TCP", "UDP"});
+        _cboProtocol.setSize(200, 30);
+        _cboProtocol.setLocation(x - 100, y + 30);
+        panel.add(_cboProtocol);
+
         // Lobby choices
         JButton btnPlay = new JButton("Play");
         btnPlay.setSize(200, 30);
@@ -47,7 +55,8 @@ class MainMenuScreen extends Screen
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                App.getInstance().onPlayClicked();
+                String protocolStr = _cboProtocol.getSelectedItem().toString();
+                App.getInstance().onPlayClicked(protocolStr);
             }
         });
     }

@@ -12,6 +12,7 @@ import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTConnectCallback;
 import com.bitheads.braincloud.client.IServerCallback;
 import com.bitheads.braincloud.client.ReasonCodes;
+import com.bitheads.braincloud.client.RelayConnectionType;
 import com.bitheads.braincloud.client.ServiceName;
 import com.bitheads.braincloud.client.ServiceOperation;
 
@@ -39,6 +40,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
     BrainCloudWrapper _bcWrapper;
     boolean _isConnectingRTT = false;
     boolean _disconnecting = false;
+    RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
 
     public static void main(String args[])
     {
@@ -301,10 +303,15 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 JSONObject options = new JSONObject();
                 options.put("ssl", false);
                 options.put("host", state.server.getJSONObject("connectData").getString("address"));
-                options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
+                if (_connectionType == RelayConnectionType.WEBSOCKET)
+                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
+                else if (_connectionType == RelayConnectionType.TCP)
+                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("tcp"));
+                else if (_connectionType == RelayConnectionType.UDP)
+                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("udp"));
                 options.put("passcode", state.server.getString("passcode"));
                 options.put("lobbyId", state.server.getString("lobbyId"));
-                _bcWrapper.getRelayService().connect(options, new IRelayConnectCallback()
+                _bcWrapper.getRelayService().connect(_connectionType, options, new IRelayConnectCallback()
                 {
                     @Override
                     public void relayConnectSuccess(JSONObject jsonData)
@@ -340,9 +347,16 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
     }
 
-    public void onPlayClicked()
+    public void onPlayClicked(String protocolStr)
     {
         goToLoadingScreen("Joining...");
+
+        switch (protocolStr)
+        {
+            case "WEBSOCKET": _connectionType = RelayConnectionType.WEBSOCKET; break;
+            case "TCP": _connectionType = RelayConnectionType.TCP; break;
+            case "UDP": _connectionType = RelayConnectionType.UDP; break;
+        }
 
         synchronized(this)
         {
