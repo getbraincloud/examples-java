@@ -2,8 +2,8 @@
 This application is a multiplayer game where you see other players' mouse movement. Players can create shockwaves by clicking.
 ![](readme_images/screencap.jpg)
 
-## How to setup the portal for this app
-1. Close the submodules
+## How to setup the app
+1. Clone the submodules
    ```
    git clone submodule --update --init --recursive --progress
    ```
