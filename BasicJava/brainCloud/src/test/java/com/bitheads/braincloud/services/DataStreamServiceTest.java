@@ -47,4 +47,14 @@ public class DataStreamServiceTest extends TestFixtureBase
 
         tr.Run();
     }
+
+    @Test
+    public void testSubmitCrashReport() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getDataStreamService().submitCrashReport("test", "test", "{\"testProperty\":\"1\"}", "test", "test", "test", "test", true, tr);
+
+        tr.Run();
+    }
 }

@@ -118,4 +118,66 @@ public class LobbyServiceTest extends TestFixtureBase
         //40653 is cxId must belong to the caller. 
         tr.RunExpectFail(StatusCodes.BAD_REQUEST, 40653);;
     }
+
+    @Test
+    public void testPings() throws Exception {
+
+        String[] lobbyTypes = new String[1];
+        lobbyTypes[0] = "MATCH_UNRANKED";
+        String[] badLobbyTypes = new String[1];
+        badLobbyTypes[0] = "InvalidLobbyId";
+        
+        TestResult tr = new TestResult(_wrapper);
+
+        // Didn't getRegionsForLobbies, should fail
+        _wrapper.getLobbyService().pingRegions(tr);
+        tr.RunExpectFail(StatusCodes.BAD_REQUEST, ReasonCodes.MISSING_REQUIRED_PARAMETER);
+
+        // Wrong lobby types, should fail
+        _wrapper.getLobbyService().getRegionsForLobbies(badLobbyTypes, tr);
+        tr.RunExpectFail(StatusCodes.BAD_REQUEST, ReasonCodes.LOBBY_TYPE_NOT_FOUND);
+
+        // Proper get regions
+        _wrapper.getLobbyService().getRegionsForLobbies(lobbyTypes, tr);
+        tr.Run();
+
+        // Call a function <>WithPingData without having ping servers, should fail
+        _wrapper.getLobbyService().createLobbyWithPingData("MATCH_UNRANKED", 0, null, true, "{}", "all", "{}", tr);
+        tr.RunExpectFail(StatusCodes.BAD_REQUEST, ReasonCodes.MISSING_REQUIRED_PARAMETER);
+
+        // Ping
+        _wrapper.getLobbyService().pingRegions(tr);
+        tr.Run();
+
+        // Do it again and make sure pings are not all bellow 10 which would happen in case of http caching
+        _wrapper.getLobbyService().pingRegions(tr);
+        tr.Run();
+        JSONObject pingData = _wrapper.getLobbyService().getPingData();
+        if (pingData == null) {
+            throw new Exception("Expected valid pingData");
+        }
+        int avg = 0;
+        for (int i = 0; i < pingData.names().length(); ++i) {
+            String regionName = pingData.names().getString(i);
+            int ping = pingData.getInt(regionName);
+            avg += ping;
+        }
+        avg /= pingData.names().length();
+        if (avg <= 10) {
+            throw new Exception("Pings are all too small, it's impossible we ping east to west. Cached HTTP calls?");
+        }
+
+        // Call all the <>WithPingData functions and make sure they go through braincloud
+        _wrapper.getLobbyService().findOrCreateLobbyWithPingData("MATCH_UNRANKED", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", true, "{}", "all", tr);
+        tr.Run();
+
+        _wrapper.getLobbyService().findLobbyWithPingData("MATCH_UNRANKED", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, true, "{}", "all", tr);
+        tr.Run();
+
+        _wrapper.getLobbyService().createLobbyWithPingData("MATCH_UNRANKED", 0, null, true, "{}", "all", "{}", tr);
+        tr.Run();
+
+        _wrapper.getLobbyService().joinLobbyWithPingData("wrongLobbyId", true, "{}", "red", null, tr);
+        tr.RunExpectFail(StatusCodes.BAD_REQUEST, ReasonCodes.LOBBY_NOT_FOUND);
+    }
 }

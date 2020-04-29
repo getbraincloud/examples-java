@@ -40,5 +40,9 @@ public enum ServiceName {
     leaderboard,
     time,
     tournament,
-    virtualCurrency
+    globalFileV3,
+    customEntity,
+    virtualCurrency,
+    itemCatalog,
+    userItems
 }
