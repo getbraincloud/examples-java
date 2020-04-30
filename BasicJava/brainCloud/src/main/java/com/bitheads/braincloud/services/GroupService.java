@@ -8,6 +8,7 @@ import com.bitheads.braincloud.comms.ServerCall;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /**
  * Created by bradleyh on 5/6/2016.
@@ -29,6 +30,7 @@ public class GroupService {
         attributes,
         name,
         groupType,
+        groupTypes,
         isOpenGroup,
         acl,
         data,
@@ -168,6 +170,37 @@ public class GroupService {
 
             ServerCall sc = new ServerCall(ServiceName.group,
                     ServiceOperation.AUTO_JOIN_GROUP, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     *Find and join an open group in the pool of groups in multiple group types provided as input arguments.     *
+     * Service Name - group
+     * Service Operation - AUTO_JOIN_GROUP_MULTI
+     *
+     * @param groupTypes Name of the associated group type.
+     * @param autoJoinStrategy Selection strategy to employ when there are multiple matches
+     * @param where Query parameters (optional)
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void autoJoinGroupMulti(String[]  groupTypes, AutoJoinStrategy autoJoinStrategy, String where, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            JSONArray jsonData = new JSONArray();
+            for (String att : groupTypes) {
+                jsonData.put(att);
+            }
+            data.put(Parameter.groupTypes.name(), groupTypes);
+            data.put(Parameter.autoJoinStrategy.name(), autoJoinStrategy);
+
+            if (StringUtil.IsOptionalParameterValid(where))
+                data.put(Parameter.where.name(), where);
+
+            ServerCall sc = new ServerCall(ServiceName.group,
+                    ServiceOperation.AUTO_JOIN_GROUP_MULTI, data, callback);
             _client.sendRequest(sc);
         } catch (JSONException je) {
             je.printStackTrace();

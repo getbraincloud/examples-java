@@ -29,10 +29,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -63,6 +65,7 @@ public class BrainCloudRestClient implements Runnable {
     private boolean _cacheMessagesOnNetworkError = false;
     private long _lastSendTime;
     private long _lastReceivedPacket;
+    private boolean _useCompresssion = false;
 
     private int _uploadLowTransferTimeoutSecs = 120;
     private int _uploadLowTransferThresholdSecs = 50;
@@ -138,8 +141,19 @@ public class BrainCloudRestClient implements Runnable {
         _secretMap.put(appId, secretKey);
 
         String suffix = "/dispatcherv2";
-        _uploadUrl = _serverUrl.endsWith(suffix) ? _serverUrl.substring(0, _serverUrl.length() - suffix.length()) : _serverUrl;
-        _uploadUrl += "/uploader";
+
+        if (_serverUrl.endsWith(suffix))
+        {
+            _serverUrl = _serverUrl.substring(0, _serverUrl.length() - suffix.length());
+        }
+
+        while (_serverUrl.length() > 0 && _serverUrl.charAt(_serverUrl.length() - 1) == '/')
+        {
+            _serverUrl = _serverUrl.substring(0, _serverUrl.length() - 1);
+        }
+
+        _uploadUrl = _serverUrl + "/uploader";
+        _serverUrl = _serverUrl + "/dispatcherv2";
 
         if (_thread == null) {
             _thread = new Thread(this);
@@ -219,6 +233,14 @@ public class BrainCloudRestClient implements Runnable {
 
             runFileUploadCallbacks();
         }
+    }
+
+    public void enableCompression() {
+        this._useCompresssion = true;
+    }
+
+    public void disableCompression() {
+        this._useCompresssion = false;
     }
 
     private void runFileUploadCallbacks() {
@@ -384,8 +406,9 @@ public class BrainCloudRestClient implements Runnable {
     public void setPacketTimeoutsToDefault() {
         _packetTimeouts = new ArrayList<>();
         _packetTimeouts.add(15);
-        _packetTimeouts.add(10);
-        _packetTimeouts.add(10);
+        _packetTimeouts.add(20);
+        _packetTimeouts.add(35);
+        _packetTimeouts.add(50);
     }
 
     public int getAuthenticationPacketTimeout() {
@@ -596,7 +619,7 @@ public class BrainCloudRestClient implements Runnable {
         }
     }
 
-    private void fakeErrorResponse(int statusCode, int reasonCode, String statusMessage)
+    public void fakeErrorResponse(int statusCode, int reasonCode, String statusMessage)
     {
         if (_loggingEnabled) {
             try {
@@ -645,14 +668,12 @@ public class BrainCloudRestClient implements Runnable {
             }
         }
         //LogString("poll time - " + polltime);
-
         boolean hasRecords = false;
         try {
             hasRecords = this._messageQueueCount.tryAcquire(1, polltime, TimeUnit.MILLISECONDS);
         }
         catch (InterruptedException e) {
         }
-
         //waiting for callbacks to be run
         // do a one second sleep so we don't hit this too hard
         // return the sempahore permit if required
@@ -779,9 +800,13 @@ public class BrainCloudRestClient implements Runnable {
 
             connection.setRequestProperty("X-APPID", _appId);
 
+            if (_useCompresssion) {
+                connection.setRequestProperty("Content-Encoding", "gzip");
+                connection.setRequestProperty("Accept-Encoding", "gzip");
+            }
+
             connection.setRequestProperty("charset", "utf-8");
             byte[] postData = body.getBytes("UTF-8");
-            connection.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
             // to avoid taking the json parsing hit even when logging is disabled
             if (_loggingEnabled) {
@@ -797,7 +822,15 @@ public class BrainCloudRestClient implements Runnable {
             _lastSendTime = System.currentTimeMillis();
 
             connection.connect();
-            DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+
+            DataOutputStream wr = null;
+
+            if (_useCompresssion) {
+                GZIPOutputStream gzipOutputStream = new GZIPOutputStream(connection.getOutputStream());
+                wr = new DataOutputStream(gzipOutputStream);
+            } else {
+                wr = new DataOutputStream(connection.getOutputStream());
+            }
             try {
                 wr.write(postData);
             } finally {
@@ -805,7 +838,14 @@ public class BrainCloudRestClient implements Runnable {
             }
 
             // Get server response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            BufferedReader reader = null;
+
+            if (_useCompresssion) {
+                GZIPInputStream gzipInputStream = new GZIPInputStream(connection.getInputStream());
+                reader = new BufferedReader(new InputStreamReader(gzipInputStream));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            }
             String line;
             StringBuilder builder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
@@ -1084,7 +1124,6 @@ public class BrainCloudRestClient implements Runnable {
 
                         updateKillSwitch(status, sc.getServiceName().toString(), sc.getServiceOperation().toString());
                     }
-
                     _serverResponses.addLast(serverResponse);
                 } else {
                     LogString("missing server call for json response: " + messages.toString());

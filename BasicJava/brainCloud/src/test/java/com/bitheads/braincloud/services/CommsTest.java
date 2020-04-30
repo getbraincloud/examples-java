@@ -102,10 +102,12 @@ public class CommsTest extends TestFixtureNoAuth
         Thread.sleep(61 * 1000);
 
         _wrapper.getTimeService().readServerTime(tr);
-        tr.RunExpectFail(StatusCodes.FORBIDDEN, ReasonCodes.USER_SESSION_EXPIRED);
+        //tr.RunExpectFail(StatusCodes.FORBIDDEN, ReasonCodes.USER_SESSION_EXPIRED);
+        tr.Run();
 
         _wrapper.getTimeService().readServerTime(tr);
-        tr.RunExpectFail(StatusCodes.FORBIDDEN, ReasonCodes.USER_SESSION_EXPIRED);
+        //tr.RunExpectFail(StatusCodes.FORBIDDEN, ReasonCodes.USER_SESSION_EXPIRED);
+        tr.Run();
 
         _wrapper.getClient().getAuthenticationService().authenticateUniversal(getUser(Users.UserA).id, getUser(Users.UserA).password, true, tr);
         tr.Run();

@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class AsyncMatchServiceTest extends TestFixtureBase
 {
     private final String _platform = "BC";
-    
+    String ownerId;
     @Test
     public void testCreateMatch() throws Exception
     {
@@ -209,6 +209,65 @@ public class AsyncMatchServiceTest extends TestFixtureBase
         tr.RunExpectFail(400, ReasonCodes.MATCH_NOT_FOUND);
     }
     
+    @Test
+    public void testCompleteMatchWithSummaryData() throws Exception
+    {
+        //todo
+        String matchId = createMatch();
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getAsyncMatchService().submitTurn(
+            ownerId,
+            matchId,
+            BigInteger.valueOf(0),
+            Helpers.createJsonPair("blob", 1),
+            null,
+            getUser(Users.UserB).profileId,
+            Helpers.createJsonPair("map", "level1"),
+            Helpers.createJsonPair("map", "level1"),
+            tr
+        );
+        tr.Run();
+        
+        TestResult tr2 = new TestResult(_wrapper);
+        _wrapper.getAsyncMatchService().completeMatchWithSummaryData(
+                ownerId,
+                matchId,
+                "",
+                "{\"test\": \"Testing\"}",
+                tr2);
+        tr2.Run();
+    }
+
+    @Test
+    public void testAbandonMatchWithSummaryData() throws Exception
+    {
+        //todo
+        String matchId = createMatch();
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getAsyncMatchService().submitTurn(
+            ownerId,
+            matchId,
+            BigInteger.valueOf(0),
+            Helpers.createJsonPair("blob", 1),
+            null,
+            getUser(Users.UserB).profileId,
+            Helpers.createJsonPair("map", "level1"),
+            Helpers.createJsonPair("map", "level1"),
+            tr
+        );
+        tr.Run();
+        
+        TestResult tr2 = new TestResult(_wrapper);
+        _wrapper.getAsyncMatchService().abandonMatchWithSummaryData(
+                ownerId,
+                matchId,
+                "",
+                "{\"test\": \"Testing\"}",
+                tr2);
+        tr2.Run();
+    }
     
     ///// helper fns
 
@@ -232,6 +291,10 @@ public class AsyncMatchServiceTest extends TestFixtureBase
         if (tr.Run())
         {
             matchId = tr.m_response.getJSONObject("data").getString("matchId");
+            if(tr.m_response.getJSONObject("data").getString("ownerId") != null)
+            {
+                ownerId =tr.m_response.getJSONObject("data").getString("ownerId");
+            }
         }
 
         return matchId;
@@ -260,6 +323,10 @@ public class AsyncMatchServiceTest extends TestFixtureBase
         if (tr.Run())
         {
             matchId = tr.m_response.getJSONObject("data").getString("matchId");
+            if(tr.m_response.getJSONObject("data").getString("ownerId") != null)
+            {
+                ownerId =tr.m_response.getJSONObject("data").getString("ownerId");
+            }
         }
 
         return matchId;

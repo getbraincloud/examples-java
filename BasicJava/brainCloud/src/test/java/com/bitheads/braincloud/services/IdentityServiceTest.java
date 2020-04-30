@@ -191,4 +191,18 @@ public class IdentityServiceTest extends TestFixtureBase {
         _wrapper.getIdentityService().updateUniversalIdLogin("braincloudtest@gmail.com", tr);
         tr.RunExpectFail(400, ReasonCodes.NEW_CREDENTIAL_IN_USE);
     }
+
+    
+    @Test
+    public void testAttachDetachBlockchain() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getIdentityService().attachBlockchainIdentity("config", "publicKEEEEEEEEY", tr);
+        tr.Run();
+
+        TestResult tr2 = new TestResult(_wrapper);
+
+        _wrapper.getIdentityService().detachBlockchainIdentity("config", tr2);
+        tr2.Run();
+    }
 }

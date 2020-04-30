@@ -16,6 +16,8 @@ public class PlayerStateService {
         attributes,
         wipeExisting,
         playerName,
+        languageCode,
+        timeZoneOffset,
         summaryFriendData,
         playerPictureUrl,
         contactEmail,
@@ -178,6 +180,46 @@ public class PlayerStateService {
 
             ServerCall serverCall = new ServerCall(ServiceName.playerState,
                     ServiceOperation.UPDATE_ATTRIBUTES, data, callback);
+            _client.sendRequest(serverCall);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update user's attributes.
+     *
+     * @param timeZoneOffset Whether to wipe existing attributes prior to update.
+     */
+    public void updateTimeZoneOffset(int timeZoneOffset,
+                                 IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.timeZoneOffset.name(), timeZoneOffset);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.UPDATE_TIMEZONE_OFFSET, data, callback);
+            _client.sendRequest(serverCall);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+     /**
+     * Update user's attributes.
+     *
+     * @param languageCode Whether to wipe existing attributes prior to update.
+     */
+    public void updateLanguageCode(String languageCode,
+                                 IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.languageCode.name(), languageCode);
+
+            ServerCall serverCall = new ServerCall(ServiceName.playerState,
+                    ServiceOperation.UPDATE_LANGUAGE_CODE, data, callback);
             _client.sendRequest(serverCall);
 
         } catch (JSONException e) {

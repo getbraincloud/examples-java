@@ -166,4 +166,80 @@ public class PlayerStateServiceTest extends TestFixtureBase
 
         tr.Run();
     }
+
+    @Test
+    public void testClearUserStatus() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().clearUserStatus(
+                "name",
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testExtendUserStatus() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().extendUserStatus(
+                "name",
+                0,
+                "{\"test\": \"Testing\"}",
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testGetUserStatus() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().getUserStatus(
+                "name",
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testSetUserStatus() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().setUserStatus(
+                "name",
+                0,
+                "{\"test\": \"Testing\"}",
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testUpdateTimeZoneOffset() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().updateTimeZoneOffset(
+                1,
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testUpdateLanguageCode() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getPlayerStateService().updateLanguageCode(
+                "fr",
+                tr);
+
+        tr.Run();
+    }
 }

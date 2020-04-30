@@ -32,13 +32,18 @@ import com.bitheads.braincloud.services.ProductService;
 import com.bitheads.braincloud.services.ProfanityService;
 import com.bitheads.braincloud.services.PushNotificationService;
 import com.bitheads.braincloud.services.RedemptionCodeService;
+import com.bitheads.braincloud.services.RelayService;
 import com.bitheads.braincloud.services.RTTService;
 import com.bitheads.braincloud.services.S3HandlingService;
 import com.bitheads.braincloud.services.ScriptService;
 import com.bitheads.braincloud.services.SocialLeaderboardService;
 import com.bitheads.braincloud.services.TimeService;
 import com.bitheads.braincloud.services.TournamentService;
+import com.bitheads.braincloud.services.GlobalFileService;
+import com.bitheads.braincloud.services.CustomEntityService;
 import com.bitheads.braincloud.services.VirtualCurrencyService;
+import com.bitheads.braincloud.services.ItemCatalogService;
+import com.bitheads.braincloud.services.UserItemsService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -369,6 +374,27 @@ public class BrainCloudWrapper implements IServerCallback {
     }
 
     /**
+     * Authenticate the user using a handoffId and an authentication token.
+     *
+     * @param handoffId   braincloud handoffId generated frim cloud script
+     * @param securityToken The authentication token
+     * @param callback   The callback handler
+     */
+    public void authenticateHandoff(String handoffId, String securityToken, IServerCallback callback) {
+        getClient().getAuthenticationService().authenticateHandoff(handoffId, securityToken, this);
+    }
+
+    /**
+     * Authenticate the user using a handoffId and an authentication token.
+     *
+     * @param handoffCode generate in cloud code
+     * @param callback   The callback handler
+     */
+    public void authenticateSettopHandoff(String handoffCode, IServerCallback callback) {
+        getClient().getAuthenticationService().authenticateSettopHandoff(handoffCode, this);
+    }
+
+    /**
      * Authenticate the user with a custom Email and Password. Note that the
      * client app is responsible for collecting (and storing) the e-mail and
      * potentially password (for convenience) in the client data. For the
@@ -443,25 +469,63 @@ public class BrainCloudWrapper implements IServerCallback {
     }
 
     /**
+     *Authenticate the user using an apple id
+     *
+     * @param appleUserId  This can be the user id OR the email of the user for the account
+     * @param identityToken The token confirming the user's identity
+     * @param forceCreate     Should a new profile be created for this user if the account
+     *                        does not exist?
+     * @param callback        The callback handler
+     */
+    public void authenticateApple(String appleUserId, String identityToken, boolean forceCreate, IServerCallback callback) {
+        _authenticateCallback = callback;
+
+        initializeIdentity(false);
+
+        getClient().getAuthenticationService().authenticateApple(appleUserId, identityToken, forceCreate, this);
+    }
+
+    /**
      * Authenticate the user using a google userid(email address) and google
      * authentication token.
      *
-     * @param googleUserId    String representation of google+ userid (email)
-     * @param googleAuthToken The authentication token derived via the google apis.
+     * @param googleUserId    String representation of google+ userId. Gotten with calls like RequestUserId
+     * @param serverAuthCode The server authentication token derived via the google apis. Gotten with calls like RequestServerAuthCode
      * @param forceCreate     Should a new profile be created for this user if the account
      *                        does not exist?
      * @param callback        The callback handler
      */
     public void authenticateGoogle(String googleUserId,
-                                   String googleAuthToken,
+                                   String serverAuthCode,
                                    boolean forceCreate,
                                    IServerCallback callback) {
         _authenticateCallback = callback;
 
         initializeIdentity(false);
 
-        getClient().getAuthenticationService().authenticateGoogle(googleUserId, googleAuthToken, forceCreate, this);
+        getClient().getAuthenticationService().authenticateGoogle(googleUserId, serverAuthCode, forceCreate, this);
     }
+
+    /**
+     * Authenticate the user using a google openId
+     *
+     * @param googleUserAccountEmail    The email associated with the google user
+     * @param IdToken The id token of the google account. Can get with calls like requestIdToken
+     * @param forceCreate     Should a new profile be created for this user if the account
+     *                        does not exist?
+     * @param callback        The callback handler
+     */
+    public void authenticateGoogleOpenId(String googleUserAccountEmail,
+                                   String IdToken,
+                                   boolean forceCreate,
+                                   IServerCallback callback) {
+        _authenticateCallback = callback;
+
+        initializeIdentity(false);
+
+        getClient().getAuthenticationService().authenticateGoogleOpenId(googleUserAccountEmail, IdToken, forceCreate, this);
+    }
+
 
     /**
      * Authenticate the user using a steam userid and session ticket (without
@@ -549,6 +613,19 @@ public class BrainCloudWrapper implements IServerCallback {
         getClient().runCallbacks();
     }
 
+    /**
+     * Enable compression in comms transactions
+     */
+    public void enableCompression() {
+        getClient().enableCompression();
+    }
+
+    /**
+     * Disable compression in comms transactions
+     */
+    public void disableCompression() {
+        getClient().disableCompression();
+    }
 
     /**
      * The serverCallback() method returns server data back to the layer
@@ -716,6 +793,10 @@ public class BrainCloudWrapper implements IServerCallback {
         return _client.getRedemptionCodeService();
     }
 
+    public RelayService getRelayService() {
+        return _client.getRelayService();
+    }
+
     public RTTService getRTTService() {
         return _client.getRTTService();
     }
@@ -738,5 +819,21 @@ public class BrainCloudWrapper implements IServerCallback {
 
     public TournamentService getTournamentService() {
         return _client.getTournamentService();
+    }
+
+    public GlobalFileService getGlobalFileService() {
+        return _client.getGlobalFileService();
+    }
+
+    public CustomEntityService getCustomEntityService() {
+        return _client.getCustomEntityService();
+    }
+
+    public ItemCatalogService getItemCatalogService() {
+        return _client.getItemCatalogService();
+    }
+
+    public UserItemsService getUserItemsService() {
+        return _client.getUserItemsService();
     }
 }
