@@ -32,13 +32,13 @@ public class CommsWithAuthTest extends TestFixtureBase
     @Test
     public void testTimeoutRetry45sec() throws Exception {
         TestResult tr = new TestResult(_wrapper);
-            tr.setMaxWait(60);
+            tr.setMaxWait(120);
 
         _wrapper.getScriptService().runScript(
             "TestTimeoutRetry45",
             Helpers.createJsonPair("testParm1", 1),
             tr);
 
-        tr.RunExpectFail(StatusCodes.CLIENT_NETWORK_ERROR, ReasonCodes.CLIENT_NETWORK_ERROR_TIMEOUT);
+        tr.Run();
     }
 }

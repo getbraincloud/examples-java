@@ -42,6 +42,41 @@ public class ScriptServiceTest extends TestFixtureBase {
     }
 
     @Test
+    public void testScheduleRunScriptMillisUTC() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+
+        Date date = new Date();
+        date.setTime(date.getTime() + 120 * 1000);
+        _wrapper.getScriptService().scheduleRunScriptMillisUTC(
+                _scriptName,
+                Helpers.createJsonPair("testParm1", 1),
+                TimeUtil.UTCDateTimeToUTCMillis(date),
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
+    public void testScheduleRunScriptUTC_DATE_CONVERSIONS() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        Date date = new Date();
+        long testDateAsLong = TimeUtil.UTCDateTimeToUTCMillis(date);
+        System.out.println("UTC MILLIS : " + testDateAsLong);
+        Date testDate = TimeUtil.UTCMillisToUTCDateTime(testDateAsLong);
+        System.out.println("UTC Date : " + testDate);
+        System.out.println("UTC DateTime : " + TimeUtil.LocalTimeToUTCTime(date));
+        System.out.println("Local DateTime : " + TimeUtil.UTCTimeToLocalTime(date));
+        
+        date.setTime(date.getTime() + 120 * 1000);
+        _wrapper.getScriptService().scheduleRunScriptUTC(
+                _scriptName,
+                Helpers.createJsonPair("testParm1", 1),
+                TimeUtil.LocalTimeToUTCTime(date),
+                tr);
+        tr.Run();
+    }
+
+    @Test
     public void testScheduleRunScriptMinutes() throws Exception {
         TestResult tr = new TestResult(_wrapper);
 

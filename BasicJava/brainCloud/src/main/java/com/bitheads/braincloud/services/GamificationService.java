@@ -457,6 +457,9 @@ public class GamificationService {
     }
 
     /**
+     * @deprecated as of Nov.1, 2019
+     *
+     * 
      * Sets the specified milestones' statuses to LOCKED.
      *
      * Service Name - Gamification

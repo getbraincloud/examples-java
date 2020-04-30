@@ -135,6 +135,10 @@ public class CustomEntityService {
      * @param version
      * @param callback Callback.
      */
+    /**
+     * @deprecated Use getEntityPage instead
+     */
+    @Deprecated
     public void getPage(String entityType, int rowsPerPage, String searchJson, String sortJson, Boolean doCount,
                          IServerCallback callback) {
 
@@ -157,6 +161,31 @@ public class CustomEntityService {
         }
     }
 
+        /**
+     * Retrieves first page of custom entities from the server based on the custom entity type and specified query context, enforcing ownership/ACL permissions.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param context
+     * @param callback Callback.
+     */
+    public void getEntityPage(String entityType, String context,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            JSONObject jsonContext = new JSONObject(context);
+            data.put(Parameter.entityType.name(), entityType);
+            data.put(Parameter.context.name(), jsonContext);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.GET_ENTITY_PAGE, data, callback);
+            _client.sendRequest(serverCall);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Gets the page of custom entities from the server based on the encoded context and specified page offset, enforcing ownership/ACL permissions.
      *
@@ -165,6 +194,10 @@ public class CustomEntityService {
      * @param pageOffset
      * @param callback Callback.
      */
+    /**
+     * @deprecated Use getEntityPageOffset instead
+     */
+    @Deprecated
     public void getPageOffset(String entityType, String context, int pageOffset,
                          IServerCallback callback) {
 
@@ -176,6 +209,32 @@ public class CustomEntityService {
 
             ServerCall serverCall = new ServerCall(ServiceName.customEntity,
                     ServiceOperation.GET_PAGE_BY_OFFSET, data, callback);
+            _client.sendRequest(serverCall);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+        /**
+     * Gets the page of custom entities from the server based on the encoded context and specified page offset, enforcing ownership/ACL permissions.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param context
+     * @param pageOffset
+     * @param callback Callback.
+     */
+    public void getEntityPageOffset(String entityType, String context, int pageOffset,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            data.put(Parameter.context.name(), context);
+            data.put(Parameter.pageOffset.name(), pageOffset);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.GET_ENTITY_PAGE_OFFSET, data, callback);
             _client.sendRequest(serverCall);
 
         } catch (JSONException e) {

@@ -1,8 +1,11 @@
 package com.bitheads.braincloud.client;
 
+import com.bitheads.braincloud.client.IRelayCallback;
+import com.bitheads.braincloud.client.IRelayConnectCallback;
 import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTConnectCallback;
 import com.bitheads.braincloud.comms.BrainCloudRestClient;
+import com.bitheads.braincloud.comms.RelayComms;
 import com.bitheads.braincloud.comms.RTTComms;
 import com.bitheads.braincloud.comms.ServerCall;
 import com.bitheads.braincloud.services.AppStoreService;
@@ -34,12 +37,14 @@ import com.bitheads.braincloud.services.ProductService;
 import com.bitheads.braincloud.services.ProfanityService;
 import com.bitheads.braincloud.services.PushNotificationService;
 import com.bitheads.braincloud.services.RedemptionCodeService;
+import com.bitheads.braincloud.services.RelayService;
 import com.bitheads.braincloud.services.RTTService;
 import com.bitheads.braincloud.services.S3HandlingService;
 import com.bitheads.braincloud.services.ScriptService;
 import com.bitheads.braincloud.services.SocialLeaderboardService;
 import com.bitheads.braincloud.services.TimeService;
 import com.bitheads.braincloud.services.TournamentService;
+import com.bitheads.braincloud.services.GlobalFileService;
 import com.bitheads.braincloud.services.CustomEntityService;
 import com.bitheads.braincloud.services.VirtualCurrencyService;
 import com.bitheads.braincloud.services.ItemCatalogService;
@@ -52,6 +57,15 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class BrainCloudClient {
+
+    public enum BrainCloudUpdateType
+    {
+        ALL,
+        REST,   // REST Api calls
+        RTT,    // Real-time tech
+        RS,     // Relay server
+        PING    // Lobby Pings
+    };
 
     public static final boolean EnableSingletonMode = false;
     public static final String SingletonUseErrorMessage =
@@ -67,10 +81,11 @@ public class BrainCloudClient {
     private double _timeZoneOffset;
 
 
-    private final static String BRAINCLOUD_VERSION = "4.2.0";
+    private final static String BRAINCLOUD_VERSION = "4.5.0";
 
     private BrainCloudRestClient _restClient;
     private RTTComms _rttComms;
+    private RelayComms _relayComms;
 
     private AppStoreService _appStoreService = new AppStoreService(this);
     private AuthenticationService _authenticationService = new AuthenticationService(this);
@@ -101,12 +116,14 @@ public class BrainCloudClient {
     private ProfanityService _profanityService = new ProfanityService(this);
     private PushNotificationService _pushNotificationService = new PushNotificationService(this);
     private RedemptionCodeService _redemptionCodeService = new RedemptionCodeService(this);
+    private RelayService _relayService = new RelayService(this);
     private RTTService _rttService = new RTTService(this);
     private S3HandlingService _s3HandlingService = new S3HandlingService(this);
     private ScriptService _scriptService = new ScriptService(this);
     private SocialLeaderboardService _socialLeaderboardService = new SocialLeaderboardService(this);
     private TimeService _timeService = new TimeService(this);
     private TournamentService _tournamentService = new TournamentService(this);
+    private GlobalFileService _globalFileService = new GlobalFileService(this);
     private CustomEntityService _customEntityService = new CustomEntityService(this);
     private VirtualCurrencyService _virtualCurrencyService = new VirtualCurrencyService(this);
     private ItemCatalogService _itemCatalogService = new ItemCatalogService(this);
@@ -120,6 +137,7 @@ public class BrainCloudClient {
     public BrainCloudClient() {
         _restClient = new BrainCloudRestClient(this);
         _rttComms = new RTTComms(this);
+        _relayComms = new RelayComms(this);
     }
 
     public String getRttConnectionId()
@@ -152,6 +170,10 @@ public class BrainCloudClient {
 
     public RTTComms getRTTComms() {
         return _rttComms;
+    }
+
+    public RelayComms getRelayComms() {
+        return _relayComms;
     }
 
     /**
@@ -294,6 +316,7 @@ public class BrainCloudClient {
     }
 
     public void resetCommunication() {
+        _relayComms.disconnect();
         _rttComms.disableRTT();
         _restClient.resetCommunication();
     }
@@ -302,8 +325,47 @@ public class BrainCloudClient {
      * Run callbacks, to be called every so often (e.g. once per frame) from your main thread.
      */
     public void runCallbacks() {
-        _restClient.runCallbacks();
-        _rttComms.runCallbacks();
+        runCallbacks(BrainCloudUpdateType.ALL);
+    }
+
+    /**
+     * Run callbacks, to be called every so often (e.g. once per frame) from your main thread.
+     */
+    public void runCallbacks(BrainCloudUpdateType updateType) {
+        switch (updateType) {
+            case REST:
+                _restClient.runCallbacks();
+                break;
+            case RTT:
+                _rttComms.runCallbacks();
+                break;
+            case PING:
+                _lobbyService.runPingCallbacks();
+                break;
+            case RS:
+                _relayComms.runCallbacks();
+                break;
+            case ALL:
+                _restClient.runCallbacks();
+                _lobbyService.runPingCallbacks();
+                _rttComms.runCallbacks();
+                _relayComms.runCallbacks();
+                break;
+        }
+    }
+
+    /**
+     * Enable compression in comms transactions
+     */
+    public void enableCompression() {
+        _restClient.enableCompression();
+    }
+
+    /**
+     * Disable compression in comms transactions
+     */
+    public void disableCompression() {
+        _restClient.disableCompression();
     }
 
     /**
@@ -325,6 +387,8 @@ public class BrainCloudClient {
     public void enableLogging(boolean shouldEnable) {
         _restClient.enableLogging(shouldEnable);
         _rttComms.enableLogging(shouldEnable);
+        _relayComms.enableLogging(shouldEnable);
+        _lobbyService.enableLogging(shouldEnable);
     }
 
     /**
@@ -633,6 +697,7 @@ public class BrainCloudClient {
     public void sendRequest(ServerCall serverCall) {
         _restClient.addToQueue(serverCall);
     }
+    
 
     /**
      * Returns the sessionId or empty string if no session present.
@@ -873,6 +938,10 @@ public class BrainCloudClient {
         return _redemptionCodeService;
     }
 
+    public RelayService getRelayService() {
+        return _relayService;
+    }
+
     public RTTService getRTTService() {
         return _rttService;
     }
@@ -897,6 +966,10 @@ public class BrainCloudClient {
         return _tournamentService;
     }
 
+    public GlobalFileService getGlobalFileService() {
+        return _globalFileService;
+    }
+  
     public CustomEntityService getCustomEntityService() {
         return _customEntityService;
     }

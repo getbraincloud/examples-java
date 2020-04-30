@@ -210,10 +210,10 @@ public class PushNotificationService {
      * @param fcmContent Valid Fcm data content
      * @param iosContent Valid ios data content
      * @param facebookContent Facebook template string
-     * @param startTime Start time of sending the push notification
+     * @param startTimeUTC Start time of sending the push notification - in UTC milliseconds
      * @param callback The method to be invoked when the server response is received
      */
-    public void scheduleRawPushNotificationUTC(String profileId, String fcmContent, String iosContent, String facebookContent, int startTime, IServerCallback callback) {
+    public void scheduleRawPushNotificationUTC(String profileId, String fcmContent, String iosContent, String facebookContent, long startTimeUTC, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.profileId.name(), profileId);
@@ -230,7 +230,7 @@ public class PushNotificationService {
                 data.put(Parameter.facebookContent .name(), new JSONObject(facebookContent ));
             }
 
-            data.put(Parameter.startDateUTC.name(), startTime);
+            data.put(Parameter.startDateUTC.name(), startTimeUTC);
 
             ServerCall sc = new ServerCall(ServiceName.pushNotification, ServiceOperation.SCHEDULE_RAW_NOTIFICATION, data, callback);
             _client.sendRequest(sc);
@@ -380,11 +380,11 @@ public class PushNotificationService {
      * @param profileId The profileId of the user to receive the notification
      * @param alertContentJson Body and title of alert
      * @param customDataJson Optional custom data
-     * @param startTime Start time of sending the push notification
+     * @param startTimeUTC Start time of sending the push notification - in UTC miliseconds
      * @param callback The method to be invoked when the server response is received
      */
     public void scheduleNormalizedPushNotificationUTC(String profileId, String alertContentJson, String customDataJson,
-                                                      int startTime, IServerCallback callback) {
+                                                      long startTimeUTC, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.profileId.name(), profileId);
@@ -393,7 +393,7 @@ public class PushNotificationService {
                 data.put(Parameter.customData.name(), new JSONObject(customDataJson));
             }
 
-            data.put(Parameter.startDateUTC.name(), startTime);
+            data.put(Parameter.startDateUTC.name(), startTimeUTC);
 
             ServerCall sc = new ServerCall(ServiceName.pushNotification, ServiceOperation.SCHEDULE_NORMALIZED_NOTIFICATION, data, callback);
             _client.sendRequest(sc);
@@ -436,11 +436,11 @@ public class PushNotificationService {
      * @param profileId The profileId of the user to receive the notification
      * @param notificationTemplateId Body and title of alert
      * @param substitutionsJson Map of substitution positions to strings
-     * @param startTime Start time of sending the push notification
+     * @param startTimeUTC Start time of sending the push notification - in UTC milliseconds
      * @param callback The method to be invoked when the server response is received
      */
     public void scheduleRichPushNotificationUTC(String profileId, int notificationTemplateId, String substitutionsJson,
-                                                int startTime, IServerCallback callback) {
+                                                long startTimeUTC, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.profileId.name(), profileId);
@@ -449,7 +449,7 @@ public class PushNotificationService {
                 data.put(Parameter.substitutions.name(), new JSONObject(substitutionsJson));
             }
 
-            data.put(Parameter.startDateUTC.name(), startTime);
+            data.put(Parameter.startDateUTC.name(), startTimeUTC);
 
             ServerCall sc = new ServerCall(ServiceName.pushNotification, ServiceOperation.SCHEDULE_RICH_NOTIFICATION, data, callback);
             _client.sendRequest(sc);

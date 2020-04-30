@@ -226,6 +226,122 @@ public class IdentityService {
         detachIdentity(googleId, AuthenticationType.Google, continueAnon, callback);
     }
 
+        /**
+     * Attach a Google identity to the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Attach
+     *
+     * @param googleOpenId The google id of the player
+     * @param authenticationToken  The validated token from the Google SDK
+     * (that will be further validated when sent to the bC service)
+     * @param callback The callback method
+     *
+     * @returns Errors to watch for:  SWITCHING_PROFILES - this means that the Google identity you provided
+     * already points to a different profile.  You will likely want to offer the player the
+     * choice to *SWITCH* to that profile, or *MERGE* the profiles.
+     *
+     * To switch profiles, call ClearSavedProfileID() and call this method again.
+     *
+     */
+    public void attachGoogleOpenIdIdentity(String googleOpenId, String authenticationToken, IServerCallback callback) {
+        attachIdentity(googleOpenId, authenticationToken, AuthenticationType.GoogleOpenId, callback);
+    }
+
+    /**
+     * Merge the profile associated with the specified Google identity with the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Merge
+     *
+     * @param googleOpenId The google id of the player
+     * @param authenticationToken  The validated token from the Google SDK
+     * (that will be further validated when sent to the bC service)
+     * @param callback The callback method
+     *
+     * @returns
+     *
+     */
+    public void mergeGoogleOpenIdIdentity(String googleOpenId, String authenticationToken, IServerCallback callback) {
+        mergeIdentity(googleOpenId, authenticationToken, AuthenticationType.GoogleOpenId, callback);
+    }
+
+    /**
+     * Detach the Google identity from the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Detach
+     *
+     * @param googleOpenId The google id of the player
+     * @param continueAnon Proceed even if the profile will revert to anonymous?
+     * @param callback The method to be invoked when the server response is received
+     *
+     * @returns Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
+     * disconnecting this identity would result in the profile being anonymous (which means that
+     * the profile wouldn't be retrievable if the user loses their device)
+     */
+    public void detachGoogleOpenIdIdentity(String googleOpenId, boolean continueAnon, IServerCallback callback) {
+        detachIdentity(googleOpenId, AuthenticationType.GoogleOpenId, continueAnon, callback);
+    }
+
+    /**
+     * Attach a Google identity to the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Attach
+     *
+     * @param appleId The google id of the player
+     * @param authenticationToken  The validated token from the Google SDK
+     * (that will be further validated when sent to the bC service)
+     * @param callback The callback method
+     *
+     * @returns Errors to watch for:  SWITCHING_PROFILES - this means that the Google identity you provided
+     * already points to a different profile.  You will likely want to offer the player the
+     * choice to *SWITCH* to that profile, or *MERGE* the profiles.
+     *
+     * To switch profiles, call ClearSavedProfileID() and call this method again.
+     *
+     */
+    public void attachAppleIdentity(String appleId, String authenticationToken, IServerCallback callback) {
+        attachIdentity(appleId, authenticationToken, AuthenticationType.Apple, callback);
+    }
+
+    /**
+     * Merge the profile associated with the specified Google identity with the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Merge
+     *
+     * @param appleId The google id of the player
+     * @param authenticationToken  The validated token from the Google SDK
+     * (that will be further validated when sent to the bC service)
+     * @param callback The callback method
+     *
+     * @returns
+     *
+     */
+    public void mergeAppleIdentity(String appleId, String authenticationToken, IServerCallback callback) {
+        mergeIdentity(appleId, authenticationToken, AuthenticationType.Apple, callback);
+    }
+
+    /**
+     * Detach the Google identity from the current profile.
+     *
+     * Service Name - Identity
+     * Service Operation - Detach
+     *
+     * @param appleId The google id of the player
+     * @param continueAnon Proceed even if the profile will revert to anonymous?
+     * @param callback The method to be invoked when the server response is received
+     *
+     * @returns Watch for DOWNGRADING_TO_ANONYMOUS_ERROR - occurs if you set continueAnon to false, and
+     * disconnecting this identity would result in the profile being anonymous (which means that
+     * the profile wouldn't be retrievable if the user loses their device)
+     */
+    public void detachAppleIdentity(String appleId, boolean continueAnon, IServerCallback callback) {
+        detachIdentity(appleId, AuthenticationType.Apple, continueAnon, callback);
+    }
+
 
     /**** EMAIL AND PASSWORD Methods ***/
 

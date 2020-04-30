@@ -12,10 +12,13 @@ public class AuthenticationType {
     public static final AuthenticationType Facebook = new AuthenticationType("Facebook");
     public static final AuthenticationType GameCenter = new AuthenticationType("GameCenter");
     public static final AuthenticationType Steam = new AuthenticationType("Steam");
+    public static final AuthenticationType Apple = new AuthenticationType("Apple");
     public static final AuthenticationType Google = new AuthenticationType("Google");
+    public static final AuthenticationType GoogleOpenId = new AuthenticationType("GoogleOpenId");
     public static final AuthenticationType Twitter = new AuthenticationType("Twitter");
     public static final AuthenticationType Parse = new AuthenticationType("Parse");
     public static final AuthenticationType Handoff = new AuthenticationType("Handoff");
+    public static final AuthenticationType SettopHandoff = new AuthenticationType("SettopHandoff");
     public static final AuthenticationType External = new AuthenticationType("External");
     public static final AuthenticationType Unknown = new AuthenticationType("Unknown");
 
@@ -47,8 +50,14 @@ public class AuthenticationType {
         if (s.equals(Steam.toString())) {
             return Steam;
         }
+        if (s.equals(Apple.toString())) {
+            return Apple;
+        }
         if (s.equals(Google.toString())) {
             return Google;
+        }
+        if (s.equals(GoogleOpenId.toString())) {
+            return GoogleOpenId;
         }
         if (s.equals(Twitter.toString())) {
             return Twitter;
