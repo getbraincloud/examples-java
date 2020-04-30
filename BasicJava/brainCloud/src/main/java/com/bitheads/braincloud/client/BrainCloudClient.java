@@ -969,7 +969,7 @@ public class BrainCloudClient {
     public GlobalFileService getGlobalFileService() {
         return _globalFileService;
     }
-
+  
     public CustomEntityService getCustomEntityService() {
         return _customEntityService;
     }
