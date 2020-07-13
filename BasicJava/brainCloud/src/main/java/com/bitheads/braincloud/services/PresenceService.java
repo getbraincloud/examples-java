@@ -91,7 +91,7 @@ public class PresenceService
 	{
 		try {
 			JSONObject data = new JSONObject();
-			data.put(Parameter.profileIds.name(), profileIds);
+			data.put(Parameter.profileIds.name(), new JSONArray(profileIds));
 			data.put(Parameter.includeOffline.name(), includeOffline);
 
 			ServerCall sc = new ServerCall(ServiceName.presence, ServiceOperation.GET_PRESENCE_OF_USERS, data, callback);
@@ -150,7 +150,7 @@ public class PresenceService
 	{
 		try {
 			JSONObject data = new JSONObject();
-			data.put(Parameter.profileIds.name(), profileIds);
+			data.put(Parameter.profileIds.name(), new JSONArray(profileIds));
 			data.put(Parameter.bidirectional.name(), bidirectional);
 
 			ServerCall sc = new ServerCall(ServiceName.presence, ServiceOperation.REGISTER_LISTENERS_FOR_PROFILES, data, callback);

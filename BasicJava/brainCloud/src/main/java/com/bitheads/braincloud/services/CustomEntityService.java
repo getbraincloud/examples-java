@@ -19,6 +19,7 @@ public class CustomEntityService {
         isOwned,
         entityType,
         version,
+        deleteCriteria,
         whereJson,
         rowsPerPage,
         searchJson,
@@ -337,4 +338,179 @@ public class CustomEntityService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * deletes Entities based on the criteria
+     *
+     * @param entityType The entity type as defined by the user
+     * @param deleteCriteria
+     * @param callback Callback.
+     */
+    public void deleteEntities(String entityType, String deleteCriteria,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            JSONObject Data = new JSONObject(deleteCriteria);
+            data.put(Parameter.deleteCriteria.name(), Data);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.DELETE_ENTITIES, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Deletes the specified custom entity singleton, owned by the session's user, for the specified entity type, on the server.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param version
+     * @param callback Callback.
+     */
+    public void deleteSingleton(String entityType, int version,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            //JSONObject Data = new JSONObject(version);
+            data.put(Parameter.version.name(), version);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.DELETE_SINGLETON, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Updates the singleton owned by the user for the specified custom entity type on the server, creating the singleton if it does not exist. This operation results in the owned singleton's data being completely replaced by the passed in JSON object.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param version
+     * @param dataJson
+     * @param acl
+     * @param timeToLive
+     * @param callback Callback.
+     */
+    public void updateSingleton(String entityType, int version, String dataJson, String acl, long timeToLive,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            //JSONObject data = new JSONObject();
+            data.put(Parameter.version.name(), version);
+
+            JSONObject jsonData = new JSONObject(dataJson);
+            data.put(Parameter.dataJson.name(), jsonData);
+
+            if (StringUtil.IsOptionalParameterValid(acl)) {
+                JSONObject jsonAcl;
+                jsonAcl = new JSONObject(acl);
+                data.put(Parameter.acl.name(), jsonAcl);
+            }
+
+            data.put(Parameter.timeToLive.name(), timeToLive);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.UPDATE_SINGLETON, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Partially updates the data, of the singleton owned by the user for the specified custom entity type, with the specified fields, on the server
+     *
+     * @param entityType The entity type as defined by the user
+     * @param version
+     * @param fieldsJson
+     * @param callback Callback.
+     */
+    public void updateSingletonFields(String entityType, int version,String fieldsJson,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            data.put(Parameter.version.name(), version);
+
+            JSONObject fieldsData = new JSONObject(fieldsJson);
+            data.put(Parameter.fieldsJson.name(), fieldsData);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.UPDATE_SINGLETON_FIELDS, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Increments the specified fields by the specified amount within custom entity data on the server, enforcing ownership/ACL permissions.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param entityId
+     * @param fieldsJson
+     * @param callback Callback.
+     */
+    public void incrementData(String entityType, String entityId, String fieldsJson,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+            data.put(Parameter.entityId.name(), entityId);
+
+            JSONObject fieldsData = new JSONObject(fieldsJson);
+            data.put(Parameter.fieldsJson.name(), fieldsData);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.INCREMENT_DATA, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Reads the custom entity singleton owned by the session's user.
+     *
+     * @param entityType The entity type as defined by the user
+     * @param callback Callback.
+     */
+    public void readSingleton(String entityType,
+                         IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.entityType.name(), entityType);
+
+            ServerCall serverCall = new ServerCall(ServiceName.customEntity,
+                    ServiceOperation.READ_SINGLETON, data, callback);
+            _client.sendRequest(serverCall);
+
+        }
+         catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+    

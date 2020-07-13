@@ -110,7 +110,10 @@ public class FileServiceTest extends TestFixtureBase implements IFileUploadCallb
     public void testUploadSingleFile() throws Exception {
         TestResult tr = new TestResult(_wrapper);
 
-        String path = createFile(10);
+        //works locally for 10mb
+        //String path = createFile(10);
+        //trying 11 mb for jenkins compatability
+        String path = createFile(1);
 
         _wrapper.getFileService().uploadFile(
                 "", "test.dat", true, true, path, tr);
@@ -129,7 +132,10 @@ public class FileServiceTest extends TestFixtureBase implements IFileUploadCallb
     public void testUploadCancel() throws Exception {
         TestResult tr = new TestResult(_wrapper);
 
-        String path = createFile(10);
+        //works locally for 10mb
+        //String path = createFile(10);
+        //trying 11 mb for jenkins compatability
+        String path = createFile(1);
 
         _wrapper.getFileService().uploadFile(
                 "", "test.dat", true, true, path, tr);

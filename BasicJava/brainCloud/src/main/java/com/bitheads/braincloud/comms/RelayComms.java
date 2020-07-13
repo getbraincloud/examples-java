@@ -404,7 +404,8 @@ public class RelayComms {
                 _orderedReliablePackets.get(i).clear();
             }
             _connectInfo = null;
-
+            
+            _reliables.clear();
             _udpRsmgPackets.clear();
             _nextExpectedUdpRsmgPacketId = 0;
         }
@@ -902,6 +903,7 @@ public class RelayComms {
                             }
                             break; // Out of order
                         }
+                        return;
                     }
                     else {
                         // Just drop out of order packets for unreliables

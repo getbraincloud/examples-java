@@ -229,7 +229,7 @@ public class AuthenticationServiceTest extends TestFixtureNoAuth
 
         TestResult tr = new TestResult(_wrapper);
 
-        String content = "{\"templateId\": \"d-template-id-guid\", \"substitutions\": { \":name\": \"John Doe\",\":resetLink\": \"www.dummuyLink.io\"}, \"categories\": [\"category1\",\"category2\" ]}"; 
+        String content = "{\"templateId\": \"8f14c77d-61f4-4966-ab6d-0bee8b13d090\", \"substitutions\": { \":name\": \"John Doe\",\":resetLink\": \"www.dummuyLink.io\"}, \"categories\": [\"category1\",\"category2\" ]}"; 
         _wrapper.getClient().getAuthenticationService().resetUniversalIdPasswordAdvanced(
             //an example universalId of userB
                 "userb-1177370719",
@@ -266,7 +266,7 @@ public class AuthenticationServiceTest extends TestFixtureNoAuth
 
         TestResult tr = new TestResult(_wrapper);
 
-        String content = "{\"templateId\": \"d-template-id-guid\", \"substitutions\": { \":name\": \"John Doe\",\":resetLink\": \"www.dummuyLink.io\"}, \"categories\": [\"category1\",\"category2\" ]}"; 
+        String content = "{\"templateId\": \"8f14c77d-61f4-4966-ab6d-0bee8b13d090\", \"substitutions\": { \":name\": \"John Doe\",\":resetLink\": \"www.dummuyLink.io\"}, \"categories\": [\"category1\",\"category2\" ]}"; 
         _wrapper.getClient().getAuthenticationService().resetUniversalIdPasswordAdvancedWithExpiry(
             //an example universalId of userB
                 "userb-1177370719",
