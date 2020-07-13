@@ -131,6 +131,64 @@ public class CustomEntityServiceTest extends TestFixtureBase {
         tr.Run();
     }
 
+    @Test
+    public void testDeleteEntities() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        String entityId = createDefaultEntity(ACL.Access.None);
+        _wrapper.getCustomEntityService().deleteEntities(
+                _defaultEntityType,
+                "{\"entityId\": \"Testing\"}",
+                tr);
+        tr.Run();
+    }
+
+    @Test
+    public void testReadSingleton() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        String entityId = createDefaultEntity(ACL.Access.None);
+        _wrapper.getCustomEntityService().readSingleton(
+                _defaultEntityType,
+                tr);
+        tr.Run();
+    }
+
+    @Test
+    public void testDeleteSingleton() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        String entityId = createDefaultEntity(ACL.Access.None);
+        _wrapper.getCustomEntityService().deleteSingleton(
+                _defaultEntityType,
+                -1,
+                tr);
+        tr.Run();
+    }
+
+    @Test
+    public void testUpdateSingleton() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        String entityId = createDefaultEntity(ACL.Access.None);
+        _wrapper.getCustomEntityService().updateSingleton(
+                _defaultEntityType,
+                -1,
+                Helpers.createJsonPair("test", "testy"),
+                null,
+                1,
+                tr);
+        tr.Run();
+    }
+
+    @Test
+    public void testUpdateSingletonFields() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+        String entityId = createDefaultEntity(ACL.Access.None);
+        _wrapper.getCustomEntityService().updateSingletonFields(
+                _defaultEntityType,
+                1,
+                "{\"goals\": \"3\"}",
+                tr);
+        tr.Run();
+    }
+
     /// <summary>
     /// Creates a default entity on the server
     /// </summary>

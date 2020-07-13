@@ -389,7 +389,10 @@ public class AsyncMatchService {
             JSONObject data = new JSONObject();
             data.put(Parameter.ownerId.name(), ownerId);
             data.put(Parameter.matchId.name(), matchId);
+            if(pushContent != null)
+            {
             data.put(Parameter.pushContent.name(), pushContent);
+            }
             JSONObject summaryData = new JSONObject(summary);
             data.put(Parameter.summary.name(), summaryData);
 
@@ -418,7 +421,10 @@ public class AsyncMatchService {
             JSONObject data = new JSONObject();
             data.put(Parameter.ownerId.name(), ownerId);
             data.put(Parameter.matchId.name(), matchId);
+            if(pushContent != null)
+            {
             data.put(Parameter.pushContent.name(), pushContent);
+            }
             JSONObject summaryData = new JSONObject(summary);
             data.put(Parameter.summary.name(), summaryData);
 

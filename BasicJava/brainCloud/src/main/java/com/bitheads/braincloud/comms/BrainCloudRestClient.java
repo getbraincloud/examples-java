@@ -668,12 +668,14 @@ public class BrainCloudRestClient implements Runnable {
             }
         }
         //LogString("poll time - " + polltime);
+
         boolean hasRecords = false;
         try {
             hasRecords = this._messageQueueCount.tryAcquire(1, polltime, TimeUnit.MILLISECONDS);
         }
         catch (InterruptedException e) {
         }
+
         //waiting for callbacks to be run
         // do a one second sleep so we don't hit this too hard
         // return the sempahore permit if required
