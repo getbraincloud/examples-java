@@ -13,16 +13,20 @@ public class Lobby
 
     public Lobby(JSONObject lobbyJson, String in_lobbyId)
     {
+        State state = App.getInstance().state;
+        
         lobbyId = in_lobbyId;
         ownerId = lobbyJson.getString("owner");
         JSONArray jsonMembers = lobbyJson.getJSONArray("members");
         for (int i = 0; i < jsonMembers.length(); ++i)
         {
             JSONObject jsonMember = jsonMembers.getJSONObject(i);
-            members.add(new User(jsonMember.getString("profileId"), 
+            User user = new User(jsonMember.getString("profileId"), 
                                  jsonMember.getString("name"), 
                                  jsonMember.getJSONObject("extra").getInt("colorIndex"), 
-                                 false));
+                                 false);
+            if (user.profileId.equals(state.user.profileId)) user.allowSendTo = false;   
+            members.add(user);
         }
     }
 }
