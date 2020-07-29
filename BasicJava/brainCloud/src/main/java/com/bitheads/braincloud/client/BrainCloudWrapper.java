@@ -74,6 +74,11 @@ public class BrainCloudWrapper implements IServerCallback {
     private BrainCloudClient _client = null;
     private String _wrapperName = "";
 
+    //get the release platform
+    public Platform getReleasePlatform() {
+        return _client.getReleasePlatform();
+    }
+
     /**
      * Returns a singleton instance of the BrainCloudClient, if this is the BrainCloudWrapper Singleton.
      * Otherwise, return an instance of the BrainCloudClient, if this is an instance of the BrainCloudWrapper.
