@@ -1,5 +1,7 @@
 package com.bitheads.braincloud.client;
 
+import android.os.Build;
+
 import com.bitheads.braincloud.client.IRelayCallback;
 import com.bitheads.braincloud.client.IRelayConnectCallback;
 import com.bitheads.braincloud.client.IRTTCallback;
@@ -55,6 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.lang.System;
 
 public class BrainCloudClient {
 
@@ -223,7 +226,15 @@ public class BrainCloudClient {
         _appId = appId;
         _appVersion = appVersion;
         _secretMap.put(_appId, secretKey);
-        _releasePlatform = Platform.GooglePlayAndroid;
+
+        //detect amazon. Will need to revisit so we no longer assume java apps are android if not amazon
+        if(Build.MANUFACTURER.equals("Amazon")) {
+            _releasePlatform = _releasePlatform.fromString(Build.MANUFACTURER);
+        }
+        else
+        {
+            _releasePlatform = Platform.GooglePlayAndroid;
+        }
 
         Locale locale = Locale.getDefault();
         if (_countryCode == null || _countryCode.isEmpty()) _countryCode = locale.getCountry();
@@ -285,7 +296,7 @@ public class BrainCloudClient {
         _appId = appId;
         _appVersion = appVersion;
         _secretMap = secretMap;
-        _releasePlatform = Platform.GooglePlayAndroid;
+        //_releasePlatform = Platform.GooglePlayAndroid;
 
         Locale locale = Locale.getDefault();
         if (_countryCode == null || _countryCode.isEmpty()) _countryCode = locale.getCountry();

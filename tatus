@@ -1,0 +1,320 @@
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/generated/source/buildConfig/debug/com/bitheads/braincloud/BuildConfig.java.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/attr/R.txt.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/incremental/mergeDebugShaders/merger.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/incremental/packageDebugAssets/merger.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/merger.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/manifests/aapt/debug/AndroidManifest.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/manifests/full/debug/AndroidManifest.xml.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/intermediates/res/symbol-table-with-package/debug/package-aware-r.txt.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in BasicJava/brainCloud/build/outputs/logs/manifest-merger-debug-report.txt.
+The file will have its original line endings in your working directory
+[1mdiff --git a/BasicJava/.idea/caches/build_file_checksums.ser b/BasicJava/.idea/caches/build_file_checksums.ser[m
+[1mindex 1ceb2c8..cc17c1b 100644[m
+Binary files a/BasicJava/.idea/caches/build_file_checksums.ser and b/BasicJava/.idea/caches/build_file_checksums.ser differ
+[1mdiff --git a/BasicJava/app/src/main/java/com/braincloud/basic_java/BCClient.java b/BasicJava/app/src/main/java/com/braincloud/basic_java/BCClient.java[m
+[1mindex 99c589e..e695505 100644[m
+[1m--- a/BasicJava/app/src/main/java/com/braincloud/basic_java/BCClient.java[m
+[1m+++ b/BasicJava/app/src/main/java/com/braincloud/basic_java/BCClient.java[m
+[36m@@ -41,6 +41,4 @@[m [mpublic class BCClient[m
+     {[m
+         _bcWrapper.setContext(appContext);[m
+     }[m
+[31m-[m
+[31m-[m
+ }[m
+[1mdiff --git a/BasicJava/app/src/main/java/com/braincloud/basic_java/Login.java b/BasicJava/app/src/main/java/com/braincloud/basic_java/Login.java[m
+[1mindex a7a71eb..13a6cd6 100644[m
+[1m--- a/BasicJava/app/src/main/java/com/braincloud/basic_java/Login.java[m
+[1m+++ b/BasicJava/app/src/main/java/com/braincloud/basic_java/Login.java[m
+[36m@@ -2,6 +2,7 @@[m [mpackage com.braincloud.basic_java;[m
+ [m
+ //android specific includes[m
+ import android.content.Intent;[m
+[32m+[m[32mimport android.os.Build;[m
+ import android.support.annotation.NonNull;[m
+ import android.support.v7.app.AppCompatActivity;[m
+ import android.os.Bundle;[m
+[36m@@ -48,7 +49,12 @@[m [mpublic class Login extends AppCompatActivity implements  IServerCallback[m
+         //get a reference to the button of the app[m
+         Button loginButton = findViewById(R.id.loginButton);[m
+ [m
+[32m+[m[32m        //show detection[m
+[32m+[m[32m        //attempt to authenticate[m
+[32m+[m[32m        TextView statusTextView = findViewById(R.id.statusTextView);[m
+ [m
+[32m+[m[32m        //show detection[m
+[32m+[m[32m        statusTextView.setText(_bc.GetWrapper().getReleasePlatform().toString());[m
+ [m
+         //when this button is clicked create an inline class so that we can keep it unique to this class.[m
+         loginButton.setOnClickListener(new View.OnClickListener() {[m
+[1mdiff --git a/BasicJava/app/src/main/res/layout/activity_log_in.xml b/BasicJava/app/src/main/res/layout/activity_log_in.xml[m
+[1mindex c891d63..0fdce6f 100644[m
+[1m--- a/BasicJava/app/src/main/res/layout/activity_log_in.xml[m
+[1m+++ b/BasicJava/app/src/main/res/layout/activity_log_in.xml[m
+[36m@@ -10,11 +10,11 @@[m
+         android:id="@+id/statusTextView"[m
+         android:layout_width="wrap_content"[m
+         android:layout_height="44dp"[m
+[31m-        android:layout_marginBottom="108dp"[m
+[31m-        android:layout_marginEnd="8dp"[m
+[32m+[m[32m        android:layout_marginStart="8dp"[m
+         android:layout_marginLeft="8dp"[m
+[32m+[m[32m        android:layout_marginEnd="8dp"[m
+         android:layout_marginRight="8dp"[m
+[31m-        android:layout_marginStart="8dp"[m
+[32m+[m[32m        android:layout_marginBottom="304dp"[m
+         android:textSize="36sp"[m
+         app:layout_constraintBottom_toBottomOf="parent"[m
+         app:layout_constraintEnd_toEndOf="parent"[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$1.class b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$1.class[m
+[1mindex 932c807..a52dfd8 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$1.class and b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$1.class differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$BrainCloudUpdateType.class b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$BrainCloudUpdateType.class[m
+[1mindex 0880a00..5a5d4ba 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$BrainCloudUpdateType.class and b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient$BrainCloudUpdateType.class differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient.class b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient.class[m
+[1mindex d36781b..ebf0518 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient.class and b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudClient.class differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudWrapper.class b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudWrapper.class[m
+[1mindex 9df3c62..bde87ae 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudWrapper.class and b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/BrainCloudWrapper.class differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/Platform.class b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/Platform.class[m
+[1mindex 4047584..6c95033 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/Platform.class and b/BasicJava/brainCloud/build/intermediates/classes/debug/com/bitheads/braincloud/client/Platform.class differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/debug-mergeJniLibs/merge-state b/BasicJava/brainCloud/build/intermediates/incremental/debug-mergeJniLibs/merge-state[m
+[1mindex d40e100..dceb4cb 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/incremental/debug-mergeJniLibs/merge-state and b/BasicJava/brainCloud/build/intermediates/incremental/debug-mergeJniLibs/merge-state differ
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml[m
+[1mindex 49ec645..cdc918a 100644[m
+[1m--- a/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml[m
+[1m+++ b/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml[m
+[36m@@ -1,2 +1,2 @@[m
+ <?xml version="1.0" encoding="utf-8"?>[m
+[31m-<merger version="3"><dataSet config="main"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\main\jniLibs"/></dataSet><dataSet config="debug"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\debug\jniLibs"/></dataSet></merger>[m
+\ No newline at end of file[m
+[32m+[m[32m<merger version="3"><dataSet config="main"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\jniLibs"/></dataSet><dataSet config="debug"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\debug\jniLibs"/></dataSet></merger>[m
+\ No newline at end of file[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugShaders/merger.xml b/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugShaders/merger.xml[m
+[1mindex 683f6a5..cc8a193 100644[m
+[1m--- a/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugShaders/merger.xml[m
+[1m+++ b/BasicJava/brainCloud/build/intermediates/incremental/mergeDebugShaders/merger.xml[m
+[36m@@ -1,2 +1,2 @@[m
+ <?xml version="1.0" encoding="utf-8"?>[m
+[31m-<merger version="3"><dataSet config="main"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\main\shaders"/></dataSet><dataSet config="debug"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\debug\shaders"/></dataSet></merger>[m
+\ No newline at end of file[m
+[32m+[m[32m<merger version="3"><dataSet config="main"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\shaders"/></dataSet><dataSet config="debug"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\debug\shaders"/></dataSet></merger>[m
+\ No newline at end of file[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugAssets/merger.xml b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugAssets/merger.xml[m
+[1mindex 7e20992..950ef8e 100644[m
+[1m--- a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugAssets/merger.xml[m
+[1m+++ b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugAssets/merger.xml[m
+[36m@@ -1,2 +1,2 @@[m
+ <?xml version="1.0" encoding="utf-8"?>[m
+[31m-<merger version="3"><dataSet config="main"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\main\assets"/><source path="D:\work projects\examples-java\BasicJava\brainCloud\build\generated\assets\shaders\debug"/></dataSet><dataSet config="debug"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\debug\assets"/></dataSet></merger>[m
+\ No newline at end of file[m
+[32m+[m[32m<merger version="3"><dataSet config="main"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\assets"/><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\build\generated\assets\shaders\debug"/></dataSet><dataSet config="debug"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\debug\assets"/></dataSet></merger>[m
+\ No newline at end of file[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/compile-file-map.properties b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/compile-file-map.properties[m
+[1mindex 3da4fda..d5f6ae5 100644[m
+[1m--- a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/compile-file-map.properties[m
+[1m+++ b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/compile-file-map.properties[m
+[36m@@ -1 +1 @@[m
+[31m-#Mon Jul 13 18:46:50 EDT 2020[m
+[32m+[m[32m#Fri Jul 24 12:24:01 EDT 2020[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/merger.xml b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/merger.xml[m
+[1mindex 1c6d295..fecfe7b 100644[m
+[1m--- a/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/merger.xml[m
+[1m+++ b/BasicJava/brainCloud/build/intermediates/incremental/packageDebugResources/merger.xml[m
+[36m@@ -1,2 +1,2 @@[m
+ <?xml version="1.0" encoding="utf-8"?>[m
+[31m-<merger version="3"><dataSet config="main$Generated" generated="true"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\main\res"/><source path="D:\work projects\examples-java\BasicJava\brainCloud\build\generated\res\rs\debug"/><source path="D:\work projects\examples-java\BasicJava\brainCloud\build\generated\res\resValues\debug"/></dataSet><dataSet config="main" generated-set="main$Generated"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\main\res"/><source path="D:\work projects\examples-java\BasicJava\brainCloud\build\generated\res\rs\debug"/><source path="D:\work projects\examples-java\BasicJava\brainCloud\build\generated\res\resValues\debug"/></dataSet><dataSet config="debug$Generated" generated="true"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\debug\res"/></dataSet><dataSet config="debug" generated-set="debug$Generated"><source path="D:\work projects\examples-java\BasicJava\brainCloud\src\debug\res"/></dataSet><mergedItems/></merger>[m
+\ No newline at end of file[m
+[32m+[m[32m<merger version="3"><dataSet config="main$Generated" generated="true"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\res"/><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\build\generated\res\rs\debug"/><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\build\generated\res\resValues\debug"/></dataSet><dataSet config="main" generated-set="main$Generated"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\res"/><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\build\generated\res\rs\debug"/><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\build\generated\res\resValues\debug"/></dataSet><dataSet config="debug$Generated" generated="true"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\debug\res"/></dataSet><dataSet config="debug" generated-set="debug$Generated"><source path="C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\debug\res"/></dataSet><mergedItems/></merger>[m
+\ No newline at end of file[m
+[1mdiff --git a/BasicJava/brainCloud/build/intermediates/intermediate-jars/debug/classes.jar b/BasicJava/brainCloud/build/intermediates/intermediate-jars/debug/classes.jar[m
+[1mindex f6a6604..274e651 100644[m
+Binary files a/BasicJava/brainCloud/build/intermediates/intermediate-jars/debug/classes.jar and b/BasicJava/brainCloud/build/intermediates/intermediate-jars/debug/classes.jar differ
+[1mdiff --git a/BasicJava/brainCloud/build/outputs/logs/manifest-merger-debug-report.txt b/BasicJava/brainCloud/build/outputs/logs/manifest-merger-debug-report.txt[m
+[1mindex a7d85ed..2c19685 100644[m
+[1m--- a/BasicJava/brainCloud/build/outputs/logs/manifest-merger-debug-report.txt[m
+[1m+++ b/BasicJava/brainCloud/build/outputs/logs/manifest-merger-debug-report.txt[m
+[36m@@ -1,45 +1,45 @@[m
+ -- Merging decision tree log ---[m
+ manifest[m
+[31m-ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+ 	package[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:2:5-38[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:2:5-38[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+ 	android:versionName[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+ 	android:versionCode[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:1-6:12[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+ 	xmlns:android[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:11-69[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:1:11-69[m
+ uses-permission#android.permission.INTERNET[m
+[31m-ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:5-67[m
+[32m+[m[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:5-67[m
+ 	android:name[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:22-64[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:4:22-64[m
+ uses-permission#android.permission.READ_EXTERNAL_STORAGE[m
+[31m-ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:5:5-80[m
+[32m+[m[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:5:5-80[m
+ 	android:name[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:5:22-77[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml:5:22-77[m
+ uses-sdk[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml reason: use-sdk injection requested[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml reason: use-sdk injection requested[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+ 	android:targetSdkVersion[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+ 	android:minSdkVersion[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		ADDED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[31m-		INJECTED from D:\work projects\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mADDED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[32m+[m		[32mINJECTED from C:\Users\Taachi\source\repos\examples-java\BasicJava\brainCloud\src\main\AndroidManifest.xml[m
+[1mdiff --git a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudClient.java b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudClient.java[m
+[1mindex 906c41a..039e358 100644[m
+[1m--- a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudClient.java[m
+[1m+++ b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudClient.java[m
+[36m@@ -1,5 +1,7 @@[m
+ package com.bitheads.braincloud.client;[m
+ [m
+[32m+[m[32mimport android.os.Build;[m
+[32m+[m
+ import com.bitheads.braincloud.client.IRelayCallback;[m
+ import com.bitheads.braincloud.client.IRelayConnectCallback;[m
+ import com.bitheads.braincloud.client.IRTTCallback;[m
+[36m@@ -55,6 +57,7 @@[m [mimport java.util.HashMap;[m
+ import java.util.Map;[m
+ import java.util.Locale;[m
+ import java.util.TimeZone;[m
+[32m+[m[32mimport java.lang.System;[m
+ [m
+ public class BrainCloudClient {[m
+ [m
+[36m@@ -223,7 +226,15 @@[m [mpublic class BrainCloudClient {[m
+         _appId = appId;[m
+         _appVersion = appVersion;[m
+         _secretMap.put(_appId, secretKey);[m
+[31m-        _releasePlatform = Platform.GooglePlayAndroid;[m
+[32m+[m
+[32m+[m[32m        //detect amazon. Will need to revisit so we no longer assume java apps are android if not amazon[m
+[32m+[m[32m        if(Build.MANUFACTURER.equals("Amazon")) {[m
+[32m+[m[32m            _releasePlatform = _releasePlatform.fromString(Build.MANUFACTURER);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        else[m
+[32m+[m[32m        {[m
+[32m+[m[32m            _releasePlatform = Platform.GooglePlayAndroid;[m
+[32m+[m[32m        }[m
+ [m
+         Locale locale = Locale.getDefault();[m
+         if (_countryCode == null || _countryCode.isEmpty()) _countryCode = locale.getCountry();[m
+[36m@@ -285,7 +296,7 @@[m [mpublic class BrainCloudClient {[m
+         _appId = appId;[m
+         _appVersion = appVersion;[m
+         _secretMap = secretMap;[m
+[31m-        _releasePlatform = Platform.GooglePlayAndroid;[m
+[32m+[m[32m        //_releasePlatform = Platform.GooglePlayAndroid;[m
+ [m
+         Locale locale = Locale.getDefault();[m
+         if (_countryCode == null || _countryCode.isEmpty()) _countryCode = locale.getCountry();[m
+[1mdiff --git a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudWrapper.java b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudWrapper.java[m
+[1mindex fa49385..0908952 100644[m
+[1m--- a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudWrapper.java[m
+[1m+++ b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/BrainCloudWrapper.java[m
+[36m@@ -98,6 +98,10 @@[m [mpublic class BrainCloudWrapper implements IServerCallback {[m
+         _client = new BrainCloudClient();[m
+     }[m
+ [m
+[32m+[m[32m    public Platform getReleasePlatform() {[m
+[32m+[m[32m        return _client.getReleasePlatform();[m
+[32m+[m[32m    }[m
+[32m+[m
+     /**[m
+      * Method returns a singleton instance of the BrainCloudWrapper.[m
+      *[m
+[1mdiff --git a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/Platform.java b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/Platform.java[m
+[1mindex 270b1e3..a901bfd 100644[m
+[1m--- a/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/Platform.java[m
+[1m+++ b/BasicJava/brainCloud/src/main/java/com/bitheads/braincloud/client/Platform.java[m
+[36m@@ -7,6 +7,7 @@[m [mpublic class Platform {[m
+     public static final Platform BlackBerry = new Platform("BB");[m
+     public static final Platform Facebook = new Platform("FB");[m
+     public static final Platform GooglePlayAndroid = new Platform("ANG");[m
+[32m+[m[32m    public static final Platform AmazonAndroid = new Platform(("Amazon")); //needs to have specific capitalizations.[m
+     public static final Platform iOS = new Platform("IOS");[m
+     public static final Platform Linux = new Platform("LINUX");[m
+     public static final Platform Mac = new Platform("MAC");[m
+[36m@@ -22,7 +23,7 @@[m [mpublic class Platform {[m
+     public static final Platform Wii = new Platform("WII");[m
+     public static final Platform Tizen = new Platform("TIZEN");[m
+     public static final Platform Roku = new Platform("ROKU");[m
+[31m-    public static final Platform Unknown = new Platform("UNKNOWN");[m
+[32m+[m[32m    public static final Platform Unknown = new Platform("NOT POSSIBLE");[m
+ [m
+     private Platform(String value) {[m
+         this._value = value;[m
+[36m@@ -46,6 +47,9 @@[m [mpublic class Platform {[m
+         if (s.equals(GooglePlayAndroid.toString())) {[m
+             return GooglePlayAndroid;[m
+         }[m
+[32m+[m[32m        if (s.equals(AmazonAndroid.toString())) {[m
+[32m+[m[32m            return AmazonAndroid;[m
+[32m+[m[32m        }[m
+         if (s.equals(iOS.toString())) {[m
+             return iOS;[m
+         }[m

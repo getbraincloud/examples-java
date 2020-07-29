@@ -7,6 +7,7 @@ public class Platform {
     public static final Platform BlackBerry = new Platform("BB");
     public static final Platform Facebook = new Platform("FB");
     public static final Platform GooglePlayAndroid = new Platform("ANG");
+    public static final Platform AmazonAndroid = new Platform(("Amazon")); //needs to have specific capitalizations.
     public static final Platform iOS = new Platform("IOS");
     public static final Platform Linux = new Platform("LINUX");
     public static final Platform Mac = new Platform("MAC");
@@ -22,7 +23,7 @@ public class Platform {
     public static final Platform Wii = new Platform("WII");
     public static final Platform Tizen = new Platform("TIZEN");
     public static final Platform Roku = new Platform("ROKU");
-    public static final Platform Unknown = new Platform("UNKNOWN");
+    public static final Platform Unknown = new Platform("NOT POSSIBLE");
 
     private Platform(String value) {
         this._value = value;
@@ -45,6 +46,9 @@ public class Platform {
         }
         if (s.equals(GooglePlayAndroid.toString())) {
             return GooglePlayAndroid;
+        }
+        if (s.equals(AmazonAndroid.toString())) {
+            return AmazonAndroid;
         }
         if (s.equals(iOS.toString())) {
             return iOS;

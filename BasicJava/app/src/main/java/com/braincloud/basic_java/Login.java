@@ -2,6 +2,7 @@ package com.braincloud.basic_java;
 
 //android specific includes
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -48,7 +49,12 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //get a reference to the button of the app
         Button loginButton = findViewById(R.id.loginButton);
 
+        //show detection
+        //attempt to authenticate
+        TextView statusTextView = findViewById(R.id.statusTextView);
 
+        //show detection
+        statusTextView.setText(_bc.GetWrapper().getReleasePlatform().toString());
 
         //when this button is clicked create an inline class so that we can keep it unique to this class.
         loginButton.setOnClickListener(new View.OnClickListener() {

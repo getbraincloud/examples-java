@@ -41,6 +41,4 @@ public class BCClient
     {
         _bcWrapper.setContext(appContext);
     }
-
-
 }
