@@ -34,6 +34,38 @@ public class Platform {
         return _value;
     }
 
+    // this will need to be updated as we come across new platforms that are actually running java. This detects a generic platform based on 
+    // the platform code that is returned by javas platform detection.
+    // Research will need to be done to identify the code for each platform being detected.  
+    public static Platform detectGenericPlatform(String s)
+    {
+        //Google android
+        if (s.contains("ANG")) {
+            return GooglePlayAndroid;
+        }
+        //amazon android
+        if (s.contains("Amazon")) {
+            return AmazonAndroid;
+        }
+        //linux os
+        if (s.contains("nix")) {
+            return Linux;
+        }
+        //mac os 
+        if (s.contains("mac")) {
+            return Mac;
+        }
+        //web app
+        if (s.contains("web")) {
+            return Web;
+        }
+        //windows os
+        if (s.contains("win")) {
+            return Windows;
+        }
+        return Unknown;
+    }
+
     public static Platform fromString(String s) {
         if (s.equals(AppleTVOS.toString())) {
             return AppleTVOS;

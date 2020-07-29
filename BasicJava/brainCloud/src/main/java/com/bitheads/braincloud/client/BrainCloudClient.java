@@ -55,8 +55,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import android.os.Build;
-import java.lang.System;
+//import android.os.Build;
 
 public class BrainCloudClient {
 
@@ -134,7 +133,7 @@ public class BrainCloudClient {
 
     private static BrainCloudClient instance = null;
 
-    private static String DEFAULT_SERVER_URL = "https://internal.braincloudservers.com/dispatcherv2";
+    private static String DEFAULT_SERVER_URL = "https://sharedprod.braincloudservers.com/dispatcherv2";
 
     public BrainCloudClient() {
         _restClient = new BrainCloudRestClient(this);
@@ -225,13 +224,23 @@ public class BrainCloudClient {
         _appId = appId;
         _appVersion = appVersion;
         _secretMap.put(_appId, secretKey);
-        //detect amazon. Will need to revisit so we no longer assume java apps are android if not amazon
-        if(Build.MANUFACTURER.equals("Amazon")) {
-        _releasePlatform = _releasePlatform.fromString(Build.MANUFACTURER);
-        }
-        else
+
+        //the wrapper will always handle this, but in the case they do not go through the wrapper on Desktop the release platform will be null and it needs 
+        //to go through the steps the wrapper would have. In the case they use android but don't use the wrapper, we will not be able to distinguish
+        //between Google and Amazon android because of Javas incompatabilities between Java_desktop and Java_android. In this case it is safe to at least
+        //identify that they are using an Android device of some sort.   
+        if(_releasePlatform == null)
         {
-            _releasePlatform = Platform.GooglePlayAndroid;
+            //it is likely desktop
+            setReleasePlatform(getReleasePlatform().detectGenericPlatform(System.getProperty("os.name").toLowerCase()));
+            //log detected platform
+            System.out.println("Detected Platform: " + System.getProperty("os.name"));
+
+            //if it remains to be null, it is android
+            if(_releasePlatform == null)
+            {
+                setReleasePlatform(Platform.GooglePlayAndroid);
+            }
         }
 
         Locale locale = Locale.getDefault();
@@ -294,13 +303,23 @@ public class BrainCloudClient {
         _appId = appId;
         _appVersion = appVersion;
         _secretMap = secretMap;
-        //detect amazon. Will need to revisit so we no longer assume java apps are android if not amazon
-        if(Build.MANUFACTURER.equals("Amazon")) {
-            _releasePlatform = _releasePlatform.fromString(Build.MANUFACTURER);
-        }
-        else
+
+        //the wrapper will always handle this, but in the case they do not go through the wrapper on Desktop the release platform will be null and it needs 
+        //to go through the steps the wrapper would have. In the case they use android but don't use the wrapper, we will not be able to distinguish
+        //between Google and Amazon android because of Javas incompatabilities between Java_desktop and Java_android. In this case it is safe to at least
+        //identify that they are using an Android device of some sort.   
+        if(_releasePlatform == null)
         {
-            _releasePlatform = Platform.GooglePlayAndroid;
+            //it is likely desktop
+            setReleasePlatform(getReleasePlatform().detectGenericPlatform(System.getProperty("os.name").toLowerCase()));
+            //log detected platform
+            System.out.println("Detected Platform: " + System.getProperty("os.name"));
+
+            //if it remains to be null, it is android
+            if(_releasePlatform == null)
+            {
+                setReleasePlatform(Platform.GooglePlayAndroid);
+            }
         }
 
         Locale locale = Locale.getDefault();
