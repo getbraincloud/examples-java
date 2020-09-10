@@ -41,6 +41,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
     boolean _isConnectingRTT = false;
     boolean _disconnecting = false;
     RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
+    long _lastMoveSendTime = System.currentTimeMillis();
+    boolean _pendingMoveSend = false;
 
     public static void main(String args[])
     {
@@ -93,7 +95,15 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     while (true)
                     {
                         _bcWrapper.runCallbacks();
-                        wait(100);
+                        wait(1);
+
+                        // Check if we don't have move send pendings
+                        if (_pendingMoveSend) {
+                            long nowMs = System.currentTimeMillis();
+                            if (nowMs - _lastMoveSendTime >= 1000 / 60) { // Cap send at 60 fps
+                                sendPlayerMove();
+                            }
+                        }
                     }
                 }
                 catch (Exception e)
@@ -168,6 +178,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
     public void goToGameScreen()
     {
         state.shockwaves.clear();
+        _pendingMoveSend = false;
+        _lastMoveSendTime = System.currentTimeMillis();
         changeScreen(new GameScreen());
     }
 
@@ -204,6 +216,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
                     // Set the state with our user information. 7 is default white color index.
                     state.user = new User(jsonData.getString("profileId"), username, 7, false);
+                    state.user.allowSendTo = false; // We don't relay packet to ourself
                     goToMainMenuScreen();
                 }
 
@@ -385,7 +398,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 public void rttConnectSuccess()
                 {
                     _isConnectingRTT = false;
-                    _bcWrapper.getLobbyService().findOrCreateLobby("CursorParty", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
+                    _bcWrapper.getLobbyService().findOrCreateLobby("CursorPartyV2", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
                     {
                         @Override
                         public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
@@ -430,6 +443,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
         state.lobby = null;
         state.server = null;
         state.user.isReady = false;
+        _pendingMoveSend = false; //TODO put that in state object
+        _lastMoveSendTime = System.currentTimeMillis();
         goToMainMenuScreen();
     }
 
@@ -447,9 +462,29 @@ public class App implements IRelayCallback, IRelaySystemCallback
         onStateChanged();
     }
 
+    public void sendPlayerMove()
+    {
+        JSONObject data = new JSONObject();
+        data.put("op", "move");
+        JSONObject posJson = new JSONObject();
+        posJson.put("x", state.user.pos.x);
+        posJson.put("y", state.user.pos.y);
+        data.put("data", posJson);
+
+        _bcWrapper.getRelayService().sendToAll(
+            data.toString().getBytes(StandardCharsets.US_ASCII),
+            state.reliable,
+            state.ordered,
+            RelayService.CHANNEL_HIGH_PRIORITY_1);
+
+        _lastMoveSendTime = System.currentTimeMillis();
+    }
+
     public void onPlayerMove(int x, int y)
     {
+        // Update our own position right away
         state.user.pos = new Point(x, y);
+
         User myUser = null;
         for (int i = 0; i < state.lobby.members.size(); ++i)
         {
@@ -465,14 +500,9 @@ public class App implements IRelayCallback, IRelaySystemCallback
             myUser.pos = new Point(x, y);
         }
 
-        JSONObject data = new JSONObject();
-        data.put("op", "move");
-        JSONObject posJson = new JSONObject();
-        posJson.put("x", x);
-        posJson.put("y", y);
-        data.put("data", posJson);
-
-        _bcWrapper.getRelayService().send(data.toString().getBytes(StandardCharsets.US_ASCII), RelayService.TO_ALL_PLAYERS, false, true, RelayService.CHANNEL_HIGH_PRIORITY_1);
+        // Make sure we don't send faster than 60 fps. Java seems to trigger mouse move events
+        // at a crazy rate!
+        _pendingMoveSend = true;
     }
 
     public void onPlayerShockwave(int x, int y)
@@ -486,6 +516,20 @@ public class App implements IRelayCallback, IRelaySystemCallback
         posJson.put("y", y);
         data.put("data", posJson);
 
-        _bcWrapper.getRelayService().send(data.toString().getBytes(StandardCharsets.US_ASCII), RelayService.TO_ALL_PLAYERS, false, true, RelayService.CHANNEL_HIGH_PRIORITY_1);
+        long playerMask = 0;
+        for (int i = 0; i < state.lobby.members.size(); ++i)
+        {
+            User user = state.lobby.members.get(i);
+            if (!user.allowSendTo) continue;
+            int netId = _bcWrapper.getRelayService().getNetIdForProfileId(user.profileId);
+            playerMask |= (1L << (long)netId);
+        }
+
+        _bcWrapper.getRelayService().sendToPlayers(
+            data.toString().getBytes(StandardCharsets.US_ASCII),
+            playerMask, 
+            false,
+            true,
+            RelayService.CHANNEL_HIGH_PRIORITY_1);
     }
 }

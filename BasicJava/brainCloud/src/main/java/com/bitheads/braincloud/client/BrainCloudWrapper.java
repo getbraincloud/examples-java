@@ -48,6 +48,7 @@ import com.bitheads.braincloud.services.UserItemsService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Map;
+import android.os.Build;
 
 /**
  * The BrainCloudWrapper provides some convenience functionality to developers when they are
@@ -61,7 +62,7 @@ public class BrainCloudWrapper implements IServerCallback {
 
     private static final String AUTHENTICATION_ANONYMOUS = "anonymous";
     private static final String _SHARED_PREFERENCES = "bcprefs";
-    private static final String _DEFAULT_URL = "https://internal.braincloudservers.com/dispatcherv2";
+    private static final String _DEFAULT_URL = "https://sharedprod.braincloudservers.com/dispatcherv2";
 
     private static BrainCloudWrapper _instance = null;
 
@@ -73,6 +74,14 @@ public class BrainCloudWrapper implements IServerCallback {
 
     private BrainCloudClient _client = null;
     private String _wrapperName = "";
+
+    //get the release platform 
+    public Platform getReleasePlatform() {
+        return _client.getReleasePlatform();
+    }
+    public void setReleasePlatform(Platform releasePlatform) {
+        getClient().setReleasePlatform(releasePlatform);
+    }
 
     /**
      * Returns a singleton instance of the BrainCloudClient, if this is the BrainCloudWrapper Singleton.
@@ -138,6 +147,18 @@ public class BrainCloudWrapper implements IServerCallback {
         _context = ctx;
     }
 
+    private void detectPlatform()
+    {
+        //detect amazon. This is needed to distinguish between google android devices and amazon android devices.
+        if(Build.MANUFACTURER.equals("Amazon")) {
+            setReleasePlatform(getReleasePlatform().detectGenericPlatform(Build.MANUFACTURER));
+        }
+        else
+        {
+            getClient().setReleasePlatform(Platform.GooglePlayAndroid); 
+        }
+    }
+
     /**
      * Method initializes the BrainCloudClient.
      *
@@ -148,6 +169,11 @@ public class BrainCloudWrapper implements IServerCallback {
      */
     public void initialize(Context ctx, String appId, String secretKey, String appVersion) {
         setContext(ctx);
+
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
+
         getClient().initialize(_DEFAULT_URL,appId, secretKey, appVersion);
     }
 
@@ -162,6 +188,11 @@ public class BrainCloudWrapper implements IServerCallback {
      */
     public void initialize(Context ctx, String appId, String secretKey, String appVersion, String serverUrl) {
         setContext(ctx);
+
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
+
         getClient().initialize(serverUrl, appId, secretKey, appVersion);
     }
 
@@ -176,6 +207,10 @@ public class BrainCloudWrapper implements IServerCallback {
      * @param serverUrl  The url to the brainCloud server
      */
     public void initialize(String appId, String secretKey, String appVersion, String serverUrl) {
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
+
         getClient().initialize(serverUrl, appId, secretKey, appVersion);
     }
 
@@ -188,6 +223,10 @@ public class BrainCloudWrapper implements IServerCallback {
      * @param appVersion The app version
      */
     public void initialize(String appId, String secretKey, String appVersion) {
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
+
         getClient().initialize(appId, secretKey, appVersion);
     }
 
@@ -197,6 +236,10 @@ public class BrainCloudWrapper implements IServerCallback {
         {
             _client = new BrainCloudClient();
         }
+
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
 
         getClient().initializeWithApps(url, appId, secretMap, version);
     } 
@@ -215,6 +258,10 @@ public class BrainCloudWrapper implements IServerCallback {
         {
             _client = new BrainCloudClient();
         }
+
+        //need to do detection in the wrapper because java doesn't recognize defines or precompiler statements... 
+        //Both java_desktop and java_android have lib specific ways of detecting platforms and they are not cross compatible.  
+        detectPlatform();
 
         getClient().initializeWithApps(url, defaultAppId, secretMap, version);
     } 
