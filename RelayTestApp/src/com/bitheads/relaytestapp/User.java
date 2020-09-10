@@ -9,6 +9,7 @@ public class User
     public int colorIndex = 7;
     public boolean isReady = false;
     public Point pos = null;
+    public boolean allowSendTo = true;
 
     public User(String in_profileId, String in_name, int in_colorIndex, boolean in_isReady)
     {
