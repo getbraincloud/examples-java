@@ -147,39 +147,6 @@ public class PlaybackStreamService {
     }
 
     /**
-     * @deprecated Use getRecentStreamsForInitiatingPlayer() instead - Removal after September 1 2017
-     */
-    public void getStreamSummariesForInitiatingPlayer(
-            String initiatingPlayerId,
-            IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put(Parameter.initiatingPlayerId.name(), initiatingPlayerId);
-
-            ServerCall sc = new ServerCall(ServiceName.playbackStream, ServiceOperation.GET_STREAM_SUMMARIES_FOR_INITIATING_PLAYER, data, callback);
-            _client.sendRequest(sc);
-        } catch (JSONException je) {
-        }
-    }
-
-    /**
-     * @deprecated Use getRecentStreamsForTargetPlayer() instead - Removal after September 1 2017
-     */
-    public void getStreamSummariesForTargetPlayer(
-            String targetPlayerId,
-            IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put(Parameter.targetPlayerId.name(), targetPlayerId);
-
-            ServerCall sc = new ServerCall(ServiceName.playbackStream, ServiceOperation.GET_STREAM_SUMMARIES_FOR_TARGET_PLAYER, data, callback);
-            _client.sendRequest(sc);
-        } catch (JSONException je) {
-        }
-    }
-
-
-    /**
      * Gets recent stream summaries for initiating player
      *
      * Service Name - PlaybackStream

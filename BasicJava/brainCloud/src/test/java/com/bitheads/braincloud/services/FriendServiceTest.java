@@ -109,19 +109,6 @@ public class FriendServiceTest extends TestFixtureBase
     }
 
     @Test
-    public void testFindPlayerByUniversalId() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        _wrapper.getFriendService().findUserByUniversalId(
-                "search",
-                5,
-                tr);
-
-        tr.Run();
-    }
-
-    @Test
     public void testGetProfileInfoForCredential() throws Exception
     {
         TestResult tr = new TestResult(_wrapper);

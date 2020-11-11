@@ -7,6 +7,7 @@ import com.bitheads.braincloud.client.ServiceName;
 import com.bitheads.braincloud.client.ServiceOperation;
 import com.bitheads.braincloud.comms.ServerCall;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -320,7 +321,7 @@ public class PushNotificationService {
     public void sendRawPushNotificationBatch(String[] profileIds, String fcmContent, String iosContent, String facebookContent, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
-            data.put(Parameter.profileIds.name(), profileIds);
+            data.put(Parameter.profileIds.name(), new JSONArray(profileIds));
 
             if (StringUtil.IsOptionalParameterValid(fcmContent)) {
                 data.put(Parameter.fcmContent.name(), new JSONObject(fcmContent));
@@ -521,7 +522,7 @@ public class PushNotificationService {
     public void sendNormalizedPushNotificationBatch(String[] profileIds, String alertContentJson, String customDataJson, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
-            data.put(Parameter.profileIds.name(), profileIds);
+            data.put(Parameter.profileIds.name(), new JSONArray(profileIds));
             data.put(Parameter.alertContent.name(), new JSONObject(alertContentJson));
             if (StringUtil.IsOptionalParameterValid(customDataJson)) {
                 data.put(Parameter.customData.name(), new JSONObject(customDataJson));

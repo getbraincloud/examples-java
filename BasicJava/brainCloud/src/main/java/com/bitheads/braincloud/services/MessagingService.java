@@ -92,14 +92,6 @@ public class MessagingService {
         _client.sendRequest(sc);
     }
 
-
-    /**
-     * @deprecated Use getMessages(String msgbox, ArrayList<String> msgIds, Boolean markAsRead, IServerCallback callback) instead - Removal after June 1 2019
-     */
-    public void getMessages(String msgbox, ArrayList<String> msgIds, IServerCallback callback) {
-        getMessages(msgbox, msgIds, false, callback);
-    }
-
     /**
      * Retrieves list of specified messages.
      *

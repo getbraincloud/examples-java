@@ -227,16 +227,4 @@ public class GamificationServiceTest extends TestFixtureBase
 
         tr.Run();
     }
-
-    @Test
-    public void testResetMilestones() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        _wrapper.getGamificationService().resetMilestones(
-                new String[]{_milestoneId},
-                tr);
-
-        tr.Run();
-    }
 }

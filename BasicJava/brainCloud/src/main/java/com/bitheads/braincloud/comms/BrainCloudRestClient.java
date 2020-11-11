@@ -130,18 +130,16 @@ public class BrainCloudRestClient implements Runnable {
     }
 
     public void initialize(String serverUrl, String appId, String secretKey) {
-        _packetId = 0;
+        resetCommunication();
         _expectedPacketId = NO_PACKET_EXPECTED;
         _serverUrl = serverUrl;
         _appId = appId;
         _secretKey = secretKey;
-        _sessionId = "";
         _retryCount = 0;
         _isInitialized = true;
         _secretMap.put(appId, secretKey);
 
         String suffix = "/dispatcherv2";
-
         if (_serverUrl.endsWith(suffix))
         {
             _serverUrl = _serverUrl.substring(0, _serverUrl.length() - suffix.length());
@@ -151,7 +149,6 @@ public class BrainCloudRestClient implements Runnable {
         {
             _serverUrl = _serverUrl.substring(0, _serverUrl.length() - 1);
         }
-
         _uploadUrl = _serverUrl + "/uploader";
         _serverUrl = _serverUrl + "/dispatcherv2";
 
@@ -163,9 +160,9 @@ public class BrainCloudRestClient implements Runnable {
 
     public void initializeWithApps(String serverUrl, String appId, Map<String, String> secretMap) {
 
-        //clear the map
-        _secretMap.clear();
-        //update the map
+        _secretMap = null; //clean up _secretMaps data
+
+        //update the map with new map passed in
         _secretMap = secretMap;
 
         initialize(serverUrl, appId, secretMap.get(appId));
@@ -323,7 +320,9 @@ public class BrainCloudRestClient implements Runnable {
             _eventResponses.clear();
             _rewardResponses.clear();
             _isAuthenticated = false;
+            _isInitialized = false;
             _sessionId = "";
+            _packetId = 0;
             _blockingQueue = false;
             _networkErrorCallbackReadyToBeSent = false;
 
@@ -430,15 +429,7 @@ public class BrainCloudRestClient implements Runnable {
             _cacheMessagesOnNetworkError = in_enabled;
         }
     }
-
-    /**
-     * @deprecated Use getAppId instead - removal after September 1 2017
-     */
-    @Deprecated
-    public String getGameId() {
-        return _appId;
-    }
-
+    
     public String getAppId() {
         return _appId;
     }

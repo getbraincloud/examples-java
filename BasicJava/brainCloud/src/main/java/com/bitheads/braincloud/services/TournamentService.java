@@ -227,16 +227,7 @@ public class TournamentService {
     }
 
     /**
-     * Post the users score to the leaderboard
-     *
-     * Service Name - tournament
-     * Service Operation - POST_TOURNAMENT_SCORE
-     *
-     * @param leaderboardId The leaderboard for the tournament
-     * @param score The score to post
-     * @param jsonData Optional data attached to the leaderboard entry
-     * @param roundStartedTime Time the user started the match resulting in the score being posted in UTC.
-     * @param callback The method to be invoked when the server response is received
+     * @deprecated Use postTournamentScoreUTC instead - Removal September 1, 2021
      */
     public void postTournamentScore(String leaderboardId, long score, String jsonData, Date roundStartedTime, IServerCallback callback) {
 
@@ -263,18 +254,37 @@ public class TournamentService {
      * Post the users score to the leaderboard
      *
      * Service Name - tournament
-     * Service Operation - POST_TOURNAMENT_SCORE_WITH_RESULTS
+     * Service Operation - POST_TOURNAMENT_SCORE
      *
      * @param leaderboardId The leaderboard for the tournament
      * @param score The score to post
      * @param jsonData Optional data attached to the leaderboard entry
-     * @param roundStartedTime Time the user started the match resulting in the score being posted in UTC.
-     * @param sort Sort key Sort order of page.
-     * @param beforeCount The count of number of players before the current player to include.
-     * @param afterCount The count of number of players after the current player to include.
-     * @param initialScore The initial score for players first joining a tournament
-     *						  Usually 0, unless leaderboard is LOW_VALUE
+     * @param roundStartedTimeUTC Time the user started the match resulting in the score being posted in UTC mmilliseconds time.
      * @param callback The method to be invoked when the server response is received
+     */
+    public void postTournamentScoreUTC(String leaderboardId, long score, String jsonData, long roundStartedTimeUTC, IServerCallback callback) {
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.score.name(), score);
+
+            if (StringUtil.IsOptionalParameterValid(jsonData)) {
+                JSONObject jsonObj = new JSONObject(jsonData);
+                data.put(Parameter.data.name(), jsonObj);
+            }
+
+            data.put(Parameter.roundStartedEpoch.name(), roundStartedTimeUTC);
+
+            ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.POST_TOURNAMENT_SCORE, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * @deprecated Use postTournamentScoreWithResultsUTC instead - Removal September 1, 2021
      */
     public void postTournamentScoreWithResults(
             String leaderboardId,
@@ -301,6 +311,56 @@ public class TournamentService {
             }
 
             data.put(Parameter.roundStartedEpoch.name(), roundStartedTime.getTime());
+
+            ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.POST_TOURNAMENT_SCORE_WITH_RESULTS, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Post the users score to the leaderboard
+     *
+     * Service Name - tournament
+     * Service Operation - POST_TOURNAMENT_SCORE_WITH_RESULTS
+     *
+     * @param leaderboardId The leaderboard for the tournament
+     * @param score The score to post
+     * @param jsonData Optional data attached to the leaderboard entry
+     * @param roundStartedTimeUTC Time the user started the match resulting in the score being posted in UTC mmilliseconds time.
+     * @param sort Sort key Sort order of page.
+     * @param beforeCount The count of number of players before the current player to include.
+     * @param afterCount The count of number of players after the current player to include.
+     * @param initialScore The initial score for players first joining a tournament
+     *						  Usually 0, unless leaderboard is LOW_VALUE
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void postTournamentScoreWithResultsUTC(
+            String leaderboardId,
+            long score,
+            String jsonData,
+            long roundStartedTimeUTC,
+            SocialLeaderboardService.SortOrder sort,
+            int beforeCount,
+            int afterCount,
+            long initialScore,
+            IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.score.name(), score);
+            data.put(Parameter.sort.name(), sort.name());
+            data.put(Parameter.beforeCount.name(), beforeCount);
+            data.put(Parameter.afterCount.name(), afterCount);
+            data.put(Parameter.initialScore.name(), initialScore);
+
+            if (StringUtil.IsOptionalParameterValid(jsonData)) {
+                JSONObject jsonObj = new JSONObject(jsonData);
+                data.put(Parameter.data.name(), jsonObj);
+            }
+
+            data.put(Parameter.roundStartedEpoch.name(), roundStartedTimeUTC);
 
             ServerCall sc = new ServerCall(ServiceName.tournament, ServiceOperation.POST_TOURNAMENT_SCORE_WITH_RESULTS, data, callback);
             _client.sendRequest(sc);

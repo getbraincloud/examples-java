@@ -58,6 +58,19 @@ public class CustomEntityServiceTest extends TestFixtureBase {
     }
 
     @Test
+    public void testGetRandomEntitiesMatching() throws Exception {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getCustomEntityService().getRandomEntitiesMatching(
+                _defaultEntityType,
+                "{\"data.position\": \"defense\"}",
+                100,
+                tr);
+
+        tr.Run();
+    }
+
+    @Test
     public void testGetEntityPage() throws Exception {
         TestResult tr = new TestResult(_wrapper);
         _wrapper.getCustomEntityService().getEntityPage(
