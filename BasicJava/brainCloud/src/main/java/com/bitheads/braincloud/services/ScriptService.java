@@ -58,15 +58,7 @@ public class ScriptService {
     }
 
     /**
-     * Allows cloud script executions to be scheduled
-     *
-     * Service Name - Script
-     * Service Operation - ScheduleCloudScript
-     *
-     * @param scriptName The name of the script to be run
-     * @param jsonScriptData JSON bundle to pass to script
-     * @param startTimeUTC The start date as a Date object
-     * See The API documentation site for more details on cloud code
+     * @deprecated Use scheduleRunScriptMillisUTC instead - Removal September 1, 2021
      */
     public void scheduleRunScriptUTC(String scriptName, String jsonScriptData, Date startTimeUTC, IServerCallback callback) {
 

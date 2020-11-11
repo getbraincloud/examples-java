@@ -34,18 +34,6 @@ public class PlayerStateService {
     }
 
     /**
-     * @deprecated Use deleteUser() instead - Removal after September 1 2017
-     */
-    public void deletePlayer(IServerCallback callback) {
-
-        JSONObject message = new JSONObject();
-
-        ServerCall serverCall = new ServerCall(ServiceName.playerState,
-                ServiceOperation.FULL_PLAYER_RESET, message, callback);
-        _client.sendRequest(serverCall);
-    }
-
-    /**
      * Completely deletes the user record and all data fully owned by the
      * user. After calling this method, the user will need to
      * re-authenticate and create a new profile. This is mostly used for
@@ -82,18 +70,6 @@ public class PlayerStateService {
         ServerCall sc = new ServerCall(ServiceName.playerState,
                 ServiceOperation.LOGOUT, null, callback);
         _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use readUserState() instead - Removal after September 1 2017
-     */
-    public void readPlayerState(IServerCallback callback) {
-
-        JSONObject message = new JSONObject();
-
-        ServerCall serverCall = new ServerCall(ServiceName.playerState,
-                ServiceOperation.READ, message, callback);
-        _client.sendRequest(serverCall);
     }
 
     /**
@@ -137,15 +113,6 @@ public class PlayerStateService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * @deprecated Use resetUser() instead - Removal after September 1 2017
-     */
-    public void resetPlayer(IServerCallback callback) {
-        ServerCall sc = new ServerCall(ServiceName.playerState,
-                ServiceOperation.GAME_DATA_RESET, null, callback);
-        _client.sendRequest(sc);
     }
 
     /**
@@ -228,19 +195,25 @@ public class PlayerStateService {
     }
 
     /**
-     * @deprecated Use updateName() instead - Removal after September 1 2017
+     * Sets the user's visible name
+     *
+     * @param name The name to be picked
+     * @param callback The callback handler
+     *
+     * @deprecated Use updateUserName instead - removal September 1, 2021
      */
-    public void updatePlayerName(String name,
-                                 IServerCallback callback) {
-        updateName(name, callback);
-    }
-
-    /**
-     * @deprecated Use updateName() instead - Removal after September 1 2017
-     */
-    public void updateUserName(String name,
+    public void updateName(String name,
                                IServerCallback callback) {
-        updateName(name, callback);
+        JSONObject data = new JSONObject();
+        try {
+            data.put(Parameter.playerName.name(), name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ServerCall sc = new ServerCall(ServiceName.playerState,
+                ServiceOperation.UPDATE_NAME, data, callback);
+        _client.sendRequest(sc);
     }
 
     /**
@@ -249,7 +222,7 @@ public class PlayerStateService {
      * @param name The name to be picked
      * @param callback The callback handler
      */
-    public void updateName(String name,
+    public void updateUserName(String name,
                                IServerCallback callback) {
         JSONObject data = new JSONObject();
         try {
@@ -292,24 +265,6 @@ public class PlayerStateService {
 
         ServerCall sc = new ServerCall(ServiceName.playerState, ServiceOperation.UPDATE_SUMMARY, data, callback);
         _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use updateUserPictureUrl() instead - Removal after September 1 2017
-     */
-    public void updatePlayerPictureUrl(
-            String pictureUrl,
-            IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put(Parameter.playerPictureUrl.name(), pictureUrl);
-
-            ServerCall serverCall = new ServerCall(ServiceName.playerState,
-                    ServiceOperation.UPDATE_PICTURE_URL, data, callback);
-            _client.sendRequest(serverCall);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     /**

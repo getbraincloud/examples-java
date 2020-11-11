@@ -51,25 +51,29 @@ public class RelayComms {
         System
     }
 
+    private final boolean VERBOSE_LOG = true;
+
     private final int CONTROL_BYTES_SIZE    = 1;
     private final int CHANNEL_COUNT         = 4;
-    private final int MAX_PACKET_ID_HISTORY = 128;
+    private final int MAX_PACKET_ID_HISTORY = 60 * 10; // So we last 10 seconds at 60 fps
 
-    private final int MAX_PLAYERS       = 128;
+    private final int MAX_PLAYERS       = 40;
     private final int INVALID_NET_ID    = MAX_PLAYERS;
 
     // Messages sent from Client to Relay-Server
-    private final int CL2RS_CONNECTION          = 129;
-    private final int CL2RS_DISCONNECT          = 130;
-    private final int CL2RS_RELAY               = 131;
-    private final int CL2RS_PING                = 133;
-    private final int CL2RS_RSMG_ACKNOWLEDGE    = 134;
-    private final int CL2RS_ACKNOWLEDGE         = 135;
+    private final int CL2RS_CONNECT     = 0;
+    private final int CL2RS_DISCONNECT  = 1;
+    private final int CL2RS_RELAY       = 2;
+    private final int CL2RS_ACK         = 3;
+    private final int CL2RS_PING        = 4;
+    private final int CL2RS_RSMG_ACK    = 5;
 
     // Messages sent from Relay-Server to Client
-    private final int RS2CL_RSMG         = 129;
-    private final int RS2CL_PONG         = CL2RS_PING;
-    private final int RS2CL_ACKNOWLEDGE  = CL2RS_ACKNOWLEDGE;
+    private final int RS2CL_RSMG        = 0;
+    private final int RS2CL_DISCONNECT  = 1;
+    private final int RS2CL_RELAY       = 2;
+    private final int RS2CL_ACK         = 3;
+    private final int RS2CL_PONG        = 4;
 
     private final int RELIABLE_BIT = 0x8000;
     private final int ORDERED_BIT  = 0x4000;
@@ -79,6 +83,9 @@ public class RelayComms {
     private final int MAX_PACKET_ID = 0xFFF;
     private final int PACKET_LOWER_THRESHOLD = MAX_PACKET_ID * 25 / 100;
     private final int PACKET_HIGHER_THRESHOLD = MAX_PACKET_ID * 75 / 100;
+        
+    private final int MAX_PACKET_SIZE = 1024;
+    private final int TIMEOUT_MS = 10000;
 
     private class RelayCallback {
         public RelayCallbackType _type;
@@ -178,14 +185,14 @@ public class RelayComms {
     class Reliable {
         public ByteBuffer buffer;
         public int packetId;
-        public int channel;
+        public long ackId;
         public long sendTimeMs;
         public long resendTimeMs;
         public long waitTimeMs;
 
-        public Reliable(ByteBuffer _buffer, int _channel, int _packetId) {
+        public Reliable(ByteBuffer _buffer, long _ackId, int _packetId, int channel) {
             buffer = _buffer;
-            channel = _channel;
+            ackId = _ackId;
             packetId = _packetId;
             sendTimeMs = System.currentTimeMillis();
             resendTimeMs = sendTimeMs;
@@ -195,6 +202,7 @@ public class RelayComms {
 
     private ArrayList<Reliable> _reliables = new ArrayList<Reliable>();
     private ArrayList<UdpRsmgPacket> _udpRsmgPackets = new ArrayList<UdpRsmgPacket>();
+    private ArrayList<Integer> _rsmgHistory = new ArrayList<Integer>();
     private int _nextExpectedUdpRsmgPacketId = 0;
 
     private BrainCloudClient _client;
@@ -212,15 +220,15 @@ public class RelayComms {
     private HashMap<Integer, String> _netIdToProfileId = new HashMap<Integer, String>();
     private HashMap<String, Integer> _profileIdToNetId = new HashMap<String, Integer>();
 
-    private int _sendPacketId[] = new int[CHANNEL_COUNT * 2]; // *2 here is for reliable vs unreliable
-    private ArrayList<ArrayList<Integer>> _packetIdHistory = new ArrayList<ArrayList<Integer>>();
-    private int _recvPacketId[] = new int[CHANNEL_COUNT * 2];
-    private ArrayList<ArrayList<RelayPacket>> _orderedReliablePackets = new ArrayList<ArrayList<RelayPacket>>();
+    private HashMap<Long, Integer> _sendPacketId = new HashMap<Long, Integer>();
+    private HashMap<Long, Integer> _recvPacketId = new HashMap<Long, Integer>();
+    private HashMap<Long, ArrayList<RelayPacket>> _orderedReliablePackets = new HashMap<Long, ArrayList<RelayPacket>>();
     
     private int _ping = 999;
     private boolean _pingInFlight = false;
     private int _pingIntervalMS = 1000;
     private long _lastPingTime = 0;
+    private long _lastRecvTime = 0;
     
     private RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
     private WSClient _webSocketClient;
@@ -235,14 +243,6 @@ public class RelayComms {
     
     public RelayComms(BrainCloudClient client) {
         _client = client;
-        for (int i = 0; i < CHANNEL_COUNT * 2; ++i) {
-            _sendPacketId[i] = 0;
-            _recvPacketId[i] = -1;
-            _packetIdHistory.add(new ArrayList<Integer>());
-        }
-        for (int i = 0; i < CHANNEL_COUNT; ++i) {
-            _orderedReliablePackets.add(new ArrayList<RelayPacket>());
-        }
     }
 
     public boolean getLoggingEnabled() {
@@ -267,6 +267,12 @@ public class RelayComms {
         _profileIdToNetId.clear();
         _netId = -1;
         _ownerId = null;
+        _sendPacketId.clear();
+        _recvPacketId.clear();
+        _reliables.clear();
+        _orderedReliablePackets.clear();
+        _udpRsmgPackets.clear();
+        _rsmgHistory.clear();
 
         if (options == null) {
             _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Invalid arguments"));
@@ -338,6 +344,7 @@ public class RelayComms {
             }
             case UDP: {
                 try {
+                    _lastRecvTime = System.currentTimeMillis();
                     _udpAddr = InetAddress.getByName(host);
                     _udpSocket = new DatagramSocket();
                     _udpPort = port;
@@ -395,19 +402,16 @@ public class RelayComms {
                 _udpSocket = null;
             }
 
-            for (int i = 0; i < CHANNEL_COUNT * 2; ++i) {
-                _sendPacketId[i] = 0;
-                _recvPacketId[i] = -1;
-                _packetIdHistory.get(i).clear();
-            }
-            for (int i = 0; i < CHANNEL_COUNT; ++i) {
-                _orderedReliablePackets.get(i).clear();
-            }
             _connectInfo = null;
             
             _reliables.clear();
             _udpRsmgPackets.clear();
+            _rsmgHistory.clear();
             _nextExpectedUdpRsmgPacketId = 0;
+            _sendPacketId.clear();
+            _recvPacketId.clear();
+            _reliables.clear();
+            _orderedReliablePackets.clear();
         }
     }
 
@@ -484,7 +488,7 @@ public class RelayComms {
 
     private void onWSConnected() {
         try {
-            send(CL2RS_CONNECTION, buildConnectionRequest());
+            send(CL2RS_CONNECT, buildConnectionRequest());
         } catch(Exception e) {
             e.printStackTrace();
             disconnect();
@@ -497,7 +501,7 @@ public class RelayComms {
     private void onTCPConnected() {
         try {
             startTCPReceivingThread();
-            send(CL2RS_CONNECTION, buildConnectionRequest());
+            send(CL2RS_CONNECT, buildConnectionRequest());
         } catch(Exception e) {
             e.printStackTrace();
             disconnect();
@@ -512,7 +516,7 @@ public class RelayComms {
             startUDPReceivingThread();
             _isConnecting = true;
             _lastConnectTryTime = System.currentTimeMillis();
-            send(CL2RS_CONNECTION, buildConnectionRequest());
+            send(CL2RS_CONNECT, buildConnectionRequest());
         } catch(Exception e) {
             e.printStackTrace();
             disconnect();
@@ -528,6 +532,7 @@ public class RelayComms {
         json.put("lobbyId", _connectInfo._lobbyId);
         json.put("profileId", _client.getAuthenticationService().getProfileId());
         json.put("passcode", _connectInfo._passcode);
+        json.put("version", _client.getBrainCloudVersion());
 
         return json;
     }
@@ -537,9 +542,9 @@ public class RelayComms {
     }
 
     private void send(int netId, String text) {
-        if (_loggingEnabled) {
-            System.out.println("RELAY SEND: " + text);
-        }
+        // if (_loggingEnabled && VERBOSE_LOG) {
+        //     System.out.println("RELAY SEND: " + text);
+        // }
 
         byte[] textBytes = text.getBytes(StandardCharsets.US_ASCII);
         int bufferSize = textBytes.length + 3;
@@ -593,46 +598,73 @@ public class RelayComms {
         }
     }
 
-    public void sendRelay(byte[] data, int toNetId, boolean reliable, boolean ordered, int channel) {
+    public void sendRelay(byte[] data, long in_playerMask, boolean reliable, boolean ordered, int channel) {
         if (!isConnected()) return;
 
-        if (!((toNetId >= 0 && toNetId < MAX_PLAYERS) || toNetId == CL2RS_RELAY))
+        if (data.length > MAX_PACKET_SIZE)
         {
             synchronized(_callbackEventQueue) {
-                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Invalid Net Id: " + toNetId));
-            }
-            return;
-        }
-        if (data.length > 1024)
-        {
-            synchronized(_callbackEventQueue) {
-                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Packet too big " + data.length + " > max 1024"));
+                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Packet too big " + data.length + " > max " + MAX_PACKET_SIZE));
             }
             return;
         }
 
-        int bufferSize = data.length + 5;
+        // Allocate buffer
+        int bufferSize = data.length + 11;
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+
+        // Size
+        buffer.putShort((short)bufferSize);
+
+        // Control byte
+        buffer.put((byte)CL2RS_RELAY);
 
         // Relay Header
         int rh = 0;
         if (reliable) rh |= RELIABLE_BIT;
         if (ordered) rh |= ORDERED_BIT;
         rh |= channel << 12;
-        int channelIdx = channel + (reliable ? 0 : CHANNEL_COUNT);
-        int packetId = _sendPacketId[channelIdx];
+
+        // Store inverted player mask
+        long playerMask = 0;
+        for (long i = 0; i < (long)MAX_PLAYERS; ++i) {
+            playerMask |= ((in_playerMask >> ((long)MAX_PLAYERS - i - 1L)) & 1L) << i;
+        }
+        playerMask = ((playerMask << 8L) & 0x0000FFFFFFFFFF00L);
+
+        // AckId without packet id
+        long ackIdWithoutPacketId = ((((long)rh << 48L) & 0xF000000000000000L) | playerMask);
+
+        // Packet Id
+        int packetId = 0;
+        Integer it = _sendPacketId.get(ackIdWithoutPacketId);
+        if (it != null)
+        {
+            packetId = it;
+        }
+        int nextPacketId = ((packetId + 1) & MAX_PACKET_ID);
+        _sendPacketId.put(ackIdWithoutPacketId, nextPacketId);
+
+        // Add packet id to the header, then encode
         rh |= packetId;
-        _sendPacketId[channelIdx] = (packetId + 1) & 0xFFF;
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-        buffer.order(ByteOrder.BIG_ENDIAN);
-        buffer.putShort((short)bufferSize);
-        buffer.put((byte)toNetId);
+
         buffer.putShort((short)rh);
+        buffer.putShort((short)((playerMask >> 32L) & 0xFFFFL));
+        buffer.putShort((short)((playerMask >> 16L) & 0xFFFFL));
+        buffer.putShort((short)((playerMask)        & 0xFFFFL));
+
+        // Rest of data
         buffer.put(data, 0, data.length);
+
+        // Send
         send(buffer);
 
+        // UDP, store reliable in send map
         if (reliable && _connectionType == RelayConnectionType.UDP) {
+            long ackId = (((long)rh << 48L) & 0xFFFF000000000000L) | playerMask; // We have the packet id now in the rh
             synchronized(_lock) {
-                _reliables.add(new Reliable(buffer, channel, packetId));
+                _reliables.add(new Reliable(buffer, ackId, packetId, channel));
             }
         }
     }
@@ -711,6 +743,7 @@ public class RelayComms {
                         buffer.put(packet.getData(), 0, packet.getLength());
                         buffer.rewind();
                         
+                        _lastRecvTime = System.currentTimeMillis();
                         onRecv(buffer);
                     }
                 } catch (Exception e) {
@@ -729,7 +762,7 @@ public class RelayComms {
 
     private void sendPing() {
         if (_pingInFlight) return;
-        if (_loggingEnabled) {
+        if (_loggingEnabled && VERBOSE_LOG) {
             System.out.println("RELAY SEND: PING");
         }
 
@@ -758,7 +791,7 @@ public class RelayComms {
         buffer.order(ByteOrder.BIG_ENDIAN);
 
         int size = buffer.getShort() & 0xFFFF;
-        int netId = buffer.get() & 0xFF;
+        int controlByte = buffer.get() & 0xFF;
 
         if (len < size) {
             disconnect();
@@ -768,17 +801,31 @@ public class RelayComms {
             return;
         }
 
-        if (netId == RS2CL_RSMG) {
-            onRSMG(buffer, size - 3);
-        }
-        else if (netId == RS2CL_PONG) {
-            onPONG();
-        }
-        else if (netId == RS2CL_ACKNOWLEDGE) {
+        if (controlByte == RS2CL_RSMG) {
             if (size < 5) {
                 disconnect();
                 synchronized(_callbackEventQueue) {
-                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: ack packet cannot be smaller than 5 bytes"));
+                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: RSMG cannot be smaller than 5 bytes"));
+                }
+                return;
+            }
+            onRSMG(buffer, size - 3);
+        }
+        else if (controlByte == RS2CL_DISCONNECT) {
+            disconnect();
+            synchronized(_callbackEventQueue) {
+                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay: Disconnected by server"));
+            }
+            return;
+        }
+        else if (controlByte == RS2CL_PONG) {
+            onPONG();
+        }
+        else if (controlByte == RS2CL_ACK) {
+            if (size < 11) {
+                disconnect();
+                synchronized(_callbackEventQueue) {
+                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: ack packet cannot be smaller than 11 bytes"));
                 }
                 return;
             }
@@ -786,41 +833,49 @@ public class RelayComms {
                 onACK(buffer, size - 3);
             }
         }
-        else if (netId < MAX_PLAYERS) {
-            // if (_loggingEnabled) { // This is overkill
-            //     System.out.println("RELAY MSG From: " + netId);
-            // }
-            if (size < 5) {
+        else if (controlByte == RS2CL_RELAY) {
+            if (size < 11) {
                 disconnect();
                 synchronized(_callbackEventQueue) {
-                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: relay packet cannot be smaller than 5 bytes"));
+                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: relay packet cannot be smaller than 11 bytes"));
                 }
                 return;
             }
-            onRelay(buffer, netId, size - 3);
+            onRelay(buffer, size - 3);
         }
         else {
             disconnect();
             synchronized(_callbackEventQueue) {
-                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: Unknown netId: " + netId));
+                _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Recv Error: Unknown control byte: " + controlByte));
             }
             return;
         }
     }
 
     private void onACK(ByteBuffer buffer, int size) {
-        int rh = buffer.getShort() & 0xFFFF;
-        int channel = (rh >> 12) & 0x3;
-        int packetId = rh & 0xFFF;
+        short rh          = buffer.getShort();
+        short playerMask0 = buffer.getShort();
+        short playerMask1 = buffer.getShort();
+        short playerMask2 = buffer.getShort();
+        long ackId = (((long)rh << 48L)          & 0xFFFF000000000000L) | 
+                     (((long)playerMask0 << 32L) & 0x0000FFFF00000000L) |
+                     (((long)playerMask1 << 16L) & 0x00000000FFFF0000L) |
+                     (((long)playerMask2)        & 0x000000000000FFFFL);
+
+        // if (_loggingEnabled && VERBOSE_LOG) {
+        //     int packetId = (int)(rh & 0xFFFL);
+        //     System.out.println("ON ACK: " + packetId + ", " + ackId + ", " + rh + ", " + playerMask0 + ", " + playerMask1 + ", " + playerMask2);
+        // }
 
         synchronized(_lock) {
             for (int i = 0; i < _reliables.size(); ++i) {
                 Reliable reliable = _reliables.get(i);
-                if (reliable.channel == channel && reliable.packetId == packetId) {
+                if (reliable.ackId == ackId) {
                     _reliables.remove(i);
-                    if (_loggingEnabled) {
-                        System.out.println("RELAY ACK: " + packetId + ", " + channel);
-                    }
+                    // if (_loggingEnabled && VERBOSE_LOG) {
+                    //     int packetId = (int)(rh & 0xFFFL);
+                    //     System.out.println("RELAY ACKED: " + packetId + ", " + ackId);
+                    // }
                     break;
                 }
             }
@@ -831,74 +886,116 @@ public class RelayComms {
         if (a > PACKET_HIGHER_THRESHOLD && b <= PACKET_LOWER_THRESHOLD) {
             return true;
         }
+        if (b > PACKET_HIGHER_THRESHOLD && a <= PACKET_LOWER_THRESHOLD)
+        {
+            return false;
+        }
         return a <= b;
     }
     
-    private void onRelay(ByteBuffer buffer, int netId, int size) {
-        int rh = buffer.getShort() & 0xFFFF;
+    private void onRelay(ByteBuffer buffer, int size) {
+        short rh          = buffer.getShort();
+        short playerMask0 = buffer.getShort();
+        short playerMask1 = buffer.getShort();
+        short playerMask2 = buffer.getShort();
+        long ackId = (((long)rh << 48L)          & 0xFFFF000000000000L) | 
+                     (((long)playerMask0 << 32L) & 0x0000FFFF00000000L) |
+                     (((long)playerMask1 << 16L) & 0x00000000FFFF0000L) |
+                     (((long)playerMask2)        & 0x000000000000FFFFL);
+
+        long ackIdWithoutPacketId = (ackId & 0xF000FFFFFFFFFFFFL);
         boolean reliable = (rh & RELIABLE_BIT) == 0 ? false : true;
         boolean ordered = (rh & ORDERED_BIT) == 0  ? false : true;
-        int channel = (rh >> 12) & 0x3;
-        int packetId = rh & 0xFFF;
-
-        int channelIdx = channel + (reliable ? 0 : CHANNEL_COUNT);
+        int channel = (int)((rh >> 12L) & 0x3L);
+        int packetId = (int)(rh & 0x0FFFL);
+        int netId = (int)(playerMask2 & 0x00FFL);
 
         // Create the packet data
-        byte[] eventBuffer = new byte[size - 2];
-        buffer.position(5);
-        buffer.get(eventBuffer, 0, size - 2);
+        byte[] eventBuffer = new byte[size - 8];
+        buffer.position(11);
+        buffer.get(eventBuffer, 0, size - 8);
 
         // Ack reliables, always. An ack might have been previously dropped.
         if (_connectionType == RelayConnectionType.UDP) {
             if (reliable) {
                 // Ack
-                ByteBuffer ack = ByteBuffer.allocate(6);
+                ByteBuffer ack = ByteBuffer.allocate(11);
                 ack.order(ByteOrder.BIG_ENDIAN);
-                ack.putShort((short)6);
-                ack.put((byte)CL2RS_ACKNOWLEDGE);
+                ack.putShort((short)11);
+                ack.put((byte)CL2RS_ACK);
                 ack.putShort((short)rh);
-                ack.put((byte)netId);
+                ack.putShort((short)playerMask0);
+                ack.putShort((short)playerMask1);
+                ack.putShort((short)playerMask2);
                 send(ack);
             }
 
             synchronized(_lock) {
-                // Is it duplicate?
-                ArrayList<Integer> packetHistory = _packetIdHistory.get(channelIdx);
-                for (int i = 0; i < packetHistory.size(); ++i) {
-                    if (packetHistory.get(i) == packetId) {
-                        return; // Just ignore it
-                    }
-                }
-
-                // Record in history
-                packetHistory.add(packetId);
-                while (packetHistory.size() > MAX_PACKET_ID_HISTORY) {
-                    packetHistory.remove(0);
-                }
-
                 if (ordered) {
+                    int prevPacketId = MAX_PACKET_ID;
+                    Integer it = _recvPacketId.get(ackIdWithoutPacketId);
+                    if (it != null) {
+                        prevPacketId = it;
+                    }
                     if (reliable) {
-                        ArrayList<RelayPacket> orderedReliablePackets = _orderedReliablePackets.get(channel);
-                        if (packetId != _recvPacketId[channelIdx] + 1) {
+                        // We already received that packet if it's lower than the last confirmed
+                        // packetId. This must be a duplicate
+                        if (packetLE(packetId, prevPacketId)) {
+                            if (_loggingEnabled && VERBOSE_LOG) {
+                                System.out.println("Duplicated packet from: " + netId + ", got: " + packetId);
+                            }
+                            return;
+                        }
+
+                        if (!_orderedReliablePackets.containsKey(ackIdWithoutPacketId)) {
+                            _orderedReliablePackets.put(ackIdWithoutPacketId, new ArrayList<RelayPacket>());
+                        }
+
+                        // Check if it's out of order, then save it for later
+                        ArrayList<RelayPacket> orderedReliablePackets = _orderedReliablePackets.get(ackIdWithoutPacketId);
+                        if (packetId != ((prevPacketId + 1) & MAX_PACKET_ID)) {
+                            if (orderedReliablePackets.size() > MAX_PACKET_ID_HISTORY) {
+                                disconnect();
+                                synchronized(_callbackEventQueue) {
+                                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay disconnected, too many queued out of order packets."));
+                                }
+                                return;
+                            }
+
                             int insertIdx = 0;
                             for (; insertIdx < orderedReliablePackets.size(); ++insertIdx) {
                                 RelayPacket packet = orderedReliablePackets.get(insertIdx);
-                                if (packet.packetId <= packetId) break;
+                                if (packet.packetId == packetId) {
+                                    if (_loggingEnabled && VERBOSE_LOG) {
+                                        System.out.println("Duplicated packet: " + packetId);
+                                    }
+                                    return;
+                                }
+                                if (packetLE(packetId, packet.packetId)) break;
+                            }
+                            if (_loggingEnabled && VERBOSE_LOG) {
+                                System.out.println("Queuing out of order packet: " + packetId);
                             }
                             orderedReliablePackets.add(insertIdx, new RelayPacket(packetId, netId, eventBuffer));
                             return;
                         }
-                        _recvPacketId[channelIdx] = packetId;
+
+                        // If it's in order, queue event
+                        _recvPacketId.put(ackIdWithoutPacketId, packetId);
                         synchronized(_callbackEventQueue) {
                             _callbackEventQueue.add(new RelayCallback(RelayCallbackType.Relay, netId, eventBuffer));
                         }
+
+                        // Empty previously queued packets if they follow this one
                         while (orderedReliablePackets.size() > 0) {
                             RelayPacket packet = orderedReliablePackets.get(0);
-                            if (packet.packetId == _recvPacketId[channelIdx] + 1) {
+                            if (packet.packetId == ((packetId + 1) & MAX_PACKET_ID)) {
                                 synchronized(_callbackEventQueue) {
                                     _callbackEventQueue.add(new RelayCallback(RelayCallbackType.Relay, packet.netId, packet.data));
                                 }
                                 orderedReliablePackets.remove(0);
+                                packetId = packet.packetId;
+                                _recvPacketId.put(ackIdWithoutPacketId, packetId);
                                 continue;
                             }
                             break; // Out of order
@@ -907,10 +1004,13 @@ public class RelayComms {
                     }
                     else {
                         // Just drop out of order packets for unreliables
-                        if (packetLE(packetId, _recvPacketId[channelIdx])) {
+                        if (packetLE(packetId, prevPacketId)) {
+                            if (_loggingEnabled && VERBOSE_LOG) {
+                                System.out.println("RELAY Packet our of order: " + packetId + ", expected: " + ((prevPacketId + 1) & MAX_PACKET_ID));
+                            }
                             return;
                         }
-                        _recvPacketId[channelIdx] = packetId;
+                        _recvPacketId.put(ackIdWithoutPacketId, packetId);
                     }
                 }
             }
@@ -926,20 +1026,20 @@ public class RelayComms {
         if (_pingInFlight) {
             _pingInFlight = false;
             _ping = (int)Math.min((long)999, System.currentTimeMillis() - _lastPingTime);
-            if (_loggingEnabled) {
+            if (_loggingEnabled && VERBOSE_LOG) {
                 System.out.println("RELAY PONG: " + _ping);
             }
         }
     }
 
     private void ackRSMG(int packetId) {
-        if (_loggingEnabled) {
+        if (_loggingEnabled && VERBOSE_LOG) {
             System.out.println("RELAY RSMG ACK: " + packetId);
         }
         ByteBuffer buffer = ByteBuffer.allocate(5);
         buffer.order(ByteOrder.BIG_ENDIAN);
         buffer.putShort((short)5);
-        buffer.put((byte)CL2RS_RSMG_ACKNOWLEDGE);
+        buffer.put((byte)CL2RS_RSMG_ACK);
         buffer.putShort((short)packetId);
         send(buffer);
     }
@@ -949,7 +1049,23 @@ public class RelayComms {
             int rsmgPacketId = buffer.getShort() & 0xFFFF;
 
             if (_connectionType == RelayConnectionType.UDP) {
+                // Always ack
                 ackRSMG(rsmgPacketId);
+
+                // Is it duplicate?
+                for (int i = 0; i < _rsmgHistory.size(); ++i) {
+                    if (_rsmgHistory.get(i) == rsmgPacketId) {
+                        return; // Just ignore it
+                    }
+                }
+
+                // Record in history
+                _rsmgHistory.add(rsmgPacketId);
+
+                // Crop to max history
+                while (_rsmgHistory.size() > MAX_PACKET_ID_HISTORY) {
+                    _rsmgHistory.remove(0);
+                }
             }
 
             size -= 2;
@@ -1082,7 +1198,7 @@ public class RelayComms {
             if (timeMs - _lastConnectTryTime > CONNECT_RESEND_INTERVAL_MS) {
                 _lastConnectTryTime = timeMs;
                 try {
-                    send(CL2RS_CONNECTION, buildConnectionRequest());
+                    send(CL2RS_CONNECT, buildConnectionRequest());
                 } catch(Exception e) {
                     e.printStackTrace();
                     disconnect();
@@ -1095,14 +1211,14 @@ public class RelayComms {
         }
 
         // Resend reliable
-        if (_connectionType == RelayConnectionType.UDP) {
-            long nowMs = System.currentTimeMillis();
+        long nowMs = System.currentTimeMillis();
+        if (_connectionType == RelayConnectionType.UDP && _isConnected) {
             boolean resendTimedOut = false;
             synchronized(_lock) {
                 for (int i = 0; i < _reliables.size(); ++i) {
                     Reliable reliable = _reliables.get(i);
                     long elapsedMs = nowMs - reliable.resendTimeMs;
-                    if (nowMs >= reliable.waitTimeMs) {
+                    if (elapsedMs >= reliable.waitTimeMs) {
                         // Did we timeout?
                         if (nowMs - reliable.sendTimeMs >= 10000) {
                             resendTimedOut = true;
@@ -1114,20 +1230,31 @@ public class RelayComms {
                         reliable.resendTimeMs = nowMs;
                         send(reliable.buffer);
 
-                        if (_loggingEnabled) {
-                            System.out.println("RELAY RESEND: " + reliable.packetId + ", " + reliable.channel);
+                        if (_loggingEnabled && VERBOSE_LOG) {
+                            System.out.println("RELAY RESEND: " + reliable.packetId + ", " + reliable.ackId + ", Next resend in: " + reliable.waitTimeMs + "ms");
                         }
                     }
                 }
             }
             if (resendTimedOut) {
-                if (_loggingEnabled) {
-                    System.out.println("RELAY UDP: Timed out. Too many packet drops");
-                }
                 disconnect();
                 synchronized(_callbackEventQueue) {
                     _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Timed out. Too many packet drops."));
                 }
+                return;
+            }
+        }
+
+        // Check if we timeout (no response for 10 seconds).
+        // For UDP only since we don't have a connection.
+        if (_connectionType == RelayConnectionType.UDP &&
+            (_isConnecting || _isConnected)) {
+            if (nowMs - _lastRecvTime > TIMEOUT_MS) {
+                disconnect();
+                synchronized(_callbackEventQueue) {
+                    _callbackEventQueue.add(new RelayCallback(RelayCallbackType.ConnectFailure, "Relay Socket Timeout."));
+                }
+                return;
             }
         }
 

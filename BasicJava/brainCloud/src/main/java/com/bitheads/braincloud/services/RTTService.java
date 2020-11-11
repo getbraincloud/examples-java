@@ -7,6 +7,7 @@ import com.bitheads.braincloud.client.ServiceOperation;
 import com.bitheads.braincloud.comms.ServerCall;
 import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTConnectCallback;
+import com.bitheads.braincloud.comms.RTTComms;
 
 public class RTTService {
 
@@ -46,6 +47,14 @@ public class RTTService {
     public boolean getRTTEnabled()
     {
         return _client.getRTTComms().isRTTEnabled();
+    }
+
+    /**
+     * Returns rtt connection status
+     */
+    public RTTComms.RttConnectionStatus getConnectionStatus()
+    {
+        return _client.getRTTComms().getConnectionStatus();
     }
     
     public String getRTTConnectionId() {

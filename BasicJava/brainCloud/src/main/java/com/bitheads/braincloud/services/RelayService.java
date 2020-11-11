@@ -16,7 +16,7 @@ public class RelayService {
 
     private BrainCloudClient _client;
 
-    public static final int TO_ALL_PLAYERS = 131;
+    public static final long TO_ALL_PLAYERS = 0x000000FFFFFFFFFFL;
     public static final int CHANNEL_HIGH_PRIORITY_1 = 0;
     public static final int CHANNEL_HIGH_PRIORITY_2 = 1;
     public static final int CHANNEL_NORMAL_PRIORITY = 2;
@@ -173,7 +173,43 @@ public class RelayService {
      * @param ordered Receive this ordered or not.
      * @param channel One of: (CHANNEL_HIGH_PRIORITY_1, CHANNEL_HIGH_PRIORITY_2, CHANNEL_NORMAL_PRIORITY, CHANNEL_LOW_PRIORITY)
      */
-    public void send(byte[] data, int toNetId, boolean reliable, boolean ordered, int channel) {
-        _client.getRelayComms().sendRelay(data, toNetId, reliable, ordered, channel);
+    public void send(byte[] data, long toNetId, boolean reliable, boolean ordered, int channel) {
+        if (toNetId == TO_ALL_PLAYERS) {
+            sendToAll(data, reliable, ordered, channel);
+        } else {
+            long playerMask = (long)1 << toNetId;
+            _client.getRelayComms().sendRelay(data, playerMask, reliable, ordered, channel);
+        }
+    }
+
+    /**
+     * Send a packet to any players by using a mask
+     * 
+     * @param data Byte array for the data to send
+     * @param playerMask Mask of the players to send to. 0001 = netId 0, 0010 = netId 1, etc. If you pass ALL_PLAYER_MASK you will be included and you will get an echo for your message. Use sendToAll instead, you will be filtered out. You can manually filter out by : ALL_PLAYER_MASK &= ~(1 << myNetId)
+     * @param reliable Send this reliable or not.
+     * @param ordered Receive this ordered or not.
+     * @param channel One of: (CHANNEL_HIGH_PRIORITY_1, CHANNEL_HIGH_PRIORITY_2, CHANNEL_NORMAL_PRIORITY, CHANNEL_LOW_PRIORITY)
+     */
+    public void sendToPlayers(byte[] data, long playerMask, boolean reliable, boolean ordered, int channel) {
+        _client.getRelayComms().sendRelay(data, playerMask, reliable, ordered, channel);
+    }
+
+    /**
+     * Send a packet to all except yourself
+     * 
+     * @param data Byte array for the data to send
+     * @param reliable Send this reliable or not.
+     * @param ordered Receive this ordered or not.
+     * @param channel One of: (CHANNEL_HIGH_PRIORITY_1, CHANNEL_HIGH_PRIORITY_2, CHANNEL_NORMAL_PRIORITY, CHANNEL_LOW_PRIORITY)
+     */
+    public void sendToAll(byte[] data, boolean reliable, boolean ordered, int channel) {
+        String myProfileId = _client.getAuthenticationService().getProfileId();
+        int myNetId = _client.getRelayComms().getNetIdForProfileId(myProfileId);
+
+        long myBit = 1L << (long)myNetId;
+        long myInvertedBits = ~myBit;
+        long playerMask = TO_ALL_PLAYERS & myInvertedBits;
+        _client.getRelayComms().sendRelay(data, playerMask, reliable, ordered, channel);
     }
 }

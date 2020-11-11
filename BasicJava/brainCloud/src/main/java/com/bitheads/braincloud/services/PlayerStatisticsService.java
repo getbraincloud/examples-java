@@ -25,15 +25,6 @@ public class PlayerStatisticsService {
     }
 
     /**
-     * @deprecated Use readAllUserStats() instead - Removal after September 1 2017
-     */
-    public void readAllPlayerStats(IServerCallback callback) {
-        ServerCall sc = new ServerCall(ServiceName.playerStatistics,
-                ServiceOperation.READ, null, callback);
-        _client.sendRequest(sc);
-    }
-
-    /**
      * Read all available user statistics.
      *
      * Service Name - PlayerStatistics
@@ -45,27 +36,6 @@ public class PlayerStatisticsService {
         ServerCall sc = new ServerCall(ServiceName.playerStatistics,
                 ServiceOperation.READ, null, callback);
         _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use readUserStatsSubset() instead - Removal after September 1 2017
-     */
-    public void readPlayerStatsSubset(String[] statistics, IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            JSONArray jsonData = new JSONArray();
-            for (String att : statistics) {
-                jsonData.put(att);
-            }
-            data.put(Parameter.statistics.name(), jsonData);
-
-            ServerCall sc = new ServerCall(ServiceName.playerStatistics,
-                    ServiceOperation.READ_SUBSET, data, callback);
-            _client.sendRequest(sc);
-
-        } catch (JSONException je) {
-            je.printStackTrace();
-        }
     }
 
     /**
@@ -97,21 +67,6 @@ public class PlayerStatisticsService {
     }
 
     /**
-     * @deprecated Use readUserStatsForCategory() instead - Removal after September 1 2017
-     */
-    public void readPlayerStatsForCategory(String category, IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put(Parameter.category.name(), category);
-
-            ServerCall sc = new ServerCall(ServiceName.playerStatistics, ServiceOperation.READ_FOR_CATEGORY, data, callback);
-            _client.sendRequest(sc);
-        } catch (JSONException je) {
-            je.printStackTrace();
-        }
-    }
-
-    /**
      * Method retrieves the user statistics for the given category.
      *
      * Service Name - PlayerStatistics
@@ -133,15 +88,6 @@ public class PlayerStatisticsService {
     }
 
     /**
-     * @deprecated Use resetAllUserStats() instead - Removal after September 1 2017
-     */
-    public void resetAllPlayerStats(IServerCallback callback) {
-        ServerCall sc = new ServerCall(ServiceName.playerStatistics,
-                ServiceOperation.RESET, null, callback);
-        _client.sendRequest(sc);
-    }
-
-    /**
      * Reset all of the statistics for this user back to their initial value.
      *
      * Service Name - PlayerStatistics
@@ -153,31 +99,6 @@ public class PlayerStatisticsService {
         ServerCall sc = new ServerCall(ServiceName.playerStatistics,
                 ServiceOperation.RESET, null, callback);
         _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use incrementUserStats() instead - Removal after September 1 2017
-     */
-    public void incrementPlayerStats(String jsonData, IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            JSONObject jsonDataObj = new JSONObject(jsonData);
-            data.put(Parameter.statistics.name(), jsonDataObj);
-
-            /*
-             * To be implemented for Android platform
-             *
-             * SuccessCallback successCallbacks =
-             * braincloudClient.GetGamificationService
-             * ().CheckForAchievementsToAward; if (success != null) {
-             * successCallbacks += success; }
-             */
-
-            ServerCall sc = new ServerCall(ServiceName.playerStatistics,
-                    ServiceOperation.UPDATE_INCREMENT, data, callback);
-            _client.sendRequest(sc);
-        } catch (JSONException je) {
-        }
     }
 
     /**

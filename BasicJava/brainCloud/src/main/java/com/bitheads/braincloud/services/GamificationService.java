@@ -455,36 +455,4 @@ public class GamificationService {
         } catch (JSONException je) {
         }
     }
-
-    /**
-     * @deprecated as of Nov.1, 2019
-     *
-     * 
-     * Sets the specified milestones' statuses to LOCKED.
-     *
-     * Service Name - Gamification
-     * Service Operation - ResetMilestones
-     *
-     * @param milestoneIds Array of milestones to reset
-     * @param callback Callback.
-     */
-    public void resetMilestones(
-            String[] milestoneIds,
-            IServerCallback callback) {
-        try {
-
-            JSONObject data = new JSONObject();
-            JSONArray milestoneArray = new JSONArray();
-            for (String milestone : milestoneIds) {
-                milestoneArray.put(milestone);
-            }
-
-            data.put(Parameter.milestones.name(), milestoneArray);
-
-            ServerCall sc = new ServerCall(ServiceName.gamification, ServiceOperation.RESET_MILESTONES, data, callback);
-            _client.sendRequest(sc);
-
-        } catch (JSONException je) {
-        }
-    }
 }
