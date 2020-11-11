@@ -113,7 +113,8 @@ public class VirtualCurrencyService {
      * Service Name - VirtualCurrency
      * Service Operation - GetPeerCurrency
      *
-     * @deprecated Use getAppId instead - removal after September 1 2017
+     * @warning Method is recommended to be used in Cloud Code only for security
+     * If you need to use it client side, enable 'Allow Currency Calls from Client' on the brainCloud dashboard
      *
      * @param vcId
      * @param vcAmount
@@ -140,7 +141,8 @@ public class VirtualCurrencyService {
      * Service Name - VirtualCurrency
      * Service Operation - GetPeerCurrency
      *
-     * @deprecated Use getAppId instead - removal after September 1 2017
+     * @warning Method is recommended to be used in Cloud Code only for security
+     * If you need to use it client side, enable 'Allow Currency Calls from Client' on the brainCloud dashboard
      *
      * @param vcId
      * @param vcAmount

@@ -26,7 +26,7 @@ public class PlayerStatisticsEventServiceTest extends TestFixtureBase implements
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getPlayerStatisticsEventService().triggerUserStatsEvent(
+        _wrapper.getPlayerStatisticsEventService().triggerStatsEvent(
                 _eventId01,
                 1,
                 tr);
@@ -51,7 +51,7 @@ public class PlayerStatisticsEventServiceTest extends TestFixtureBase implements
         events.put(event1);
         events.put(event2);
 
-        _wrapper.getPlayerStatisticsEventService().triggerUserStatsEvents(
+        _wrapper.getPlayerStatisticsEventService().triggerStatsEvents(
                 events.toString(),
                 tr);
 
@@ -80,7 +80,7 @@ public class PlayerStatisticsEventServiceTest extends TestFixtureBase implements
 
         _wrapper.getClient().registerRewardCallback(this);
 
-        _wrapper.getPlayerStatisticsEventService().triggerUserStatsEvents(
+        _wrapper.getPlayerStatisticsEventService().triggerStatsEvents(
                 events.toString(),
                 tr);
         tr.Run();
@@ -110,10 +110,10 @@ public class PlayerStatisticsEventServiceTest extends TestFixtureBase implements
 
         _wrapper.getClient().registerRewardCallback(this);
 
-        _wrapper.getPlayerStatisticsEventService().triggerUserStatsEvents(
+        _wrapper.getPlayerStatisticsEventService().triggerStatsEvents(
                 events1.toString(),
                 tr);
-        _wrapper.getPlayerStatisticsEventService().triggerUserStatsEvents(
+        _wrapper.getPlayerStatisticsEventService().triggerStatsEvents(
                 events2.toString(),
                 tr);
         tr.RunExpectCount(2);

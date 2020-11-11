@@ -182,26 +182,6 @@ public class EntityService {
     }
 
     /**
-     * @deprecated Use getSharedEntityForProfileId instead - removal after September 1 2017
-     */
-    @Deprecated
-    public void getSharedEntityForPlayerId(String profileId, String entityId, IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put(Parameter.targetPlayerId.name(), profileId);
-            data.put(Parameter.entityId.name(), entityId);
-
-            ServerCall sc = new ServerCall(ServiceName.entity,
-                    ServiceOperation.READ_SHARED_ENTITY, data, callback);
-            _client.sendRequest(sc);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /**
      * Method returns a shared entity for the given profile and entity ID.
      * An entity is shared if its ACL allows for the currently logged
      * in user to read the data.
@@ -221,27 +201,6 @@ public class EntityService {
 
             ServerCall sc = new ServerCall(ServiceName.entity,
                     ServiceOperation.READ_SHARED_ENTITY, data, callback);
-            _client.sendRequest(sc);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @deprecated Use getAppVersion instead - removal after September 1 2017
-     */
-    @Deprecated
-    public void getSharedEntitiesForPlayerId(String profileId,
-                                             IServerCallback callback) {
-
-        try {
-
-            JSONObject data = new JSONObject();
-            data.put(Parameter.targetPlayerId.name(), profileId);
-
-            ServerCall sc = new ServerCall(ServiceName.entity,
-                    ServiceOperation.READ_SHARED, data, callback);
             _client.sendRequest(sc);
 
         } catch (JSONException e) {
@@ -274,31 +233,6 @@ public class EntityService {
 
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * @deprecated Use getSharedEntitiesListForProfileId instead - removal after September 1 2017
-     */
-    @Deprecated
-    public void getSharedEntitiesListForPlayerId(String profileId, String whereJson, String orderByJson, int maxReturn,
-                                                 IServerCallback callback) {
-        try {
-            JSONObject data = new JSONObject();
-
-            data.put(Parameter.targetPlayerId.name(), profileId);
-            if (StringUtil.IsOptionalParameterValid(whereJson)) {
-                data.put(Parameter.where.name(), new JSONObject(whereJson));
-            }
-            if (StringUtil.IsOptionalParameterValid(orderByJson)) {
-                data.put(Parameter.orderBy.name(), new JSONObject(orderByJson));
-            }
-            data.put(Parameter.maxReturn.name(), maxReturn);
-
-            ServerCall serverCall = new ServerCall(ServiceName.entity,
-                    ServiceOperation.READ_SHARED_ENTITIES_LIST, data, callback);
-            _client.sendRequest(serverCall);
-        } catch (JSONException ignored) {
         }
     }
 

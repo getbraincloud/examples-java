@@ -76,7 +76,7 @@ public class RelayTest extends TestFixtureBase
         // Find or create lobby
         {
             TestResult tr = new TestResult(_wrapper);
-            _wrapper.getLobbyService().findOrCreateLobby("READY_START", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", true, "{}", "all", tr);
+            _wrapper.getLobbyService().findOrCreateLobby("READY_START_V2", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", true, "{}", "all", tr);
             tr.Run();
             server = lobbyTR.Run();
         }

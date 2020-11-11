@@ -93,53 +93,6 @@ public class PlaybackStreamServiceTest extends TestFixtureBase
     }
 
     @Test
-    public void testGetStreamSummariesForInitiatingPlayer() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        String streamId = startStream();
-
-        _wrapper.getPlaybackStreamService().getStreamSummariesForInitiatingPlayer(
-                getUser(Users.UserA).profileId,
-                tr);
-
-        tr.Run();
-        endStream(streamId);
-    }
-
-    @Test
-    public void testGetStreamSummariesForTargetPlayer() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        String streamId = startStream();
-
-        _wrapper.getPlaybackStreamService().getStreamSummariesForTargetPlayer(
-                getUser(Users.UserB).profileId,
-                tr);
-
-        tr.Run();
-        endStream(streamId);
-    }
-
-    @Test
-    public void testGetRecentStreamsForInitiatingPlayer() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        String streamId = startStream();
-        int maxStream = 10;
-
-        _wrapper.getPlaybackStreamService().getRecentStreamsForInitiatingPlayer(
-                getUser(Users.UserA).profileId,
-                maxStream,
-                tr);
-
-        tr.Run();
-        endStream(streamId);
-    }
-
-    @Test
     public void testGetRecentStreamsForTargetPlayer() throws Exception
     {
         TestResult tr = new TestResult(_wrapper);
@@ -185,24 +138,5 @@ public class PlaybackStreamServiceTest extends TestFixtureBase
                 tr);
 
         tr.Run();
-    }
-
-    private String getStreamId() throws Exception
-    {
-        TestResult tr = new TestResult(_wrapper);
-
-        String streamId = "";
-
-        _wrapper.getPlaybackStreamService().getStreamSummariesForTargetPlayer(
-                getUser(Users.UserB).profileId,
-                tr);
-
-        if (tr.Run())
-        {
-            JSONArray streams = tr.m_response.getJSONObject("data").getJSONArray("streams");
-            streamId = streams.getJSONObject(0).getString("playbackStreamId");
-        }
-
-        return streamId;
     }
 }

@@ -17,6 +17,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import junit.framework.Assert;
+
 /**
  * Created by prestonjennings on 15-08-31.
  */
@@ -384,5 +386,50 @@ public class AuthenticationServiceTest extends TestFixtureNoAuth
         
         //check state
         _wrapper.getClient().getPlayerStateService().readUserState(tr5);
+    }
+
+    @Test
+    public void testReInit() throws Exception
+    {
+        Map<String, String> originalAppSecretMap = new HashMap<String, String>();
+        originalAppSecretMap.put(m_appId, m_secret);
+        originalAppSecretMap.put(m_childAppId, m_childSecret);
+
+        int initCounter = 1; 
+
+        //case 1 Multiple init on client
+        _wrapper.getClient().initializeWithApps(m_serverUrl, m_appId, originalAppSecretMap, m_appVersion);
+        Assert.assertTrue(initCounter == 1);
+        initCounter++;
+
+         _wrapper.getClient().initializeWithApps(m_serverUrl, m_appId, originalAppSecretMap, m_appVersion);
+        Assert.assertTrue(initCounter == 2);
+        initCounter++;
+
+         _wrapper.getClient().initializeWithApps(m_serverUrl, m_appId, originalAppSecretMap, m_appVersion);
+        Assert.assertTrue(initCounter == 3);
+
+        //case 2 
+
+        //Auth 
+        TestResult tr1 = new TestResult(_wrapper);
+        _wrapper.getClient().getAuthenticationService().authenticateUniversal(getUser(Users.UserB).id, getUser(Users.UserB).password, true, tr1);
+        tr1.Run();
+
+        //Call
+        TestResult tr2 = new TestResult(_wrapper);
+        _wrapper.getTimeService().readServerTime(
+                tr2);
+        tr2.Run();
+
+        //reinit
+        _wrapper.getClient().initializeWithApps(m_serverUrl, m_appId, originalAppSecretMap, m_appVersion);
+
+        // //call without auth - expecting it to fail because we need to reauth after init
+        TestResult tr3 = new TestResult(_wrapper);
+        _wrapper.getTimeService().readServerTime(
+                tr3);
+        tr3.RunExpectFail(StatusCodes.FORBIDDEN, ReasonCodes.NO_SESSION);
+
     }
 }

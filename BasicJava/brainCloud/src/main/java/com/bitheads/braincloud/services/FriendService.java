@@ -153,38 +153,6 @@ public class FriendService {
         _client.sendRequest(sc);
     }
 
-    /**
-     * @deprecated Use findUserByUniversalId() instead - Removal after September 1 2017
-     */
-    public void findPlayerByUniversalId(String searchText, int maxResults, IServerCallback callback) {
-        JSONObject data = new JSONObject();
-        try {
-            data.put(Parameter.searchText.name(), searchText);
-            data.put(Parameter.maxResults.name(), maxResults);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_PLAYER_BY_UNIVERSAL_ID, data, callback);
-        _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use findUserByExactUniversalId - Removal after Feb 1, 2019
-     */
-    public void findUserByUniversalId(String searchText, int maxResults, IServerCallback callback) {
-        JSONObject data = new JSONObject();
-        try {
-            data.put(Parameter.searchText.name(), searchText);
-            data.put(Parameter.maxResults.name(), maxResults);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.FIND_PLAYER_BY_UNIVERSAL_ID, data, callback);
-        _client.sendRequest(sc);
-    }
-
     /** Retrieves profile information for the partial matches of the specified text. 
      * 
      * @param searchText Universal Id text on which to search
@@ -245,21 +213,6 @@ public class FriendService {
         }
 
         ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.READ_FRIENDS_ENTITIES, data, callback);
-        _client.sendRequest(sc);
-    }
-
-    /**
-     * @deprecated Use readFriendUserState() instead - Removal after September 1 2017
-     */
-    public void readFriendPlayerState(String friendId, IServerCallback callback) {
-        JSONObject data = new JSONObject();
-        try {
-            data.put(Parameter.friendId.name(), friendId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.READ_FRIEND_PLAYER_STATE, data, callback);
         _client.sendRequest(sc);
     }
 

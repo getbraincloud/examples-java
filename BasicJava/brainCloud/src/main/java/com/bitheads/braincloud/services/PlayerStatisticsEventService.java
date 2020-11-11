@@ -25,9 +25,23 @@ public class PlayerStatisticsEventService {
     }
 
     /**
-     * @deprecated Use triggerUserStatsEvent() instead - Removal after September 1 2017
+     * Trigger an event server side that will increase the user statistics.
+     * This may cause one or more awards to be sent back to the user -
+     * could be achievements, experience, etc. Achievements will be sent by this
+     * client library to the appropriate awards service (Apple Game Center, etc).
+     *
+     * This mechanism supercedes the PlayerStatisticsService API methods, since
+     * PlayerStatisticsService API method only update the raw statistics without
+     * triggering the rewards.
+     *
+     * Service Name - PlayerStatisticsEvent
+     * Service Operation - Trigger
+     *
+     * @see PlayerStatisticsService
+     * 
+     * @deprecated Use triggerStatsEvent instead - removal September 1, 2021
      */
-    public void triggerPlayerStatisticsEvent(String eventName, int eventMultiplier, IServerCallback callback) {
+    public void triggerUserStatsEvent(String eventName, int eventMultiplier, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.eventName.name(), eventName);
@@ -55,7 +69,7 @@ public class PlayerStatisticsEventService {
      *
      * @see PlayerStatisticsService
      */
-    public void triggerUserStatsEvent(String eventName, int eventMultiplier, IServerCallback callback) {
+    public void triggerStatsEvent(String eventName, int eventMultiplier, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             data.put(Parameter.eventName.name(), eventName);
@@ -69,9 +83,9 @@ public class PlayerStatisticsEventService {
     }
 
     /**
-     * @deprecated Use triggerUserStatsEvents() instead - Removal after September 1 2017
+     * @deprecated Use triggerStatsEvents instead - removal September 1, 2021
      */
-    public void triggerPlayerStatisticsEvents(String jsonData, IServerCallback callback) {
+    public void triggerUserStatsEvents(String jsonData, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             JSONArray jsonArray = new JSONArray(jsonData);
@@ -102,7 +116,7 @@ public class PlayerStatisticsEventService {
      *     }
      *   ]
      */
-    public void triggerUserStatsEvents(String jsonData, IServerCallback callback) {
+    public void triggerStatsEvents(String jsonData, IServerCallback callback) {
         try {
             JSONObject data = new JSONObject();
             JSONArray jsonArray = new JSONArray(jsonData);
