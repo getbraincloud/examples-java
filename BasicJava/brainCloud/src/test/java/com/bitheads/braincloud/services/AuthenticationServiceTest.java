@@ -121,6 +121,12 @@ public class AuthenticationServiceTest extends TestFixtureNoAuth
     }
 
     @Test
+    public void testAuthenticateFacebookLimited() throws Exception
+    {
+
+    }
+
+    @Test
     public void testAuthenticateGoogle() throws Exception
     {
 

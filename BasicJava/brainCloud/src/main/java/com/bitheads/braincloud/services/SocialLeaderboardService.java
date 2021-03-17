@@ -29,6 +29,7 @@ public class SocialLeaderboardService {
     private enum Parameter {
         leaderboardId,
         leaderboardIds,
+        maxResults,
         replaceName,
         score,
         data,
@@ -745,6 +746,32 @@ public class SocialLeaderboardService {
 
             ServerCall sc = new ServerCall(ServiceName.leaderboard,
                     ServiceOperation.GET_PLAYER_SCORE, data, callback);
+            _client.sendRequest(sc);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    /**
+     * Gets a player's highest scores from a leaderboard
+     *
+     * Service Name - leaderboard
+     * Service Operation - GET_PLAYER_SCORES
+     *
+     * @param leaderboardId The leaderboard ID
+     * @param versionId The version of the leaderboard. Use -1 for current.
+     * @param maxResults The maximum number of returned results
+     * @param callback The method to be invoked when the server response is received
+     */
+    public void getPlayerScores(String leaderboardId, int versionId, int maxResults, IServerCallback callback) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put(Parameter.leaderboardId.name(), leaderboardId);
+            data.put(Parameter.versionId.name(), versionId);
+            data.put(Parameter.maxResults.name(), maxResults);
+
+            ServerCall sc = new ServerCall(ServiceName.leaderboard,
+                    ServiceOperation.GET_PLAYER_SCORES, data, callback);
             _client.sendRequest(sc);
         } catch (JSONException je) {
             je.printStackTrace();

@@ -179,6 +179,33 @@ public class AuthenticationService {
     }
 
     /**
+     * Authenticate the user with brainCloud using their FacebookLimited Credentials
+     *
+     * @param fbLimitedUserId    The facebookLimited id of the user
+     * @param fbAuthToken The validated token from the Facebook SDK (that will be
+     *                    further validated when sent to the bC service)
+     * @param forceCreate Should a new profile be created for this user if the account
+     *                    does not exist?
+     * @param callback    The callback handler
+     */
+    public void authenticateFacebookLimited(String fbLimitedUserId, String fbAuthToken, boolean forceCreate, IServerCallback callback) {
+        authenticate(fbLimitedUserId, fbAuthToken, AuthenticationType.FacebookLimited, null, forceCreate, callback);
+    }
+
+    /**
+     * Authenticate the user with brainCloud using their Oculus Credentials
+     *
+     * @param oculusUserId    The oculus id of the user
+     * @param oculusNonce Validation token from oculus gotten through the oculus sdk
+     * @param forceCreate Should a new profile be created for this user if the account
+     *                    does not exist?
+     * @param callback    The callback handler
+     */
+    public void authenticateOculus(String oculusUserId, String oculusNonce, boolean forceCreate, IServerCallback callback) {
+        authenticate(oculusUserId, oculusNonce, AuthenticationType.Oculus, null, forceCreate, callback);
+    }
+
+    /**
      *Authenticate the user using an apple id
      *
      * @param appleUserId  This can be the user id OR the email of the user for the account

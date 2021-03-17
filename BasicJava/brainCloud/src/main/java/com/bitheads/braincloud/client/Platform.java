@@ -6,6 +6,7 @@ public class Platform {
     public static final Platform AppleTVOS = new Platform("APPLE_TV_OS");
     public static final Platform BlackBerry = new Platform("BB");
     public static final Platform Facebook = new Platform("FB");
+    public static final Platform Oculus = new Platform("Oculus");
     public static final Platform GooglePlayAndroid = new Platform("ANG");
     public static final Platform AmazonAndroid = new Platform(("Amazon")); //needs to have specific capitalizations.
     public static final Platform iOS = new Platform("IOS");
@@ -75,6 +76,9 @@ public class Platform {
         }
         if (s.equals(Facebook.toString())) {
             return Facebook;
+        }
+        if (s.equals(Oculus.toString())) {
+            return Oculus;
         }
         if (s.equals(GooglePlayAndroid.toString())) {
             return GooglePlayAndroid;

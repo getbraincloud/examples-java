@@ -61,7 +61,7 @@ public class BrainCloudWrapper implements IServerCallback {
 
     private static final String AUTHENTICATION_ANONYMOUS = "anonymous";
     private static final String _SHARED_PREFERENCES = "bcprefs";
-    private static final String _DEFAULT_URL = "https://sharedprod.braincloudservers.com/dispatcherv2";
+    private static final String _DEFAULT_URL = "https://internal.braincloudservers.com/dispatcherv2";
 
     private static BrainCloudWrapper _instance = null;
 
@@ -540,6 +540,48 @@ public class BrainCloudWrapper implements IServerCallback {
     }
 
     /**
+     * Authenticate the user with brainCloud using their FacebookLimited Credentials
+     *
+     * @param fbLimitedUserId    The facebookLimited id of the user
+     * @param fbAuthToken The validated token from the Facebook SDK (that will be
+     *                    further validated when sent to the bC service)
+     * @param forceCreate Should a new profile be created for this user if the account
+     *                    does not exist?
+     * @param callback    The callback handler
+     */
+    public void authenticateFacebookLimited(String fbLimitedUserId,
+                                     String fbAuthToken,
+                                     boolean forceCreate,
+                                     IServerCallback callback) {
+        _authenticateCallback = callback;
+
+        initializeIdentity(false);
+
+        getClient().getAuthenticationService().authenticateFacebookLimited(fbLimitedUserId, fbAuthToken, forceCreate, this);
+    }
+
+        /**
+     * Authenticate the user with brainCloud using their Oculus Credentials
+     *
+     * @param oculusUserId    The oculus id of the user
+     * @param oculusNonce from the Oculus SDK (that will be
+     *                    further validated when sent to the bC service)
+     * @param forceCreate Should a new profile be created for this user if the account
+     *                    does not exist?
+     * @param callback    The callback handler
+     */
+    public void authenticateOculus(String oculusUserId,
+                                     String oculusNonce,
+                                     boolean forceCreate,
+                                     IServerCallback callback) {
+        _authenticateCallback = callback;
+
+        initializeIdentity(false);
+
+        getClient().getAuthenticationService().authenticateOculus(oculusUserId, oculusNonce, forceCreate, this);
+    }
+
+    /**
      *Authenticate the user using an apple id
      *
      * @param appleUserId  This can be the user id OR the email of the user for the account
@@ -877,6 +919,10 @@ public class BrainCloudWrapper implements IServerCallback {
     }
 
     public SocialLeaderboardService getSocialLeaderboardService() {
+        return _client.getSocialLeaderboardService();
+    }
+
+    public SocialLeaderboardService getLeaderboardService() {
         return _client.getSocialLeaderboardService();
     }
 

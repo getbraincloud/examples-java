@@ -260,6 +260,30 @@ public class FriendService {
         _client.sendRequest(sc);
     }
 
+    
+    /**
+     *Retrieves the social information associated with the logged in user. Includes summary data if includeSummaryData is true.
+     *
+     * Service Name - Friend
+     * Service Operation - GET_MY_SOCIAL_INFO
+     *
+     * @param friendPlatform Friend platform to query.
+     * @param includeSummaryData  True if including summary data; false otherwise.
+     * @param callback Method to be invoked when the server response is received.
+     */
+    public void getMySocialInfo(FriendPlatform friendPlatform, Boolean includeSummaryData, IServerCallback callback) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put(Parameter.friendPlatform.name(), friendPlatform.name());
+            data.put(Parameter.includeSummaryData.name(), includeSummaryData);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ServerCall sc = new ServerCall(ServiceName.friend, ServiceOperation.GET_MY_SOCIAL_INFO, data, callback);
+        _client.sendRequest(sc);
+    }
+
     /**
      * Links the current user and the specified users as brainCloud friends.
      *
