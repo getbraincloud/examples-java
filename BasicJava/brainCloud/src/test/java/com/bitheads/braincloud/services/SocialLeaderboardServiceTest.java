@@ -27,7 +27,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getSocialLeaderboard(
+        _wrapper.getLeaderboardService().getSocialLeaderboard(
                 _globalLeaderboardId,
                 true,
                 tr);
@@ -40,7 +40,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getSocialLeaderboardByVersion(
+        _wrapper.getLeaderboardService().getSocialLeaderboardByVersion(
                 _globalLeaderboardId,
                 true,
                 0,
@@ -61,7 +61,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
                 _globalLeaderboardId,
                 _dynamicLeaderboardId + "_" + SocialLeaderboardService.SocialLeaderboardType.LAST_VALUE
         };
-        _wrapper.getSocialLeaderboardService().getMultiSocialLeaderboard(
+        _wrapper.getLeaderboardService().getMultiSocialLeaderboard(
                 lbIds,
                 10,
                 true,
@@ -75,7 +75,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardPage(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardPage(
                 _globalLeaderboardId,
                 SocialLeaderboardService.SortOrder.HIGH_TO_LOW,
                 0,
@@ -90,7 +90,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardPage(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardPage(
                 _globalLeaderboardId,
                 SocialLeaderboardService.SortOrder.LOW_TO_HIGH,
                 0,
@@ -105,7 +105,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardPage(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardPage(
                 "thisDoesNotExistLeaderboard",
                 SocialLeaderboardService.SortOrder.LOW_TO_HIGH,
                 0,
@@ -120,7 +120,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardPageByVersion(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardPageByVersion(
                 _globalLeaderboardId,
                 SocialLeaderboardService.SortOrder.HIGH_TO_LOW,
                 0,
@@ -136,7 +136,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardView(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardView(
                 _globalLeaderboardId,
                 SocialLeaderboardService.SortOrder.HIGH_TO_LOW,
                 5,
@@ -151,7 +151,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardViewByVersion(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardViewByVersion(
                 _globalLeaderboardId,
                 SocialLeaderboardService.SortOrder.HIGH_TO_LOW,
                 5,
@@ -167,7 +167,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardVersions(
+        _wrapper.getLeaderboardService().getGlobalLeaderboardVersions(
                 _globalLeaderboardId,
                 tr);
 
@@ -192,7 +192,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         TestResult tr = new TestResult(_wrapper);
 
         long date = TimeUtil.UTCDateTimeToUTCMillis(addDays(new Date(), 3));
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboardUTC(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboardUTC(
                 _dynamicLeaderboardId + "_" + (int)(Math.random() * 10000000),
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -210,7 +210,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboardDays(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboardDays(
                 _dynamicLeaderboardId + "_" + "DAYS",
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -228,7 +228,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboardDaysUTC(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboardDaysUTC(
                 _dynamicLeaderboardId + "_" + "DAYS",
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -246,7 +246,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboard(
                 _dynamicLeaderboardId + "_" + SocialLeaderboardService.SocialLeaderboardType.LOW_VALUE,
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -264,7 +264,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboard(
                 _dynamicLeaderboardId + "_" + SocialLeaderboardService.SocialLeaderboardType.CUMULATIVE,
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -282,7 +282,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboard(
                 _dynamicLeaderboardId + "_" + SocialLeaderboardService.SocialLeaderboardType.LAST_VALUE,
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -321,7 +321,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
 
-        _wrapper.getSocialLeaderboardService().getGroupSocialLeaderboard(
+        _wrapper.getLeaderboardService().getGroupSocialLeaderboard(
                 _socialLeaderboardId,
                 groupId,
                 tr);
@@ -339,7 +339,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGroupSocialLeaderboardByVersion(
+        _wrapper.getLeaderboardService().getGroupSocialLeaderboardByVersion(
                 _socialLeaderboardId,
                 "_invalid_",
                 0,
@@ -352,7 +352,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getPlayersSocialLeaderboard(
+        _wrapper.getLeaderboardService().getPlayersSocialLeaderboard(
                 _socialLeaderboardId,
                 new String[] { getUser(Users.UserA).profileId, getUser(Users.UserB).profileId },
                 tr);
@@ -365,7 +365,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getPlayersSocialLeaderboardByVersion(
+        _wrapper.getLeaderboardService().getPlayersSocialLeaderboardByVersion(
                 _socialLeaderboardId,
 
                 new String[] { getUser(Users.UserA).profileId, getUser(Users.UserB).profileId },
@@ -380,7 +380,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().listAllLeaderboards(tr);
+        _wrapper.getLeaderboardService().listAllLeaderboards(tr);
 
         tr.Run();
     }
@@ -390,7 +390,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardEntryCount(_globalLeaderboardId, tr);
+        _wrapper.getLeaderboardService().getGlobalLeaderboardEntryCount(_globalLeaderboardId, tr);
 
         tr.Run();
     }
@@ -400,7 +400,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().getGlobalLeaderboardEntryCountByVersion(_globalLeaderboardId, 1, tr);
+        _wrapper.getLeaderboardService().getGlobalLeaderboardEntryCountByVersion(_globalLeaderboardId, 1, tr);
 
         tr.Run();
     }
@@ -411,7 +411,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         postScoreToNonDynamicLeaderboard();
 
         TestResult tr = new TestResult(_wrapper);
-        _wrapper.getSocialLeaderboardService().getPlayerScore(
+        _wrapper.getLeaderboardService().getPlayerScore(
                 _globalLeaderboardId,
                 -1,
                 tr);
@@ -425,13 +425,29 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         postScoreToNonDynamicLeaderboard();
 
         TestResult tr = new TestResult(_wrapper);
-        _wrapper.getSocialLeaderboardService().removePlayerScore(
+        _wrapper.getLeaderboardService().removePlayerScore(
                 _globalLeaderboardId,
                 -1,
                 tr);
 
         tr.Run();
     }
+
+    @Test
+    public void testGetPlayerScores() throws Exception
+    {
+        postScoreToNonDynamicLeaderboard();
+
+        TestResult tr = new TestResult(_wrapper);
+        _wrapper.getLeaderboardService().getPlayerScores(
+                _globalLeaderboardId,
+                -1,
+                 2,
+                tr);
+
+        tr.Run();
+    }
+
 
     @Test
     public void testGetPlayerScoresFromLeaderboards() throws Exception
@@ -445,7 +461,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
                 _globalLeaderboardId,
                 _dynamicLeaderboardId + "_" + SocialLeaderboardService.SocialLeaderboardType.LAST_VALUE
         };
-        _wrapper.getSocialLeaderboardService().getPlayerScoresFromLeaderboards(
+        _wrapper.getLeaderboardService().getPlayerScoresFromLeaderboards(
                 lbIds,
                 tr);
 
@@ -472,7 +488,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
 
-        _wrapper.getSocialLeaderboardService().postScoreToGroupLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToGroupLeaderboard(
                 _groupLeaderboardId,
                 groupId,
                 0, 
@@ -509,7 +525,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
 
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicGroupLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToDynamicGroupLeaderboard(
                 _groupLeaderboardId,
                 groupId,
                 0, 
@@ -547,7 +563,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
 
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicGroupLeaderboardUTC(
+        _wrapper.getLeaderboardService().postScoreToDynamicGroupLeaderboardUTC(
                 _groupLeaderboardId,
                 groupId,
                 0, 
@@ -586,7 +602,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
 
-        _wrapper.getSocialLeaderboardService().postScoreToGroupLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToGroupLeaderboard(
                 _groupLeaderboardId,
                 groupId,
                 0, 
@@ -594,7 +610,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
                 tr);
         tr.Run();
 
-        _wrapper.getSocialLeaderboardService().removeGroupScore(
+        _wrapper.getLeaderboardService().removeGroupScore(
             _groupLeaderboardId,
             groupId,
             1, 
@@ -628,7 +644,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
 
-        _wrapper.getSocialLeaderboardService().getGroupLeaderboardView(
+        _wrapper.getLeaderboardService().getGroupLeaderboardView(
                 _groupLeaderboardId,
                 groupId,
                 SocialLeaderboardService.SortOrder.HIGH_TO_LOW,
@@ -664,7 +680,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
         JSONObject data = tr.m_response.getJSONObject("data");
         String groupId = data.getString("groupId");
 
-        _wrapper.getSocialLeaderboardService().getGroupLeaderboardViewByVersion(
+        _wrapper.getLeaderboardService().getGroupLeaderboardViewByVersion(
                 _groupLeaderboardId,
                 groupId,
                 1,
@@ -685,7 +701,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToDynamicLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToDynamicLeaderboard(
                 _dynamicLeaderboardId + "_" + (int)(Math.random() * 10000000),
                 100,
                 Helpers.createJsonPair("testDataKey", 400),
@@ -702,7 +718,7 @@ public class SocialLeaderboardServiceTest extends TestFixtureBase
     {
         TestResult tr = new TestResult(_wrapper);
 
-        _wrapper.getSocialLeaderboardService().postScoreToLeaderboard(
+        _wrapper.getLeaderboardService().postScoreToLeaderboard(
                 _globalLeaderboardId,
                 1000,
                 Helpers.createJsonPair("testDataKey", 400),

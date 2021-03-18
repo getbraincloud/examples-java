@@ -147,6 +147,17 @@ public class FriendServiceTest extends TestFixtureBase
     }
 
     @Test
+    public void testGetMySocialInfo() throws Exception
+    {
+        TestResult tr = new TestResult(_wrapper);
+
+        _wrapper.getFriendService().getMySocialInfo(
+                FriendService.FriendPlatform.All, false, tr);
+
+        tr.Run();
+    }
+
+    @Test
     public void testAddFriends() throws Exception
     {
         addFriend();
