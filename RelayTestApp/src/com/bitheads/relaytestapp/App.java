@@ -315,41 +315,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
         if (operation.equals("DISBANDED"))
         {
-            if (jsonData.getJSONObject("reason").getInt("code") == ReasonCodes.RTT_ROOM_READY)
-            {
-                // Server has been created. Connect to it
-                _bcWrapper.getRelayService().registerRelayCallback(this);
-                _bcWrapper.getRelayService().registerSystemCallback(this);
-                JSONObject options = new JSONObject();
-                options.put("ssl", false);
-                options.put("host", state.server.getJSONObject("connectData").getString("address"));
-                if (_connectionType == RelayConnectionType.WEBSOCKET)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
-                else if (_connectionType == RelayConnectionType.TCP)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("tcp"));
-                else if (_connectionType == RelayConnectionType.UDP)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("udp"));
-                options.put("passcode", state.server.getString("passcode"));
-                options.put("lobbyId", state.server.getString("lobbyId"));
-                _bcWrapper.getRelayService().connect(_connectionType, options, new IRelayConnectCallback()
-                {
-                    @Override
-                    public void relayConnectSuccess(JSONObject jsonData)
-                    {
-                        goToGameScreen();
-                    }
-
-                    @Override
-                    public void relayConnectFailure(String errorMessage)
-                    {
-                        if (!_disconnecting)
-                        {
-                            dieWithMessage("Failed to connect to server, msg: " + errorMessage);
-                        }
-                    }
-                });
-            }
-            else
+            if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY)
             {
                 // Disbanded for any other reason than ROOM_READY, means we failed to launch the game.
                 onGameScreenClose();
@@ -362,8 +328,37 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
         else if (operation.equals("ROOM_READY"))
         {
-            // Server has been created, save connection info.
-            state.server = jsonData;
+            // Server has been created. Connect to it
+            _bcWrapper.getRelayService().registerRelayCallback(this);
+            _bcWrapper.getRelayService().registerSystemCallback(this);
+            JSONObject options = new JSONObject();
+            options.put("ssl", false);
+            options.put("host", jsonData.getJSONObject("connectData").getString("address"));
+            if (_connectionType == RelayConnectionType.WEBSOCKET)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
+            else if (_connectionType == RelayConnectionType.TCP)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("tcp"));
+            else if (_connectionType == RelayConnectionType.UDP)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("udp"));
+            options.put("passcode", jsonData.getString("passcode"));
+            options.put("lobbyId", jsonData.getString("lobbyId"));
+            _bcWrapper.getRelayService().connect(_connectionType, options, new IRelayConnectCallback()
+            {
+                @Override
+                public void relayConnectSuccess(JSONObject jsonData)
+                {
+                    goToGameScreen();
+                }
+
+                @Override
+                public void relayConnectFailure(String errorMessage)
+                {
+                    if (!_disconnecting)
+                    {
+                        dieWithMessage("Failed to connect to server, msg: " + errorMessage);
+                    }
+                }
+            });
         }
     }
 
@@ -441,7 +436,6 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper.getRTTService().disableRTT();
 
         state.lobby = null;
-        state.server = null;
         state.user.isReady = false;
         _pendingMoveSend = false; //TODO put that in state object
         _lastMoveSendTime = System.currentTimeMillis();
