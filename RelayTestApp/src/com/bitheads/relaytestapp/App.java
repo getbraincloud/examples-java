@@ -362,7 +362,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
     }
 
-    public void onPlayClicked(String protocolStr)
+    public void onPlayClicked(String protocolStr, String lobbyType)
     {
         goToLoadingScreen("Joining...");
 
@@ -395,7 +395,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
 
                     _isConnectingRTT = false;
-                    _bcWrapper.getLobbyService().findOrCreateLobby("CursorPartyV2", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
+                    _bcWrapper.getLobbyService().findOrCreateLobby(lobbyType, 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
                     {
                         @Override
                         public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
