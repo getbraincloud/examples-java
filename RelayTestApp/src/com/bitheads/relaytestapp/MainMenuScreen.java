@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 class MainMenuScreen extends Screen
 {
     private JComboBox _cboProtocol;
+    private JComboBox _cboLobbyType;
 
     public MainMenuScreen()
     {
@@ -44,9 +45,15 @@ class MainMenuScreen extends Screen
         panel.add(_cboProtocol);
 
         // Lobby choices
+        _cboLobbyType = new JComboBox(new String[]{"CursorPartyV2", "CursorPartyV2Backfill"});
+        _cboLobbyType.setSize(200, 30);
+        _cboLobbyType.setLocation(x - 100, y + 60);
+        panel.add(_cboLobbyType);
+
+        // Play
         JButton btnPlay = new JButton("Play");
         btnPlay.setSize(200, 30);
-        btnPlay.setLocation(x - 100, y + 70);
+        btnPlay.setLocation(x - 100, y + 100);
         panel.add(btnPlay);
 
         // Event listeners
@@ -56,7 +63,8 @@ class MainMenuScreen extends Screen
             public void actionPerformed(ActionEvent e)
             {
                 String protocolStr = _cboProtocol.getSelectedItem().toString();
-                App.getInstance().onPlayClicked(protocolStr);
+                String lobbyTypeStr = _cboLobbyType.getSelectedItem().toString();
+                App.getInstance().onPlayClicked(protocolStr, lobbyTypeStr);
             }
         });
     }

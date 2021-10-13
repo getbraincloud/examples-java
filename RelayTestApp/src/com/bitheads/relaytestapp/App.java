@@ -215,7 +215,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     _bcWrapper.getPlayerStateService().updateName(username, null);
 
                     // Set the state with our user information. 7 is default white color index.
-                    state.user = new User(jsonData.getString("profileId"), username, 7, false);
+                    state.user = new User("", username, 7, false);
                     state.user.allowSendTo = false; // We don't relay packet to ourself
                     goToMainMenuScreen();
                 }
@@ -237,12 +237,12 @@ public class App implements IRelayCallback, IRelaySystemCallback
             String jsonString = new String(bytes, StandardCharsets.US_ASCII);
             JSONObject json = new JSONObject(jsonString);
 
-            String profileId = _bcWrapper.getRelayService().getProfileIdForNetId(netId);
+            String cxId = _bcWrapper.getRelayService().getCxIdForNetId(netId);
             User user = null;
             for (int i = 0; i < state.lobby.members.size(); ++i)
             {
                 User member = state.lobby.members.get(i);
-                if (member.profileId.equals(profileId))
+                if (member.cxId.equals(cxId))
                 {
                     user = member;
                     break;
@@ -284,7 +284,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
             for (int i = 0; i < state.lobby.members.size(); ++i)
             {
                 User member = state.lobby.members.get(i);
-                if (member.profileId.equals(jsonData.getString("profileId")))
+                if (member.cxId.equals(jsonData.getString("cxId")))
                 {
                     member.pos = null; // This will stop displaying this member
                 }
@@ -315,41 +315,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
         if (operation.equals("DISBANDED"))
         {
-            if (jsonData.getJSONObject("reason").getInt("code") == ReasonCodes.RTT_ROOM_READY)
-            {
-                // Server has been created. Connect to it
-                _bcWrapper.getRelayService().registerRelayCallback(this);
-                _bcWrapper.getRelayService().registerSystemCallback(this);
-                JSONObject options = new JSONObject();
-                options.put("ssl", false);
-                options.put("host", state.server.getJSONObject("connectData").getString("address"));
-                if (_connectionType == RelayConnectionType.WEBSOCKET)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
-                else if (_connectionType == RelayConnectionType.TCP)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("tcp"));
-                else if (_connectionType == RelayConnectionType.UDP)
-                    options.put("port", state.server.getJSONObject("connectData").getJSONObject("ports").getInt("udp"));
-                options.put("passcode", state.server.getString("passcode"));
-                options.put("lobbyId", state.server.getString("lobbyId"));
-                _bcWrapper.getRelayService().connect(_connectionType, options, new IRelayConnectCallback()
-                {
-                    @Override
-                    public void relayConnectSuccess(JSONObject jsonData)
-                    {
-                        goToGameScreen();
-                    }
-
-                    @Override
-                    public void relayConnectFailure(String errorMessage)
-                    {
-                        if (!_disconnecting)
-                        {
-                            dieWithMessage("Failed to connect to server, msg: " + errorMessage);
-                        }
-                    }
-                });
-            }
-            else
+            if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY)
             {
                 // Disbanded for any other reason than ROOM_READY, means we failed to launch the game.
                 onGameScreenClose();
@@ -362,12 +328,41 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
         else if (operation.equals("ROOM_READY"))
         {
-            // Server has been created, save connection info.
-            state.server = jsonData;
+            // Server has been created. Connect to it
+            _bcWrapper.getRelayService().registerRelayCallback(this);
+            _bcWrapper.getRelayService().registerSystemCallback(this);
+            JSONObject options = new JSONObject();
+            options.put("ssl", false);
+            options.put("host", jsonData.getJSONObject("connectData").getString("address"));
+            if (_connectionType == RelayConnectionType.WEBSOCKET)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("ws"));
+            else if (_connectionType == RelayConnectionType.TCP)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("tcp"));
+            else if (_connectionType == RelayConnectionType.UDP)
+                options.put("port", jsonData.getJSONObject("connectData").getJSONObject("ports").getInt("udp"));
+            options.put("passcode", jsonData.getString("passcode"));
+            options.put("lobbyId", jsonData.getString("lobbyId"));
+            _bcWrapper.getRelayService().connect(_connectionType, options, new IRelayConnectCallback()
+            {
+                @Override
+                public void relayConnectSuccess(JSONObject jsonData)
+                {
+                    goToGameScreen();
+                }
+
+                @Override
+                public void relayConnectFailure(String errorMessage)
+                {
+                    if (!_disconnecting)
+                    {
+                        dieWithMessage("Failed to connect to server, msg: " + errorMessage);
+                    }
+                }
+            });
         }
     }
 
-    public void onPlayClicked(String protocolStr)
+    public void onPlayClicked(String protocolStr, String lobbyType)
     {
         goToLoadingScreen("Joining...");
 
@@ -397,8 +392,10 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 @Override
                 public void rttConnectSuccess()
                 {
+                    state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
+
                     _isConnectingRTT = false;
-                    _bcWrapper.getLobbyService().findOrCreateLobby("CursorPartyV2", 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
+                    _bcWrapper.getLobbyService().findOrCreateLobby(lobbyType, 0, 1, "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}", "{}", null, "{}", false, "{\"colorIndex\":" + state.user.colorIndex + "}", "all", new IServerCallback()
                     {
                         @Override
                         public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
@@ -441,7 +438,6 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper.getRTTService().disableRTT();
 
         state.lobby = null;
-        state.server = null;
         state.user.isReady = false;
         _pendingMoveSend = false; //TODO put that in state object
         _lastMoveSendTime = System.currentTimeMillis();
@@ -489,7 +485,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         for (int i = 0; i < state.lobby.members.size(); ++i)
         {
             User member = state.lobby.members.get(i);
-            if (member.profileId.equals(state.user.profileId))
+            if (member.cxId.equals(state.user.cxId))
             {
                 myUser = member;
                 break;
@@ -521,7 +517,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         {
             User user = state.lobby.members.get(i);
             if (!user.allowSendTo) continue;
-            int netId = _bcWrapper.getRelayService().getNetIdForProfileId(user.profileId);
+            int netId = _bcWrapper.getRelayService().getNetIdForCxId(user.cxId);
             playerMask |= (1L << (long)netId);
         }
 

@@ -8,7 +8,7 @@ import org.json.JSONObject;
 public class Lobby
 {
     public String lobbyId;
-    public String ownerId;
+    public String ownerCxId;
     public ArrayList<User> members = new ArrayList<User>();
 
     public Lobby(JSONObject lobbyJson, String in_lobbyId)
@@ -16,16 +16,16 @@ public class Lobby
         State state = App.getInstance().state;
         
         lobbyId = in_lobbyId;
-        ownerId = lobbyJson.getString("owner");
+        ownerCxId = lobbyJson.getString("ownerCxId");
         JSONArray jsonMembers = lobbyJson.getJSONArray("members");
         for (int i = 0; i < jsonMembers.length(); ++i)
         {
             JSONObject jsonMember = jsonMembers.getJSONObject(i);
-            User user = new User(jsonMember.getString("profileId"), 
+            User user = new User(jsonMember.getString("cxId"), 
                                  jsonMember.getString("name"), 
                                  jsonMember.getJSONObject("extra").getInt("colorIndex"), 
                                  false);
-            if (user.profileId.equals(state.user.profileId)) user.allowSendTo = false;   
+            if (user.cxId.equals(state.user.cxId)) user.allowSendTo = false;   
             members.add(user);
         }
     }

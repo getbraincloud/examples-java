@@ -87,7 +87,7 @@ class LobbyScreen extends Screen
             lblMember.setLocation(x - 100, 200 + i * 30);
             Font font = lblMember.getFont();
             lblMember.setFont(new Font(font.getName(), Font.PLAIN, 20));
-            lblMember.setForeground(Colors.COLORS[member.profileId.equals(state.user.profileId) ? state.user.colorIndex : member.colorIndex]);
+            lblMember.setForeground(Colors.COLORS[member.cxId.equals(state.user.cxId) ? state.user.colorIndex : member.colorIndex]);
             panel.add(lblMember);
         }
 
@@ -106,7 +106,7 @@ class LobbyScreen extends Screen
         });
         
         // We only put a start button if we are the owner
-        if (state.lobby.ownerId.equals(state.user.profileId) && !state.user.isReady)
+        if (state.lobby.ownerCxId.equals(state.user.cxId) && !state.user.isReady)
         {
             JButton btnStart = new JButton("Start");
             btnStart.setSize(200, 30);
