@@ -61,7 +61,7 @@ public class BrainCloudWrapper implements IServerCallback {
 
     private static final String AUTHENTICATION_ANONYMOUS = "anonymous";
     private static final String _SHARED_PREFERENCES = "bcprefs";
-    private static final String _DEFAULT_URL = "https://internal.braincloudservers.com/dispatcherv2";
+    private static final String _DEFAULT_URL = "https://api.internal.braincloudservers.com/dispatcherv2";
 
     private static BrainCloudWrapper _instance = null;
 
