@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">BCAuthentication</string>
+    <string name="default_init">BC NOT INITIALIZED</string>
+    <string name="enter_brainCloud">Enter brainCloud</string>
+    <string name="bc_init_fail">Initialize failed…</string>
+    <string name="select_auth_type">Select Authentication Type:</string>
+    <string name="auth">Authenticate</string>
+    <string name="default_auth">Welcome</string>
+    <string name="attempt_auth">Authenticating...</string>
+    <string name="auth_success">Authenticated!</string>
+    <string name="auth_fail">Authentication failed...</string>
+    <string name="retry_init">Initialization failed. Check ids and try again.</string>
+    <string-array name="auth_types">
+        <item> </item>
+        <item>Anonymous</item>
+        <item>Universal</item>
+        <item>Email</item>
+    </string-array>
+</resources>
