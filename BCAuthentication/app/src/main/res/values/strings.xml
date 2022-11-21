@@ -9,9 +9,14 @@
     <string name="attempt_auth">Authenticating...</string>
     <string name="auth_success">Authenticated!</string>
     <string name="auth_fail">Authentication failed...</string>
-    <string name="retry_init">Initialization failed. Check ids and try again.</string>
+    <string name="retry_init">Check ids and try again.</string>
+    <string name="user_hint">UserID</string>
+    <string name="password_hint">Password</string>
+    <string name="universal_hint">Username</string>
+    <string name="email_hint">Email Address</string>
+    <string name="invalid_login">invalid login arguments</string>
     <string-array name="auth_types">
-        <item> </item>
+        <item>Select Auth Type</item>
         <item>Anonymous</item>
         <item>Universal</item>
         <item>Email</item>
