@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/bc_logo"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"/>
 
     <TextView
         android:id="@+id/bc_auth_status_tv"
@@ -36,16 +36,16 @@
         android:id="@+id/auth_types_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:layout_below="@id/bc_auth_status_tv"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:background="@color/bc_button"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/bc_button">
 
         <Spinner
             android:id="@+id/auth_types_s"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 
@@ -54,15 +54,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/auth_types_ll"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/bc_button"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/bc_button">
 
             <EditText
                 android:id="@+id/user_field_et"
@@ -71,7 +71,7 @@
                 android:ems="10"
                 android:inputType="textEmailAddress"
                 android:hint="@string/user_hint"
-                android:autofillHints="username" />
+                android:autofillHints="username"/>
 
         </LinearLayout>
 
@@ -79,8 +79,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:background="@color/bc_button"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/bc_button">
 
             <EditText
                 android:id="@+id/pass_field_et"
@@ -89,7 +89,7 @@
                 android:ems="10"
                 android:inputType="textPassword"
                 android:hint="@string/password_hint"
-                android:autofillHints="password" />
+                android:autofillHints="password"/>
 
         </LinearLayout>
 
@@ -110,10 +110,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/login_fields_ll"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
-        android:text="@string/auth"
+        android:layout_centerHorizontal="true"
         android:backgroundTint="@color/bc_button"
-        android:textColor="@color/black"/>
+        android:text="@string/click_to_auth"
+        android:textColor="@color/black" />
 
 </RelativeLayout>

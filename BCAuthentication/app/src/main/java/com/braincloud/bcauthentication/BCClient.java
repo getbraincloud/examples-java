@@ -1,22 +1,14 @@
 package com.braincloud.bcauthentication;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.CountDownTimer;
-import android.util.Log;
 
 import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.client.IServerCallback;
-import com.bitheads.braincloud.client.ServiceName;
-import com.bitheads.braincloud.client.ServiceOperation;
 
-import org.json.JSONObject;
-
-public class BCClient implements IServerCallback {
+public class BCClient {
 
     private BrainCloudWrapper _bc;
-
-    private IServerCallback theCallback = this;
 
     public BCClient(){
         _bc = new BrainCloudWrapper();
@@ -44,33 +36,17 @@ public class BCClient implements IServerCallback {
         _bc.setContext(appContext);
     }
 
-    // Authenticate using the selected type
-    public void authenticate(String authType, String userId, String password){
-        switch(authType){
+    public void authenticate(String selectedAuth, String userId, String password, IServerCallback callback){
+        switch(selectedAuth){
             case "Anonymous":
-                _bc.authenticateAnonymous(theCallback);
+                _bc.authenticateAnonymous(callback);
                 break;
             case "Universal":
-                _bc.authenticateUniversal(userId, password, true, theCallback);
+                _bc.authenticateUniversal(userId, password, true, callback);
                 break;
             case "Email":
-                _bc.authenticateEmailPassword(userId, password, true, theCallback);
+                _bc.authenticateEmailPassword(userId, password, true, callback);
                 break;
         }
-
-    }
-
-    @Override
-    public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-        Log.d("BC_LOG", "Authentication succeeded");
-
-        //TODO
-        //enterBCMenu();
-    }
-
-    @Override
-    public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-        Log.d("BC_LOG", "Authentication failed");
-        Log.d("BC_LOG", jsonError);
     }
 }

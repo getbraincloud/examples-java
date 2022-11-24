@@ -4,21 +4,32 @@
     <string name="enter_brainCloud">Enter brainCloud</string>
     <string name="bc_init_fail">Initialize failed…</string>
     <string name="select_auth_type">Select Authentication Type:</string>
-    <string name="auth">Authenticate</string>
+    <string name="click_to_auth">AUTHENTICATE</string>
     <string name="default_auth">Welcome</string>
-    <string name="attempt_auth">Authenticating...</string>
+    <string name="attempt_auth">Authenticating…</string>
     <string name="auth_success">Authenticated!</string>
-    <string name="auth_fail">Authentication failed...</string>
+    <string name="auth_fail">Authentication failed…</string>
     <string name="retry_init">Check ids and try again.</string>
     <string name="user_hint">UserID</string>
     <string name="password_hint">Password</string>
     <string name="universal_hint">Username</string>
     <string name="email_hint">Email Address</string>
-    <string name="invalid_login">invalid login arguments</string>
+    <string name="invalid_login">Please fill in empty fields</string>
+    <string name="log_out">LOG OUT</string>
+    <string name="attempt_log_out">Logging out…</string>
+    <string name="log_out_fail">Log out failed…</string>
     <string-array name="auth_types">
         <item>Select Auth Type</item>
         <item>Anonymous</item>
         <item>Universal</item>
         <item>Email</item>
+    </string-array>
+    <string-array name="bc_functions">
+        <item>Select brainCloud Function</item>
+        <item>Identity</item>
+        <item>Entity</item>
+        <item>XP</item>
+        <item>Stats</item>
+        <item>Cloud Code</item>
     </string-array>
 </resources>

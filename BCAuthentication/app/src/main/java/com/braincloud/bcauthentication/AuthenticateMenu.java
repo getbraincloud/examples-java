@@ -2,6 +2,7 @@ package com.braincloud.bcauthentication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,12 +14,18 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class AuthenticateMenu extends AppCompatActivity {
+import com.bitheads.braincloud.client.IServerCallback;
+import com.bitheads.braincloud.client.ServiceName;
+import com.bitheads.braincloud.client.ServiceOperation;
+
+import org.json.JSONObject;
+
+public class AuthenticateMenu extends AppCompatActivity implements IServerCallback {
 
     // brainCloud stuff
-    private BCClient _bc;
+    public static BCClient brainCloud;
 
-    // UI component(s)
+    // UI components
     private TextView bcInitStatus;
     private TextView bcAuthStatus;
     private Spinner authSelect;
@@ -49,17 +56,15 @@ public class AuthenticateMenu extends AppCompatActivity {
         invalidLogin = findViewById(R.id.invalid_login_tv);
 
         // Create BrainCloudWrapper
-        _bc = new BCClient();
+        brainCloud = new BCClient();
 
-        // Proceed on successful initialization / prompt to retry on fail
-        if(_bc.getWrapper().getClient().isInitialized()){
-            Log.d("BC_LOG", "Initialization succeeded");
+        // Proceed on successful initialization or halt on fail
+        if(brainCloud.getWrapper().getClient().isInitialized()){
+           bcInitStatus.setText(brainCloud.getWrapper().getClient().getBrainCloudVersion());
 
-            bcInitStatus.setText(_bc.getWrapper().getClient().getBrainCloudVersion());
+            brainCloud.setApplicationContext(AuthenticateMenu.this);
 
-            _bc.setApplicationContext(AuthenticateMenu.this);
-
-            _bc.getWrapper().getClient().enableLogging(true);
+            brainCloud.getWrapper().getClient().enableLogging(true);
         }
         else{
             authSelect.setVisibility(View.GONE);
@@ -71,7 +76,39 @@ public class AuthenticateMenu extends AppCompatActivity {
             bcAuthStatus.setText(R.string.retry_init);
         }
 
-        // Create dropdown menu (Spinner component) to select authentication type
+        // Create the dropdown menu (Spinner component) to select authentication type
+        configureAuthSpinner();
+
+        // Attempt to authenticate using the selected type
+        authButton.setOnClickListener(view -> {
+            userId = userField.getText().toString();
+            password = passField.getText().toString();
+
+            if((userId.isEmpty() || password.isEmpty()) && !selectedAuth.equals("Anonymous")){
+                invalidLogin.setVisibility(View.VISIBLE);
+            }
+            else{
+                invalidLogin.setVisibility(View.GONE);
+                bcAuthStatus.setText(R.string.attempt_auth);
+
+                brainCloud.authenticate(selectedAuth, userId, password, this);
+            }
+        });
+    }
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+
+        // Resets state of authentication status and dropdown menu
+        recreate();
+        configureAuthSpinner();
+
+        // TODO - DELETE
+        Log.d("BC_LOG", "AS WE CONTINUE ON");
+    }
+
+    public void configureAuthSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.auth_types, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -83,6 +120,7 @@ public class AuthenticateMenu extends AppCompatActivity {
 
                 userField.getText().clear();
                 passField.getText().clear();
+                invalidLogin.setVisibility(View.GONE);
 
                 // Display different login components depending on the selected authentication type
                 switch(selectedAuth){
@@ -110,22 +148,21 @@ public class AuthenticateMenu extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                //TODO
+
             }
         });
+    }
 
-        // Attempt to authenticate using the selected type
-        authButton.setOnClickListener(view -> {
-            userId = userField.getText().toString();
-            password = passField.getText().toString();
+    @Override
+    public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+        Intent intent = new Intent(getApplication(), BrainCloudMenu.class);
+        startActivity(intent);
+    }
 
-            // Don't attempt authentication with empty fields
-            if((selectedAuth.equals("Universal") || selectedAuth.equals("Email")) && (userId.isEmpty() || password.isEmpty())){
-                invalidLogin.setVisibility(View.VISIBLE);
-            }
-            else{
-                _bc.authenticate(selectedAuth, userId, password);
-            }
-        });
+    @Override
+    public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
+        Log.d("BC_LOG", jsonError);
+
+        bcAuthStatus.setText(R.string.auth_fail);
     }
 }

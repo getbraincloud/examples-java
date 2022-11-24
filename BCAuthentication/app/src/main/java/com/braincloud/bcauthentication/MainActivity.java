@@ -29,5 +29,6 @@ public class MainActivity extends AppCompatActivity {
     public void enterAuthMenu(){
         Intent intent = new Intent(this, AuthenticateMenu.class);
         startActivity(intent);
+        finish();
     }
 }
