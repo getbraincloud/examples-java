@@ -23,53 +23,32 @@
         android:contentDescription="@null"/>
 
     <TextView
-        android:id="@+id/bc_menu_status_tv"
+        android:id="@+id/stats_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/bc_menu_logo_iv"
         android:layout_centerHorizontal="true"
-        android:text="@string/explore_bc"
-        android:textSize="35dp"
+        android:text="@string/stats_header"
+        android:textSize="50dp"
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
 
-    <LinearLayout
-        android:id="@+id/bc_functions_ll"
+    <TextView
+        android:id="@+id/stats_help_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_below="@id/bc_menu_status_tv"
-        android:layout_centerHorizontal="true"
-        android:orientation="vertical"
-        android:background="@color/bc_button">
-
-        <Spinner
-            android:id="@+id/bc_functions_s"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-    </LinearLayout>
+        android:layout_below="@+id/stats_title_tv"
+        android:layout_centerHorizontal="true"/>
 
     <Button
-        android:id="@+id/explore_func_b"
+        android:id="@+id/back_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/bc_functions_ll"
-        android:layout_marginTop="40dp"
-        android:layout_centerHorizontal="true"
-        android:backgroundTint="@color/bc_button"
-        android:text="@string/explore_func"
-        android:textColor="@color/black"/>
-
-    <Button
-        android:id="@+id/log_out_b"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/explore_func_b"
+        android:layout_below="@id/stats_title_tv"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/bc_button"
-        android:text="@string/log_out"
+        android:text="@string/back_button"
         android:textColor="@color/black"/>
 
 </RelativeLayout>

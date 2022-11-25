@@ -103,11 +103,11 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
         // Resets state of authentication status and dropdown menu
         recreate();
         configureAuthSpinner();
-
-        // TODO - DELETE
-        Log.d("BC_LOG", "AS WE CONTINUE ON");
     }
 
+    /**
+     * Sets up the dropdown menu (Spinner component) to select authentication type
+     */
     public void configureAuthSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.auth_types, android.R.layout.simple_spinner_item);

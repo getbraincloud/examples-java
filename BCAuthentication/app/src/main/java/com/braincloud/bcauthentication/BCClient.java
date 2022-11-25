@@ -36,6 +36,13 @@ public class BCClient {
         _bc.setContext(appContext);
     }
 
+    /**
+     * Attempt to authenticate via the selected authentication type
+     * @param selectedAuth the type of authentication that will be attempted
+     * @param userId username/email (used for non-anonymous authentication)
+     * @param password password (used for non-anonymous authentication)
+     * @param callback callback is passed from the AuthenticateMenu class
+     */
     public void authenticate(String selectedAuth, String userId, String password, IServerCallback callback){
         switch(selectedAuth){
             case "Anonymous":

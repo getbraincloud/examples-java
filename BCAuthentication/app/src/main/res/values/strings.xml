@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">BCAuthentication</string>
     <string name="default_init">BC NOT INITIALIZED</string>
-    <string name="enter_brainCloud">Enter brainCloud</string>
     <string name="bc_init_fail">Initialize failed…</string>
+    <string name="enter_brain_cloud">Enter brainCloud</string>
     <string name="select_auth_type">Select Authentication Type:</string>
     <string name="click_to_auth">AUTHENTICATE</string>
     <string name="default_auth">Welcome</string>
@@ -18,6 +18,22 @@
     <string name="log_out">LOG OUT</string>
     <string name="attempt_log_out">Logging out…</string>
     <string name="log_out_fail">Log out failed…</string>
+    <string name="explore_func">Explore</string>
+    <string name="explore_bc">Explore brainCloud</string>
+    <string name="identity_status">Update Your Identity</string>
+    <string name="entity_status">Create/Delete Entities</string>
+    <string name="xp_status">Award XP/Currency</string>
+    <string name="stats_status">View Statistics</string>
+    <string name="script_status">Run Cloud Code Scripts</string>
+    <string name="default_func_help">BRAINCLOUD FUNCTION</string>
+    <string name="identity_header">Identity</string>
+    <string name="entity_header">Entities</string>
+    <string name="xp_header">XP/Currency</string>
+    <string name="stats_header">Statistics</string>
+    <string name="scripts_header">Cloud Code</string>
+    <string name="back_button">Back</string>
+
+    <!-- Authentication types and brainCloud functions -->
     <string-array name="auth_types">
         <item>Select Auth Type</item>
         <item>Anonymous</item>
