@@ -90,7 +90,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
     }
 
     /**
-     * Sets up the dropdown menu (Spinner component) to select brainCloud function
+     * Set up the dropdown menu (Spinner component) to select brainCloud function
      */
     public void configureFunctionSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,

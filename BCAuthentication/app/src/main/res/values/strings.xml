@@ -32,8 +32,21 @@
     <string name="stats_header">Statistics</string>
     <string name="scripts_header">Cloud Code</string>
     <string name="back_button">Back</string>
+    <string name="attach">Attach</string>
+    <string name="merge">Merge</string>
 
-    <!-- Authentication types and brainCloud functions -->
+    <!-- Help messages -->
+    <string name="identity_help">
+        Attach a new identity or Merge an existing one to the current profile
+    </string>
+    <string name="attaching">Attaching...</string>
+    <string name="merging">Merging...</string>
+    <string name="attach_success">Attach Successful!</string>
+    <string name="attach_fail">Attach Failed...</string>
+    <string name="merge_success">Merge Successful!</string>
+    <string name="merge_fail">Merge Failed...</string>
+
+    <!-- Spinner arrays -->
     <string-array name="auth_types">
         <item>Select Auth Type</item>
         <item>Anonymous</item>
@@ -47,5 +60,9 @@
         <item>XP</item>
         <item>Stats</item>
         <item>Cloud Code</item>
+    </string-array>
+    <string-array name="identity_types">
+        <item>Email</item>
+        <item>Universal</item>
     </string-array>
 </resources>

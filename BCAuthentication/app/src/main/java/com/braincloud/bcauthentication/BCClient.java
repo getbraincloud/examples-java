@@ -2,6 +2,7 @@ package com.braincloud.bcauthentication;
 
 import android.content.Context;
 import android.os.CountDownTimer;
+import android.util.Log;
 
 import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.client.IServerCallback;
@@ -37,23 +38,55 @@ public class BCClient {
     }
 
     /**
-     * Attempt to authenticate via the selected authentication type
-     * @param selectedAuth the type of authentication that will be attempted
-     * @param userId username/email (used for non-anonymous authentication)
-     * @param password password (used for non-anonymous authentication)
+     * Attempt to authenticate with the selected authentication type
+     * @param authType the type of authentication that will be attempted
+     * @param user username/email (used for non-anonymous authentication)
+     * @param pass password (used for non-anonymous authentication)
      * @param callback callback is passed from the AuthenticateMenu class
      */
-    public void authenticate(String selectedAuth, String userId, String password, IServerCallback callback){
-        switch(selectedAuth){
+    public void authenticate(String authType, String user, String pass, IServerCallback callback){
+        switch(authType){
             case "Anonymous":
                 _bc.authenticateAnonymous(callback);
                 break;
             case "Universal":
-                _bc.authenticateUniversal(userId, password, true, callback);
+                _bc.authenticateUniversal(user, pass, true, callback);
                 break;
             case "Email":
-                _bc.authenticateEmailPassword(userId, password, true, callback);
+                _bc.authenticateEmailPassword(user, pass, true, callback);
                 break;
+        }
+    }
+
+    /**
+     * Attach the new identity to the currently authenticated profile
+     * @param idType determines if the new identity is Email or Universal
+     * @param user username/email of the new identity
+     * @param pass password of the new identity
+     * @param callback callback is passed from the ExploreIdentity class
+     */
+    public void attachIdentity(String idType, String user, String pass, IServerCallback callback){
+        if(idType.equals("Email")){
+            _bc.getIdentityService().attachEmailIdentity(user, pass, callback);
+        }
+        else{
+            _bc.getIdentityService().attachUniversalIdentity(user, pass, callback);
+        }
+    }
+
+    /**
+     * Merge the existing identity with the currently authenticated profile
+     * @param idType determines if the identity is Email or Universal
+     * @param user username/email of the identity
+     * @param pass password of the identity
+     * @param callback callback is passed from the ExploreIdentity class
+     */
+    public void mergeIdentity(String idType, String user, String pass, IServerCallback callback){
+        if(idType.equals("Email")){
+            _bc.getIdentityService().mergeEmailIdentity(user, pass, callback);
+        }
+        else{
+            _bc.getIdentityService().mergeUniversalIdentity(user, pass, callback);
         }
     }
 }

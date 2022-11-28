@@ -106,7 +106,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
     }
 
     /**
-     * Sets up the dropdown menu (Spinner component) to select authentication type
+     * Set up the dropdown menu (Spinner component) to select authentication type
      */
     public void configureAuthSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
