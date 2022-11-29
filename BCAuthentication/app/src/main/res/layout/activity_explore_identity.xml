@@ -34,22 +34,12 @@
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
 
-    <TextView
-        android:id="@+id/identity_help_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/identity_title_tv"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="center"
-        android:textSize="20dp"
-        android:textColor="@color/bc_text"/>
-
     <LinearLayout
         android:id="@+id/id_types_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:layout_below="@id/identity_help_tv"
+        android:layout_below="@id/identity_title_tv"
         android:layout_centerHorizontal="true"
         android:orientation="vertical"
         android:background="@color/bc_button">

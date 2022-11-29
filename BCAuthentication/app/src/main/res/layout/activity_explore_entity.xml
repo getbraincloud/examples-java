@@ -9,14 +9,14 @@
 
 
     <TextView
-        android:id="@+id/bc_menu_init_status_tv"
+        android:id="@+id/bc_init_status_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_init"
         android:textColor="@color/bc_text"/>
 
     <ImageView
-        android:id="@+id/bc_menu_logo_iv"
+        android:id="@+id/bc_logo_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/bc_logo"
@@ -26,7 +26,7 @@
         android:id="@+id/entity_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/bc_menu_logo_iv"
+        android:layout_below="@id/bc_logo_iv"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="-70dp"
         android:text="@string/entity_header"
@@ -34,18 +34,124 @@
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
 
-    <TextView
-        android:id="@+id/entity_help_tv"
+    <LinearLayout
+        android:id="@+id/entity_field_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/entity_title_tv"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@id/entity_title_tv"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <TextView
+                android:id="@+id/entity_id_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textSize="18dp"
+                android:ems="36"
+                android:text="Entity ID:"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <TextView
+                android:id="@+id/entity_type_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="18dp"
+                android:text="Entity Type:"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <EditText
+                android:id="@+id/entity_name_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="20dp"
+                android:hint="Entity Name:"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <EditText
+                android:id="@+id/entity_age_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="20dp"
+                android:hint="Entity Age:"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/empty_field_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/invalid_login"
+            android:textColor="@color/red"
+            android:textAlignment="center"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/create_b"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/bc_button"
+                android:textColor="@color/black"
+                android:text="@string/create_button"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/delete_b"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/bc_button"
+                android:textColor="@color/black"
+                android:text="Delete"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/back_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/entity_title_tv"
+        android:layout_below="@id/entity_field_ll"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/bc_button"

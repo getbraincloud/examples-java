@@ -26,7 +26,6 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
     // UI components
     private TextView bcInitStatus;
     private TextView identityStatus;
-    private TextView identityHelp;
     private Spinner identityTypes;
     private EditText userField;
     private EditText passField;
@@ -51,7 +50,6 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
         // Get reference to UI components
         bcInitStatus = findViewById(R.id.bc_init_status_tv);
         identityStatus = findViewById(R.id.identity_title_tv);
-        identityHelp = findViewById(R.id.identity_help_tv);
         identityTypes = findViewById(R.id.id_types_s);
         userField = findViewById(R.id.user_field_et);
         passField = findViewById(R.id.pass_field_et);
@@ -60,10 +58,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
         mergeButton = findViewById(R.id.merge_b);
         backButton = findViewById(R.id.identity_back_b);
 
-        bcInitStatus.setText(brainCloud.getWrapper().getClient().getBrainCloudVersion());
-
-        // Display help message
-        identityHelp.setText(R.string.identity_help);
+        bcInitStatus.setText(brainCloud.getVersion());
 
         // Create the dropdown menu (Spinner component) to select identity type to update
         configureIdSpinner();

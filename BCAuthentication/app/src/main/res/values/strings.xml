@@ -1,51 +1,50 @@
 <resources>
     <string name="app_name">BCAuthentication</string>
-    <string name="default_init">BC NOT INITIALIZED</string>
-    <string name="bc_init_fail">Initialize failed…</string>
-    <string name="enter_brain_cloud">Enter brainCloud</string>
+    <!-- Labels/Headers/Hints -->
     <string name="select_auth_type">Select Authentication Type:</string>
-    <string name="click_to_auth">AUTHENTICATE</string>
-    <string name="default_auth">Welcome</string>
-    <string name="attempt_auth">Authenticating…</string>
-    <string name="auth_success">Authenticated!</string>
-    <string name="auth_fail">Authentication failed…</string>
-    <string name="retry_init">Check ids and try again.</string>
     <string name="user_hint">UserID</string>
     <string name="password_hint">Password</string>
     <string name="universal_hint">Username</string>
     <string name="email_hint">Email Address</string>
+    <string name="identity_header">Identity</string>
+    <string name="entity_header">Entities</string>
+    <string name="xp_header">XP/Currency</string>
+    <string name="stats_header">Statistics</string>
+    <string name="scripts_header">Cloud Code</string>
+    <!-- Status messages -->
+    <string name="default_init">BC NOT INITIALIZED</string>
+    <string name="bc_init_fail">Initialize failed…</string>
+    <string name="default_auth">Welcome</string>
+    <string name="attempt_auth">Authenticating…</string>
+    <string name="auth_success">Authenticated!</string>
+    <string name="auth_fail">Authentication failed…</string>
     <string name="invalid_login">Please fill in empty fields</string>
-    <string name="log_out">LOG OUT</string>
-    <string name="attempt_log_out">Logging out…</string>
-    <string name="log_out_fail">Log out failed…</string>
-    <string name="explore_func">Explore</string>
+    <string name="retry_init">Check ids and try again.</string>
     <string name="explore_bc">Explore brainCloud</string>
     <string name="identity_status">Update Your Identity</string>
     <string name="entity_status">Create/Delete Entities</string>
     <string name="xp_status">Award XP/Currency</string>
     <string name="stats_status">View Statistics</string>
     <string name="script_status">Run Cloud Code Scripts</string>
-    <string name="default_func_help">BRAINCLOUD FUNCTION</string>
-    <string name="identity_header">Identity</string>
-    <string name="entity_header">Entities</string>
-    <string name="xp_header">XP/Currency</string>
-    <string name="stats_header">Statistics</string>
-    <string name="scripts_header">Cloud Code</string>
-    <string name="back_button">Back</string>
-    <string name="attach">Attach</string>
-    <string name="merge">Merge</string>
-
-    <!-- Help messages -->
-    <string name="identity_help">
-        Attach a new identity or Merge an existing one to the current profile
-    </string>
+    <string name="attempt_log_out">Logging out…</string>
+    <string name="log_out_fail">Log out failed…</string>
+    <string name="create_entity">Creating Entity...</string>
+    <string name="entity_success">Entity Created!</string>
     <string name="attaching">Attaching...</string>
     <string name="merging">Merging...</string>
     <string name="attach_success">Attach Successful!</string>
     <string name="attach_fail">Attach Failed...</string>
     <string name="merge_success">Merge Successful!</string>
     <string name="merge_fail">Merge Failed...</string>
-
+    <!-- Buttons -->
+    <string name="enter_brain_cloud">Enter brainCloud</string>
+    <string name="log_out">LOG OUT</string>
+    <string name="explore_func">Explore</string>
+    <string name="click_to_auth">AUTHENTICATE</string>
+    <string name="back_button">Back</string>
+    <string name="attach">Attach</string>
+    <string name="merge">Merge</string>
+    <string name="create_button">Create</string>
     <!-- Spinner arrays -->
     <string-array name="auth_types">
         <item>Select Auth Type</item>

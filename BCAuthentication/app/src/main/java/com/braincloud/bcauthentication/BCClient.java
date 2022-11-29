@@ -7,9 +7,13 @@ import android.util.Log;
 import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.client.IServerCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class BCClient {
 
     private BrainCloudWrapper _bc;
+    private Entity entity;
 
     public BCClient(){
         _bc = new BrainCloudWrapper();
@@ -27,6 +31,10 @@ public class BCClient {
                 start(); // Restart the timer
             }
         }.start();
+    }
+
+    public String getVersion(){
+        return _bc.getClient().getBrainCloudVersion();
     }
 
     public BrainCloudWrapper getWrapper(){
@@ -88,5 +96,54 @@ public class BCClient {
         else{
             _bc.getIdentityService().mergeUniversalIdentity(user, pass, callback);
         }
+    }
+
+    public void getEntityPage(IServerCallback callback){
+        JSONObject pagination = new JSONObject();
+        JSONObject searchCriteria = new JSONObject();
+        JSONObject sortCriteria = new JSONObject();
+        JSONObject jsonContext = new JSONObject();
+
+        try {
+            pagination.put("rowsPerPage", 50);
+            pagination.put("pageNumber", 1);
+
+            searchCriteria.put("entityType", "player");
+
+            sortCriteria.put("createdAt", 1);
+            sortCriteria.put("updatedAt", -1);
+
+            jsonContext.put("pagination", pagination);
+            jsonContext.put("searchCriteria", searchCriteria);
+            jsonContext.put("sortCriteria", sortCriteria);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String context = jsonContext.toString();
+
+        _bc.getEntityService().getPage(context, callback);
+    }
+
+    public void createEntity(String entityName, String entityAge, IServerCallback callback){
+        entity = new Entity();
+
+        _bc.getEntityService().createEntity(
+                entity.getEntityType(),
+                entity.getJsonData(entityName, entityAge),
+                entity.getJsonAcl(),
+                callback
+        );
+    }
+
+    public void updateEntity(String entityName, String entityAge, IServerCallback callback){
+        _bc.getEntityService().updateEntity(
+                entity.getEntityId(),
+                entity.getEntityType(),
+                entity.getJsonData(entityName, entityAge),
+                entity.getJsonAcl(),
+                -1,
+                callback
+        );
     }
 }
