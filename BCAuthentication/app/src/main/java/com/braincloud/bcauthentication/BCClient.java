@@ -171,4 +171,12 @@ public class BCClient {
                 callback
         );
     }
+
+    public void updateXP(IServerCallback callback){
+        _bc.getPlayerStateService().readUserState(callback);
+    }
+
+    public void incrementXP(int incrementAmount, IServerCallback callback){
+        _bc.getPlayerStatisticsService().incrementExperiencePoints(incrementAmount, callback);
+    }
 }

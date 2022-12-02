@@ -45,6 +45,23 @@
     <string name="attach">Attach</string>
     <string name="merge">Merge</string>
     <string name="create_button">Create</string>
+    <string name="find_entity">Finding Entity...</string>
+    <string name="create_new_entity">Creating Entity...</string>
+    <string name="update_entity">Updating Entity...</string>
+    <string name="delete_entity">Deleting Entity...</string>
+    <string name="default_entity_id">Entity ID:</string>
+    <string name="default_entity_type">Entity Type:</string>
+    <string name="create_entity_status">Create a New Entity</string>
+    <string name="create">Create</string>
+    <string name="update_entity_status">Update Entity</string>
+    <string name="update">Update</string>
+    <string name="entity_created">Entity Created!</string>
+    <string name="entity_error">Entity Error...</string>
+    <string name="entity_updated">Entity Updated!</string>
+    <string name="entity_deleted">Entity Deleted!</string>
+    <string name="default_entity_name">Entity Name:</string>
+    <string name="default_entity_age">Entity Age:</string>
+    <string name="delete">Delete</string>
     <!-- Spinner arrays -->
     <string-array name="auth_types">
         <item>Select Auth Type</item>

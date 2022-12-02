@@ -65,7 +65,7 @@ public class ExploreEntity extends AppCompatActivity {
         bcInitStatus.setText(brainCloud.getVersion());
 
         // Look for existing entities
-        entityStatus.setText("Finding Entity...");
+        entityStatus.setText(R.string.find_entity);
         getEntity();
 
         // Hide the button until an entity is created
@@ -85,12 +85,12 @@ public class ExploreEntity extends AppCompatActivity {
                 entity.setName(entityName);
                 entity.setAge(entityAge);
 
-                if(existingEntity == false){
-                    entityStatus.setText("Creating Entity...");
+                if(!existingEntity){
+                    entityStatus.setText(R.string.create_new_entity);
                     createEntity();
                 }
                 else{
-                    entityStatus.setText("Updating Entity...");
+                    entityStatus.setText(R.string.update_entity);
                     updateEntity();
                 }
             }
@@ -98,7 +98,7 @@ public class ExploreEntity extends AppCompatActivity {
 
         // Delete entity
         deleteButton.setOnClickListener(view -> {
-            entityStatus.setText("Deleting Entity...");
+            entityStatus.setText(R.string.delete_entity);
             deleteEntity();
         });
 
@@ -172,14 +172,14 @@ public class ExploreEntity extends AppCompatActivity {
         entityNameField.getText().clear();
         entityAgeField.getText().clear();
 
-        if(existingEntity == false){
-            entityIdField.setText("Entity ID:");
-            entityTypeField.setText("Entity Type:");
-            entityNameField.setHint("Entity Name:");
-            entityAgeField.setHint("Entity Age:");
+        if(!existingEntity){
+            entityIdField.setText(R.string.default_entity_id);
+            entityTypeField.setText(R.string.default_entity_type);
+            entityNameField.setHint(R.string.default_entity_name);
+            entityAgeField.setHint(R.string.default_entity_age);
 
-            entityStatus.setText("Create a New Entity");
-            createButton.setText("Create");
+            entityStatus.setText(R.string.create_entity_status);
+            createButton.setText(R.string.create);
         }
         else{
             String id = "Entity ID: " + entity.getEntityId();
@@ -192,8 +192,8 @@ public class ExploreEntity extends AppCompatActivity {
             entityNameField.setHint(name);
             entityAgeField.setHint(age);
 
-            entityStatus.setText("Update Entity");
-            createButton.setText("Update");
+            entityStatus.setText(R.string.update_entity_status);
+            createButton.setText(R.string.update);
             deleteButton.setVisibility(View.VISIBLE);
         }
     }
@@ -205,13 +205,13 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.createEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText("Entity Created!");
+                entityStatus.setText(R.string.entity_created);
                 getEntity();
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                entityStatus.setText("Entity Error...");
+                entityStatus.setText(R.string.entity_error);
                 Log.d("BC_LOG", jsonError);
             }
         });
@@ -224,13 +224,13 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.updateEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText("Entity Updated!");
+                entityStatus.setText(R.string.entity_updated);
                 getEntity();
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                entityStatus.setText("Entity Error...!");
+                entityStatus.setText(R.string.entity_error);
                 Log.d("BC_LOG", jsonError);
             }
         });
@@ -243,13 +243,13 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.deleteEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText("Entity Deleted!");
+                entityStatus.setText(R.string.entity_deleted);
                 getEntity();
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                entityStatus.setText("Entity Error...");
+                entityStatus.setText(R.string.entity_error);
                 Log.d("BC_LOG", jsonError);
             }
         });
