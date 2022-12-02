@@ -16,21 +16,48 @@ public class Entity {
     private String age;
 
     public Entity(){
-        this.entityId = "";
         this.entityType = "player";
         this.name = "James Reece";
-        this.age = "20";
+        this.age = "50";
     }
 
     public String getEntityId(){
         return entityId;
     }
 
+    public void setEntityId(String entityId){
+        this.entityId = entityId;
+    }
+
     public String getEntityType(){
         return entityType;
     }
 
-    public String getJsonData(String name, String age){
+    public void setEntityType(String entityType){
+        this.entityType = entityType;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getAge(){
+        return age;
+    }
+
+    public void setAge(String age){
+        this.age = age;
+    }
+
+    /**
+     * Create JSON context
+     * @return String - JSON context
+     */
+    public String getJsonData(){
         JSONObject obj = new JSONObject();
         String jsonData;
 
@@ -38,7 +65,7 @@ public class Entity {
             obj.put("name", name);
             obj.put("age", age);
         } catch (JSONException e) {
-            e.printStackTrace();    //TODO
+            e.printStackTrace();
             Log.d("BC_LOG", "JSON DATA ERROR");
         }
 
@@ -47,6 +74,10 @@ public class Entity {
         return jsonData;
     }
 
+    /**
+     * Create User Entity ACL
+     * @return String - JSON ACL
+     */
     public String getJsonAcl(){
         JSONObject obj = new JSONObject();
         String jsonACL;
@@ -54,7 +85,7 @@ public class Entity {
         try{
             obj.put("other", 2);
         } catch(JSONException e){
-            e.printStackTrace();    //TODO
+            e.printStackTrace();
             Log.d("BC_LOG", "JSON ACL ERROR");
         }
 

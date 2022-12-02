@@ -13,7 +13,6 @@ import org.json.JSONObject;
 public class BCClient {
 
     private BrainCloudWrapper _bc;
-    private Entity entity;
 
     public BCClient(){
         _bc = new BrainCloudWrapper();
@@ -98,6 +97,10 @@ public class BCClient {
         }
     }
 
+    /**
+     * Search for existing User Entity
+     * @param callback callback is passed from the ExploreIdentity class
+     */
     public void getEntityPage(IServerCallback callback){
         JSONObject pagination = new JSONObject();
         JSONObject searchCriteria = new JSONObject();
@@ -118,6 +121,7 @@ public class BCClient {
             jsonContext.put("sortCriteria", sortCriteria);
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.d("BC_LOG", "JSON CONTEXT ERROR");
         }
 
         String context = jsonContext.toString();
@@ -125,23 +129,44 @@ public class BCClient {
         _bc.getEntityService().getPage(context, callback);
     }
 
-    public void createEntity(String entityName, String entityAge, IServerCallback callback){
-        entity = new Entity();
-
+    /**
+     * Create User Entity
+     * @param entity Object containing User Entity data (type, name, age, etc.)
+     * @param callback callback is passed from the ExploreEntity class
+     */
+    public void createEntity(Entity entity, IServerCallback callback){
         _bc.getEntityService().createEntity(
                 entity.getEntityType(),
-                entity.getJsonData(entityName, entityAge),
+                entity.getJsonData(),
                 entity.getJsonAcl(),
                 callback
         );
     }
 
-    public void updateEntity(String entityName, String entityAge, IServerCallback callback){
+    /**
+     * Update existing User Entity with new data
+     * @param entity Object containing User Entity data (id, type, name, etc.)
+     * @param callback callback is passed from the ExploreEntity class
+     */
+    public void updateEntity(Entity entity, IServerCallback callback){
         _bc.getEntityService().updateEntity(
                 entity.getEntityId(),
                 entity.getEntityType(),
-                entity.getJsonData(entityName, entityAge),
+                entity.getJsonData(),
                 entity.getJsonAcl(),
+                -1,
+                callback
+        );
+    }
+
+    /**
+     * Delete User Entity
+     * @param entity Object containing User Entity Data (id)
+     * @param callback callback is passed from the ExploreEntity class
+     */
+    public void deleteEntity(Entity entity, IServerCallback callback){
+        _bc.getEntityService().deleteEntity(
+                entity.getEntityId(),
                 -1,
                 callback
         );
