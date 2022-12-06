@@ -23,86 +23,99 @@
         android:contentDescription="@null"/>
 
     <TextView
-        android:id="@+id/xp_title_tv"
+        android:id="@+id/currency_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/bc_logo_iv"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="-70dp"
-        android:text="@string/xp_header"
+        android:text="@string/currency_header"
         android:textSize="50dp"
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
 
     <LinearLayout
-        android:id="@+id/xp_field_ll"
+        android:id="@+id/currency_field_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/xp_title_tv"
+        android:layout_below="@id/currency_title_tv"
         android:layout_centerHorizontal="true"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@color/bc_button">
 
             <TextView
-                android:id="@+id/player_level_tv"
+                android:id="@+id/balance_tv"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:ems="18"
-                android:text="Player Level:"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:background="@color/bc_button">
+                android:text="Balance:"
+                android:ems="9"/>
 
             <TextView
-                android:id="@+id/player_xp_accrued_tv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:id="@+id/awarded_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:text="Player XP Accrued:"/>
+                android:text="Awarded:"
+                android:ems="9"/>
+
+            <TextView
+                android:id="@+id/consumed_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:text="Consumed:"
+                android:ems="18"/>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:background="@color/bc_button">
 
             <EditText
-                android:id="@+id/increment_et"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:id="@+id/amount_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:hint="increment amount"
-                android:autofillHints="increment_amount"
-                android:inputType="number" />
+                android:hint="award/consume gems"
+                android:autofillHints="amount"
+                android:inputType="number"
+                android:ems="18"/>
 
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_gravity="center">
+            android:layout_gravity="center"
+            android:weightSum="2">
 
             <Button
-                android:id="@+id/increment_b"
+                android:id="@+id/award_b"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/bc_button"
                 android:textColor="@color/black"
-                android:text="Increment XP"/>
+                android:text="Award"
+                android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/consume_b"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/bc_button"
+                android:textColor="@color/black"
+                android:text="Consume"
+                android:layout_weight="1"/>
 
         </LinearLayout>
 
@@ -112,7 +125,7 @@
         android:id="@+id/back_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/xp_field_ll"
+        android:layout_below="@id/currency_field_ll"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/bc_button"

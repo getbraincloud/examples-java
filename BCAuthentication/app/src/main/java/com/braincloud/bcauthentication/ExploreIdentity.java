@@ -34,7 +34,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
     private Button mergeButton;
     private Button backButton;
 
-    // Other variables
+    // Identity specific variables
     private String idType;
     private String userId;
     private String password;

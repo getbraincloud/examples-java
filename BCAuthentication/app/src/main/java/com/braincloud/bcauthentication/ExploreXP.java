@@ -28,18 +28,12 @@ public class ExploreXP extends AppCompatActivity {
     private TextView playerXpAccruedField;
     private EditText incrementAmountField;
     private Button incrementButton;
-    private TextView balanceField;
-    private TextView awardedField;
-    private EditText awardAmountField;
-    private Button awardButton;
     private Button backButton;
 
-    // Other variables
+    // XP specific variables
     private int playerLevel;
     private int playerXP;
     private int xpIncrementAmount;
-    private int balance;
-    private int currencyIncrementAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,36 +50,29 @@ public class ExploreXP extends AppCompatActivity {
         playerXpAccruedField = findViewById(R.id.player_xp_accrued_tv);
         incrementAmountField = findViewById(R.id.increment_et);
         incrementButton = findViewById(R.id.increment_b);
-        balanceField = findViewById(R.id.balance_tv);
-        awardedField = findViewById(R.id.awarded_tv);
-        awardAmountField = findViewById(R.id.award_amount_et);
-        awardButton = findViewById(R.id.award_b);
         backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
-        // Load current XP
+        // Get current XP info
         xpStatus.setText("Updating XP...");
-        updateXP();
+        getXP();
 
-        // Increment user's "XP Points" by the given amount
+        // Increase user's "XP Points" by the given amount
         incrementButton.setOnClickListener(view -> {
             xpStatus.setText("Incrementing XP...");
             incrementXP();
-        });
-
-        // Increment user's currency balance by the given amount
-        awardButton.setOnClickListener(view -> {
-            xpStatus.setText("Incrementing Currency...");
-            incrementCurrency();
         });
 
         // Return to BrainCloudMenu Activity to select a different brainCloud function
         backButton.setOnClickListener(view -> finish());
     }
 
-    public void updateXP(){
-        brainCloud.updateXP(new IServerCallback() {
+    /**
+     * Retrieve player's current XP
+     */
+    public void getXP(){
+        brainCloud.getXP(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 parsePlayerStateJSON(jsonData);
@@ -99,6 +86,10 @@ public class ExploreXP extends AppCompatActivity {
         });
     }
 
+    /**
+     * Get player level and points returned from server
+     * @param jsonData returned JSON containing player level and points data
+     */
     public void parsePlayerStateJSON(JSONObject jsonData){
         JSONObject data;
         String experienceLevel;
@@ -113,11 +104,13 @@ public class ExploreXP extends AppCompatActivity {
             playerXP = Integer.parseInt(experiencePoints);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("BC_LOG", "XPERROR");
+            Log.d("BC_LOG", "XP Parse Error");
         }
     }
 
-
+    /**
+     * Update UI to reflect current XP data
+     */
     public void displayXP(){
         String experienceLevel = Integer.toString(playerLevel);
         String experiencePoints = Integer.toString(playerXP);
@@ -131,6 +124,9 @@ public class ExploreXP extends AppCompatActivity {
         xpStatus.setText("Current XP");
     }
 
+    /**
+     * Increase player's experience points
+     */
     public void incrementXP(){
         xpIncrementAmount = Integer.parseInt(incrementAmountField.getText().toString());
         incrementAmountField.getText().clear();
@@ -138,8 +134,7 @@ public class ExploreXP extends AppCompatActivity {
         brainCloud.incrementXP(xpIncrementAmount, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                Log.d("BC_LOG", "XP INCREMENT SUCCESS");
-                updateXP();
+                getXP();
             }
 
             @Override
@@ -147,13 +142,5 @@ public class ExploreXP extends AppCompatActivity {
                 Log.d("BC_LOG", jsonError);
             }
         });
-    }
-
-    public void incrementCurrency(){
-        currencyIncrementAmount = Integer.parseInt(awardAmountField.getText().toString());
-
-        balance += currencyIncrementAmount;
-
-        balanceField.setText("Balance: " + Integer.toString(balance));
     }
 }

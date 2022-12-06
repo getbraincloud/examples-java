@@ -61,8 +61,11 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
                 case "Entity":
                     exploreEntity();
                     break;
-                case "XP":
+                case "Experience":
                     exploreXP();
+                    break;
+                case "Currency":
+                    exploreCurrency();
                     break;
                 case "Stats":
                     exploreStats();
@@ -115,9 +118,13 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
                         exploreFunc.setVisibility(View.VISIBLE);
                         bcFunctionStatus.setText(R.string.entity_status);
                         break;
-                    case "XP":
+                    case "Experience":
                         exploreFunc.setVisibility(View.VISIBLE);
                         bcFunctionStatus.setText(R.string.xp_status);
+                        break;
+                    case "Currency":
+                        exploreFunc.setVisibility(View.VISIBLE);
+                        bcFunctionStatus.setText(R.string.currency_status);
                         break;
                     case "Stats":
                         exploreFunc.setVisibility(View.VISIBLE);
@@ -155,11 +162,18 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
     }
 
     /**
-     * Go to the ExploreXP Activity to increment player level and award/consume currency
+     * Go to the ExploreXP Activity to increment player level
      */
     public void exploreXP(){
-        //TODO
         Intent intent = new Intent(getApplication(), ExploreXP.class);
+        startActivity(intent);
+    }
+
+    /**
+     * Go to the ExploreCurrency Activity to award/consume currency
+     */
+    public void exploreCurrency(){
+        Intent intent = new Intent(getApplication(), ExploreCurrency.class);
         startActivity(intent);
     }
 

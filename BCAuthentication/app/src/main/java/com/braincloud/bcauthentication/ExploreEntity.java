@@ -34,7 +34,7 @@ public class ExploreEntity extends AppCompatActivity {
     private Button deleteButton;
     private Button backButton;
 
-    // Other variables
+    // Entity specific variables
     private Entity entity;
     private String entityName;
     private String entityAge;

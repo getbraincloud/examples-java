@@ -172,11 +172,38 @@ public class BCClient {
         );
     }
 
-    public void updateXP(IServerCallback callback){
+    /**
+     * Retrieve player's current XP
+     * @param callback callback is passed from the ExploreXP class
+     */
+    public void getXP(IServerCallback callback){
         _bc.getPlayerStateService().readUserState(callback);
     }
 
+    /**
+     * Increase player's experience points
+     * @param incrementAmount value to increase points by
+     * @param callback callback is passed from the ExploreXP class
+     */
     public void incrementXP(int incrementAmount, IServerCallback callback){
         _bc.getPlayerStatisticsService().incrementExperiencePoints(incrementAmount, callback);
+    }
+
+    /**
+     * Retrieve player's current currency
+     * @param callback callback is passed from the ExploreCurrency class
+     */
+    public void getCurrency(IServerCallback callback){
+        _bc.getVirtualCurrencyService().getCurrency("gems", callback);
+    }
+
+    /**
+     * Run a provided Cloud Code script
+     * @param scriptName name of existing script
+     * @param scriptData parameter data to be used by the script
+     * @param callback callback is passed from the ExploreCurrency class
+     */
+    public void runCloudCodeScript(String scriptName, String scriptData, IServerCallback callback){
+        _bc.getScriptService().runScript(scriptName, scriptData, callback);
     }
 }

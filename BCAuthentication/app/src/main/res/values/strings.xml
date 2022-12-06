@@ -8,7 +8,8 @@
     <string name="email_hint">Email Address</string>
     <string name="identity_header">Identity</string>
     <string name="entity_header">Entities</string>
-    <string name="xp_header">XP/Currency</string>
+    <string name="xp_header">Experience</string>
+    <string name="currency_header">Currency</string>
     <string name="stats_header">Statistics</string>
     <string name="scripts_header">Cloud Code</string>
     <!-- Status messages -->
@@ -23,7 +24,8 @@
     <string name="explore_bc">Explore brainCloud</string>
     <string name="identity_status">Update Your Identity</string>
     <string name="entity_status">Create/Delete Entities</string>
-    <string name="xp_status">Award XP/Currency</string>
+    <string name="xp_status">Award XP</string>
+    <string name="currency_status">Award/Consume Currency</string>
     <string name="stats_status">View Statistics</string>
     <string name="script_status">Run Cloud Code Scripts</string>
     <string name="attempt_log_out">Logging out…</string>
@@ -73,7 +75,8 @@
         <item>Select brainCloud Function</item>
         <item>Identity</item>
         <item>Entity</item>
-        <item>XP</item>
+        <item>Experience</item>
+        <item>Currency</item>
         <item>Stats</item>
         <item>Cloud Code</item>
     </string-array>
