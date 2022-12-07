@@ -86,7 +86,7 @@ public class ExploreEntity extends AppCompatActivity {
                 entity.setAge(entityAge);
 
                 if(!existingEntity){
-                    entityStatus.setText(R.string.create_new_entity);
+                    entityStatus.setText(R.string.create_entity);
                     createEntity();
                 }
                 else{

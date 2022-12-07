@@ -34,12 +34,26 @@
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
 
+    <TextView
+        android:id="@+id/help_box_tv"
+        android:layout_below="@id/bc_menu_status_tv"
+        android:layout_marginTop="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/bc_text"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:text="@string/bcl_func_help"/>
+
     <LinearLayout
         android:id="@+id/bc_functions_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:layout_below="@id/bc_menu_status_tv"
+        android:layout_below="@id/help_box_tv"
         android:layout_centerHorizontal="true"
         android:orientation="vertical"
         android:background="@color/bc_button">

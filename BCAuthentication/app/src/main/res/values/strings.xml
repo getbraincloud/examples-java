@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">BCAuthentication</string>
+
     <!-- Labels/Headers/Hints -->
     <string name="select_auth_type">Select Authentication Type:</string>
     <string name="user_hint">UserID</string>
@@ -12,6 +13,37 @@
     <string name="currency_header">Currency</string>
     <string name="stats_header">Statistics</string>
     <string name="scripts_header">Cloud Code</string>
+    <string name="identity_status">Update Your Identity</string>
+    <string name="entity_status">Create/Delete Entities</string>
+    <string name="xp_status">Increment XP</string>
+    <string name="currency_status">Award/Consume Currency</string>
+    <string name="stats_status">View Statistics</string>
+    <string name="script_status">Run Cloud Code Scripts</string>
+    <string name="bcl_func_help">brainCloud function help message</string>
+    <string name="identity_help">
+        Attach or merge an email or universal ID to an existing user. Identity information can be
+        viewed in the brainCloud portal under:\nUsers > User Summary > Credentials.
+    </string>
+    <string name="entity_help">
+        Create a new entity or delete/modify an existing one. Entities can be viewed in the
+        brainCloud portal under:\nUsers > Data > User Entities.
+    </string>
+    <string name="xp_help">
+        Define XP Levels on the brainCloud portal under:\nDesign > Gamification > XP Levels.\nIf no
+        XP Levels are defined, only XP Points will be modified. XP information can be viewed under:
+        \nUsers > User Summary > Account Details.
+    </string>
+    <string name="currency_help">
+        "Gems" are the defined Virtual Currency used in this demo. Create Virtual Currencies in the
+        brainCloud portal under:\nDesign > Marketplace > Virtual Currencies.
+    </string>
+    <string name="stats_help">
+        Player Statistics are user-scoped and are only accessible to the user they belong to.
+        Global Statistics are accessible to any user.
+        Define Player Statistics in the brainCloud portal under:\nUsers > Data > Statistics.
+        \nDefine Global Statistics under:\nGlobal > Global Data > Global Statistics.
+    </string>
+
     <!-- Status messages -->
     <string name="default_init">BC NOT INITIALIZED</string>
     <string name="bc_init_fail">Initialize failed…</string>
@@ -22,22 +54,30 @@
     <string name="invalid_login">Please fill in empty fields</string>
     <string name="retry_init">Check ids and try again.</string>
     <string name="explore_bc">Explore brainCloud</string>
-    <string name="identity_status">Update Your Identity</string>
-    <string name="entity_status">Create/Delete Entities</string>
-    <string name="xp_status">Award XP</string>
-    <string name="currency_status">Award/Consume Currency</string>
-    <string name="stats_status">View Statistics</string>
-    <string name="script_status">Run Cloud Code Scripts</string>
     <string name="attempt_log_out">Logging out…</string>
     <string name="log_out_fail">Log out failed…</string>
-    <string name="create_entity">Creating Entity...</string>
-    <string name="entity_success">Entity Created!</string>
-    <string name="attaching">Attaching...</string>
-    <string name="merging">Merging...</string>
+    <string name="create_entity">Creating Entity…</string>
+    <string name="entity_created">Entity Created!</string>
+    <string name="entity_error">Entity Error…</string>
+    <string name="entity_updated">Entity Updated!</string>
+    <string name="entity_deleted">Entity Deleted!</string>
+    <string name="find_entity">Finding Entity…</string>
+    <string name="update_entity">Updating Entity…</string>
+    <string name="delete_entity">Deleting Entity…</string>
+    <string name="attaching">Attaching…</string>
+    <string name="merging">Merging…</string>
     <string name="attach_success">Attach Successful!</string>
-    <string name="attach_fail">Attach Failed...</string>
+    <string name="attach_fail">Attach Failed…</string>
     <string name="merge_success">Merge Successful!</string>
-    <string name="merge_fail">Merge Failed...</string>
+    <string name="merge_fail">Merge Failed…</string>
+    <string name="update_xp">Updating XP…</string>
+    <string name="increment_xp">Incrementing XP…</string>
+    <string name="current_xp">Current XP</string>
+    <string name="update_currency">Updating Currency…</string>
+    <string name="award_currency">Awarding Currency…</string>
+    <string name="consume_currency">Consuming Currency…</string>
+    <string name="current_currency">Current Currency</string>
+
     <!-- Buttons -->
     <string name="enter_brain_cloud">Enter brainCloud</string>
     <string name="log_out">LOG OUT</string>
@@ -47,23 +87,16 @@
     <string name="attach">Attach</string>
     <string name="merge">Merge</string>
     <string name="create_button">Create</string>
-    <string name="find_entity">Finding Entity...</string>
-    <string name="create_new_entity">Creating Entity...</string>
-    <string name="update_entity">Updating Entity...</string>
-    <string name="delete_entity">Deleting Entity...</string>
     <string name="default_entity_id">Entity ID:</string>
     <string name="default_entity_type">Entity Type:</string>
     <string name="create_entity_status">Create a New Entity</string>
     <string name="create">Create</string>
     <string name="update_entity_status">Update Entity</string>
     <string name="update">Update</string>
-    <string name="entity_created">Entity Created!</string>
-    <string name="entity_error">Entity Error...</string>
-    <string name="entity_updated">Entity Updated!</string>
-    <string name="entity_deleted">Entity Deleted!</string>
     <string name="default_entity_name">Entity Name:</string>
     <string name="default_entity_age">Entity Age:</string>
     <string name="delete">Delete</string>
+
     <!-- Spinner arrays -->
     <string-array name="auth_types">
         <item>Select Auth Type</item>

@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -60,19 +59,19 @@ public class ExploreCurrency extends AppCompatActivity {
         bcInitStatus.setText(brainCloud.getVersion());
 
         // Get current currency info
-        currencyStatus.setText("Updating Currency...");
+        currencyStatus.setText(R.string.update_currency);
         getCurrency();
 
         // Increase user's currency balance by the given amount
         awardButton.setOnClickListener(view -> {
-            currencyStatus.setText("Awarding Currency...");
+            currencyStatus.setText(R.string.award_currency);
             amount = amountField.getText().toString();
             awardCurrency();
         });
 
         // Decrease user's currency balance by the given amount
         consumeButton.setOnClickListener(view -> {
-            currencyStatus.setText("Consuming Currency...");
+            currencyStatus.setText(R.string.consume_currency);
             amount = amountField.getText().toString();
             consumeCurrency();
         });
@@ -101,6 +100,8 @@ public class ExploreCurrency extends AppCompatActivity {
 
     /**
      * Get player balance and other currency info returned from server
+     * "Gems" are being used in this example and must be created in the brainCloud portal
+     * Go to Design > Marketplace > Virtual Currencies to create "gems"
      * @param jsonObject returned JSON containing player balance, awarded, and consumed values
      */
     public void parseCurrencyJSON(JSONObject jsonObject){
@@ -146,7 +147,7 @@ public class ExploreCurrency extends AppCompatActivity {
         consumedField.setText(consumedDisplay);
         awardedField.setText(awardedDisplay);
 
-        currencyStatus.setText("Current Currency");
+        currencyStatus.setText(R.string.current_currency);
     }
 
     /**

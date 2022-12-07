@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -55,12 +54,12 @@ public class ExploreXP extends AppCompatActivity {
         bcInitStatus.setText(brainCloud.getVersion());
 
         // Get current XP info
-        xpStatus.setText("Updating XP...");
+        xpStatus.setText(R.string.update_xp);
         getXP();
 
         // Increase user's "XP Points" by the given amount
         incrementButton.setOnClickListener(view -> {
-            xpStatus.setText("Incrementing XP...");
+            xpStatus.setText(R.string.increment_xp);
             incrementXP();
         });
 
@@ -121,7 +120,7 @@ public class ExploreXP extends AppCompatActivity {
         playerLevelField.setText(playerLevelDisplay);
         playerXpAccruedField.setText(playerXPDisplay);
 
-        xpStatus.setText("Current XP");
+        xpStatus.setText(R.string.current_xp);
     }
 
     /**

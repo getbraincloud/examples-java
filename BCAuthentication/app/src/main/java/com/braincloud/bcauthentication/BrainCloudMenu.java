@@ -26,6 +26,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
     // UI components
     private TextView bcInitStatus;
     private TextView bcFunctionStatus;
+    private TextView bcFuncHelp;
     private Spinner funcSelect;
     private Button exploreFunc;
     private Button logOut;
@@ -44,6 +45,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
         // Get reference to UI components
         bcInitStatus = findViewById(R.id.bc_menu_init_status_tv);
         bcFunctionStatus = findViewById(R.id.bc_menu_status_tv);
+        bcFuncHelp = findViewById(R.id.help_box_tv);
         funcSelect = findViewById(R.id.bc_functions_s);
         exploreFunc = findViewById(R.id.explore_func_b);
         logOut = findViewById(R.id.log_out_b);
@@ -108,26 +110,37 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
                 switch(selectedFunc){
                     case "Select brainCloud Function":
                         exploreFunc.setVisibility(View.GONE);
+                        bcFuncHelp.setVisibility(View.GONE);
                         bcFunctionStatus.setText(R.string.explore_bc);
                         break;
                     case "Identity":
                         exploreFunc.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setText(R.string.identity_help);
                         bcFunctionStatus.setText(R.string.identity_status);
                         break;
                     case "Entity":
                         exploreFunc.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setText(R.string.entity_help);
                         bcFunctionStatus.setText(R.string.entity_status);
                         break;
                     case "Experience":
                         exploreFunc.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setText(R.string.xp_help);
                         bcFunctionStatus.setText(R.string.xp_status);
                         break;
                     case "Currency":
                         exploreFunc.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setText(R.string.currency_help);
                         bcFunctionStatus.setText(R.string.currency_status);
                         break;
                     case "Stats":
                         exploreFunc.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setVisibility(View.VISIBLE);
+                        bcFuncHelp.setText(R.string.stats_help);
                         bcFunctionStatus.setText(R.string.stats_status);
                         break;
                     case "Cloud Code":
