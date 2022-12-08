@@ -45,8 +45,8 @@ public class ExploreEntity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_entity);
 
-        // Get brainCloud wrapper
-        brainCloud = AuthenticateMenu.brainCloud;
+            // Get brainCloud wrapper
+            brainCloud = AuthenticateMenu.brainCloud;
 
         entity = new Entity();
 

@@ -190,7 +190,7 @@ public class BCClient {
     }
 
     /**
-     * Retrieve player's current currency
+     * Retrieve player's currency data
      * @param callback callback is passed from the ExploreCurrency class
      */
     public void getCurrency(IServerCallback callback){
@@ -205,5 +205,24 @@ public class BCClient {
      */
     public void runCloudCodeScript(String scriptName, String scriptData, IServerCallback callback){
         _bc.getScriptService().runScript(scriptName, scriptData, callback);
+    }
+
+    /**
+     * Retrieve player's statistics
+     * @param callback callback is passed from the ExploreStats class
+     */
+    public void requestUserStatistics(IServerCallback callback){
+        Log.d("BC_LOG", "Reading User Stats...");
+        _bc.getPlayerStatisticsService().readAllUserStats(callback);
+    }
+
+    /**
+     * Increment given player statistics by given amount
+     * @param jsonData name of statistic to be incremented and increment amount
+     * @param callback
+     */
+    public void incrementUserStatistic(String jsonData, IServerCallback callback){
+        Log.d("BC_LOG", "Incrementing User Stats...");
+        _bc.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
     }
 }

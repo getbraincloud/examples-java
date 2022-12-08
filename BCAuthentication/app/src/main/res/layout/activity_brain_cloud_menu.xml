@@ -29,7 +29,7 @@
         android:layout_below="@id/bc_menu_logo_iv"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="-70dp"
-        android:text="@string/explore_bc"
+        android:text="User Statistics"
         android:textSize="35dp"
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>

@@ -148,7 +148,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                //TODO
             }
         });
     }

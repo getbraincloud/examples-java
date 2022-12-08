@@ -86,6 +86,13 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 idType = adapterView.getItemAtPosition(i).toString();
 
+                if(idType.equals("Email")){
+                    userField.setHint(R.string.email_hint);
+                }
+                else{
+                    userField.setHint(R.string.user_hint);
+                }
+
                 userField.getText().clear();
                 passField.getText().clear();
                 invalidLogin.setVisibility(View.GONE);

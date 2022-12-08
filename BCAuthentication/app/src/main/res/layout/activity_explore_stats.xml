@@ -9,7 +9,7 @@
 
 
     <TextView
-        android:id="@+id/bc_menu_init_status_tv"
+        android:id="@+id/bc_init_status_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_init"
@@ -33,19 +33,22 @@
         android:textSize="50dp"
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
-
-    <TextView
-        android:id="@+id/stats_help_tv"
+    
+    <LinearLayout
+        android:id="@+id/user_statistics_field_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/stats_title_tv"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@id/stats_title_tv"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/back_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/stats_title_tv"
+        android:layout_below="@id/user_statistics_field_ll"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/bc_button"
