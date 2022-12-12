@@ -128,7 +128,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
                         identityStatus.setText(R.string.attach_fail);
-                        Log.d("BC_LOG", jsonError);
+                        Log.d("attachIdentity failed: ", jsonError);
                     }
                 });
             }
@@ -144,7 +144,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
                         identityStatus.setText(R.string.merge_fail);
-                        Log.d("BC_LOG", jsonError);
+                        Log.d("mergeIdentity failed: ", jsonError);
                     }
                 });
             }

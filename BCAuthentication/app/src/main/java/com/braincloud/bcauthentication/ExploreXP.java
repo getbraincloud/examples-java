@@ -80,7 +80,7 @@ public class ExploreXP extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", jsonError);
+                Log.d("readUserState failed: ", jsonError);
             }
         });
     }
@@ -103,7 +103,7 @@ public class ExploreXP extends AppCompatActivity {
             playerXP = Integer.parseInt(experiencePoints);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("BC_LOG", "XP Parse Error");
+            Log.d("Parse error: ", "player XP JSON failed to parse");
         }
     }
 
@@ -138,7 +138,7 @@ public class ExploreXP extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", jsonError);
+                Log.d("incrementXP failed: ", jsonError);
             }
         });
     }

@@ -121,7 +121,7 @@ public class BCClient {
             jsonContext.put("sortCriteria", sortCriteria);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("BC_LOG", "JSON CONTEXT ERROR");
+            Log.d("JSON Error", "getPage jsonContext was not created");
         }
 
         String context = jsonContext.toString();
@@ -211,8 +211,7 @@ public class BCClient {
      * Retrieve player's statistics
      * @param callback callback is passed from the ExploreStats class
      */
-    public void requestUserStatistics(IServerCallback callback){
-        Log.d("BC_LOG", "Reading User Stats...");
+    public void getUserStats(IServerCallback callback){
         _bc.getPlayerStatisticsService().readAllUserStats(callback);
     }
 
@@ -221,8 +220,7 @@ public class BCClient {
      * @param jsonData name of statistic to be incremented and increment amount
      * @param callback
      */
-    public void incrementUserStatistic(String jsonData, IServerCallback callback){
-        Log.d("BC_LOG", "Incrementing User Stats...");
+    public void incrementUserStats(String jsonData, IServerCallback callback){
         _bc.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
     }
 }

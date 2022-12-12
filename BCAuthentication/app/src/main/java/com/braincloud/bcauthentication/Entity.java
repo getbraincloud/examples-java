@@ -66,7 +66,7 @@ public class Entity {
             obj.put("age", age);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("BC_LOG", "JSON DATA ERROR");
+            Log.d("JSON Error", "Entity context was not created");
         }
 
         jsonData = obj.toString();
@@ -86,7 +86,7 @@ public class Entity {
             obj.put("other", 2);
         } catch(JSONException e){
             e.printStackTrace();
-            Log.d("BC_LOG", "JSON ACL ERROR");
+            Log.d("JSON Error", "Entity ACL was not created");
         }
 
         jsonACL = obj.toString();

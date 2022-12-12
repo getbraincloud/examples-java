@@ -208,14 +208,12 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
 
     @Override
     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-        Log.d("BC_LOG", "LOGGED OUT");
-
         finish();
     }
 
     @Override
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-        Log.d("BC_LOG", jsonError);
+        Log.d("Log out failed: ", jsonError);
 
         bcFunctionStatus.setText(R.string.log_out_fail);
     }

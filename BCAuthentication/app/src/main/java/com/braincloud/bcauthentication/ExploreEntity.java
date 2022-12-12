@@ -121,7 +121,7 @@ public class ExploreEntity extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", "jsonError");
+                Log.d("getPage failed: ", jsonError);
             }
         });
     }
@@ -161,7 +161,7 @@ public class ExploreEntity extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("BC_LOG", "PARSE ERROR");
+            Log.d("Parse error: ", "Entity JSON failed to parse");
         }
     }
 
@@ -212,7 +212,7 @@ public class ExploreEntity extends AppCompatActivity {
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
                 entityStatus.setText(R.string.entity_error);
-                Log.d("BC_LOG", jsonError);
+                Log.d("createEntity failed: ", jsonError);
             }
         });
     }
@@ -231,7 +231,7 @@ public class ExploreEntity extends AppCompatActivity {
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
                 entityStatus.setText(R.string.entity_error);
-                Log.d("BC_LOG", jsonError);
+                Log.d("updateEntity failed: ", jsonError);
             }
         });
     }
@@ -250,7 +250,7 @@ public class ExploreEntity extends AppCompatActivity {
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
                 entityStatus.setText(R.string.entity_error);
-                Log.d("BC_LOG", jsonError);
+                Log.d("deleteEntity failed: ", jsonError);
             }
         });
     }

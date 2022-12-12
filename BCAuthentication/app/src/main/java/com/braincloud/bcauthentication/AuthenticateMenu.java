@@ -161,7 +161,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
 
     @Override
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-        Log.d("BC_LOG", jsonError);
+        Log.d("Authentication failed: ", jsonError);
 
         bcAuthStatus.setText(R.string.auth_fail);
     }

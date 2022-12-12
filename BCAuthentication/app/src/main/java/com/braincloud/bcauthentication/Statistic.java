@@ -1,6 +1,6 @@
 package com.braincloud.bcauthentication;
 
-public class UserStat {
+public class Statistic {
 
     private String name;
     private long value;

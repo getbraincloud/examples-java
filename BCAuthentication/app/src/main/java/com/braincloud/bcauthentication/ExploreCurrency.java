@@ -93,7 +93,7 @@ public class ExploreCurrency extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", jsonError);
+                Log.d("getCurrency failed: ", jsonError);
             }
         });
     }
@@ -127,7 +127,7 @@ public class ExploreCurrency extends AppCompatActivity {
             awarded = Integer.parseInt(awardedValue);
         } catch(JSONException e){
             e.printStackTrace();
-            Log.d("BC_LOG", "Currency Parse Error");
+            Log.d("Parse Error: ", "Currency JSON failed to parse");
         }
     }
 
@@ -167,7 +167,7 @@ public class ExploreCurrency extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", jsonError);
+                Log.d("runScript failed: ", jsonError);
             }
         });
     }
@@ -189,7 +189,7 @@ public class ExploreCurrency extends AppCompatActivity {
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("BC_LOG", jsonError);
+                Log.d("runScript failed: ", jsonError);
             }
         });
     }
