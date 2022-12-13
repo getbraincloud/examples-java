@@ -208,19 +208,31 @@ public class BCClient {
     }
 
     /**
-     * Retrieve player's statistics
+     * Retrieve user/global statistics from brainCloud
+     * @param userStat determines which statistics to get (true: user, false: global)
      * @param callback callback is passed from the ExploreStats class
      */
-    public void getUserStats(IServerCallback callback){
-        _bc.getPlayerStatisticsService().readAllUserStats(callback);
+    public void getStatistics(Boolean userStat, IServerCallback callback){
+        if(userStat){
+            _bc.getPlayerStatisticsService().readAllUserStats(callback);
+        }
+        else{
+            _bc.getGlobalStatisticsService().readAllGlobalStats(callback);
+        }
     }
 
     /**
-     * Increment given player statistics by given amount
-     * @param jsonData name of statistic to be incremented and increment amount
-     * @param callback
+     * Increments the provided statistic
+     * @param userStat determines if the statistic is global or user
+     * @param jsonData JSON formatted String containing statistic name and increment data
+     * @param callback callback is passed from the ExploreStats class
      */
-    public void incrementUserStats(String jsonData, IServerCallback callback){
-        _bc.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
+    public void incrementStatistics(Boolean userStat, String jsonData, IServerCallback callback){
+        if(userStat){
+            _bc.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
+        }
+        else{
+            _bc.getGlobalStatisticsService().incrementGlobalStats(jsonData, callback);
+        }
     }
 }

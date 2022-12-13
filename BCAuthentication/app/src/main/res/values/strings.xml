@@ -77,7 +77,7 @@
     <string name="award_currency">Awarding Currency…</string>
     <string name="consume_currency">Consuming Currency…</string>
     <string name="current_currency">Current Currency</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="stats_update">Statistics Updated!</string>
 
     <!-- Buttons -->

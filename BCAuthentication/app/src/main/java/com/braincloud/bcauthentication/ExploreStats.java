@@ -27,12 +27,15 @@ public class ExploreStats extends AppCompatActivity {
     // UI components
     private TextView bcInitStatus;
     private TextView statStatus;
+    private Button toggleStatView;
     private LinearLayout statField;
     private Button backButton;
 
     // Statistic specific variables
     private ArrayList<Statistic> userStatistics;
     private ArrayList<Statistic> globalStatistics;
+    private ArrayList<Statistic> stats;
+    private boolean viewUserStat = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +48,19 @@ public class ExploreStats extends AppCompatActivity {
         // Get reference to UI components
         bcInitStatus = findViewById(R.id.bc_init_status_tv);
         statStatus = findViewById(R.id.stats_title_tv);
+        toggleStatView = findViewById(R.id.toggle_stat_b);
         statField = findViewById(R.id.statistics_field_ll);
         backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
         statStatus.setText(R.string.loading);
-        getUserStats();
+        getStatistics();
+
+        toggleStatView.setOnClickListener(view -> {
+            statStatus.setText("Loading...");
+            toggleStatType();
+        });
 
         // Return to BrainCloudMenu Activity to select a different brainCloud function
         backButton.setOnClickListener(view -> finish());
@@ -73,7 +82,7 @@ public class ExploreStats extends AppCompatActivity {
     }
 
     /**
-     * Returns the size of the UserStat ArrayList
+     * Get the size of the UserStat ArrayList
      * @return number of items (int) in the UserStat ArrayList
      */
     public int getCount(ArrayList<Statistic> statisticsList){
@@ -81,32 +90,32 @@ public class ExploreStats extends AppCompatActivity {
     }
 
     /**
-     * Retrieve user's statistics
+     * Retrieve user/global statistics depending on which view is selected
      */
-    public void getUserStats(){
-        brainCloud.getUserStats(new IServerCallback() {
+    public void getStatistics(){
+        brainCloud.getStatistics(viewUserStat, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                parseUserStatsJSON(jsonData);
+                parseStats(jsonData);
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("readStats failed: ", jsonError);
+                Log.d("Failed to get stats: ", jsonError);
             }
         });
     }
 
     /**
-     * Create ArrayList of user statistics from data returned from server
-     * @param jsonData JSONObject contain user statistics returned from server
+     * Create list of statistics from data returned from brainCloud
+     * @param jsonData
      */
-    public void parseUserStatsJSON(JSONObject jsonData){
+    public void parseStats(JSONObject jsonData){
         JSONObject data;
         JSONObject statistics;
         String name;
         String value;
-        userStatistics = new ArrayList<>();
+        stats = new ArrayList<>();
 
         try {
             data = jsonData.getJSONObject("data");
@@ -119,12 +128,12 @@ public class ExploreStats extends AppCompatActivity {
                     name = key.getString(i);
                     value = statistics.getString(name);
 
-                    userStatistics.add(new Statistic());
-                    userStatistics.get(i).setName(name);
-                    userStatistics.get(i).setValue(Long.parseLong(value));
+                    stats.add(new Statistic());
+                    stats.get(i).setName(name);
+                    stats.get(i).setValue(Long.parseLong(value));
                 }
 
-                displayUserStats(userStatistics);
+                displayStats(stats);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -132,46 +141,55 @@ public class ExploreStats extends AppCompatActivity {
     }
 
     /**
-     * Create separate views for each user statistic
+     * Create separate views for each statistic
      */
-    public void displayUserStats(ArrayList<Statistic> statisticsList){
+    public void displayStats(ArrayList<Statistic> statisticsList){
         for(int i = 0; i < getCount(statisticsList); i++){
-            View userStat = getLayoutInflater().inflate(R.layout.statistic_entry, null, false);
+            View stat = getLayoutInflater().inflate(R.layout.statistic_entry, null, false);
 
             Statistic statistic = getStatisticAtIndex(i, statisticsList);
 
             // Get UI components
-            TextView userStatName = userStat.findViewById(R.id.stat_name_tv);
-            TextView userStatValue = userStat.findViewById(R.id.stat_value_tv);
-            Button increment = userStat.findViewById(R.id.increment_b);
+            TextView statName = stat.findViewById(R.id.stat_name_tv);
+            TextView statValue = stat.findViewById(R.id.stat_value_tv);
+            Button increment = stat.findViewById(R.id.increment_b);
 
             // Display user statistic names and values
-            userStatName.setText(statistic.getName());
-            userStatValue.setText(Long.toString(statistic.getValue()));
+            statName.setText(statistic.getName());
+            statValue.setText(Long.toString(statistic.getValue()));
 
             // Increment displayed user statistic value and send increment request to server
             increment.setOnClickListener(view -> {
-                int value = Integer.parseInt(userStatValue.getText().toString());
+                int value = Integer.parseInt(statValue.getText().toString());
                 value++;
-                userStatValue.setText(Integer.toString(value));
-                incrementUserStats(userStatName.getText().toString());
+                statValue.setText(Integer.toString(value));
+                incrementStats(statName.getText().toString());
             });
 
             // Add user statistic entry to main view
-            statField.addView(userStat);
+            statField.addView(stat);
         }
 
-        statStatus.setText(R.string.stats_update);
+        // Update status to reflect which statistics are being displayed
+        toggleStatView.setVisibility(View.VISIBLE);
+        if(viewUserStat){
+            statStatus.setText("User Stats");
+            toggleStatView.setText("View Global Stats");
+        }
+        else{
+            statStatus.setText("Global Stats");
+            toggleStatView.setText("View User Stats");
+        }
     }
 
     /**
-     * Increment given user statistic by given amount (hardcoded 1 for now)
-     * @param statName name of the user statistic to increment
+     * Increments the provided statistic [hardcoded increment by 1 for now]
+     * @param statName the statistic to be incremented
      */
-    public void incrementUserStats(String statName){
+    public void incrementStats(String statName){
         String jsonData = "{\"" + statName + "\":1}";
 
-        brainCloud.incrementUserStats(jsonData, new IServerCallback() {
+        brainCloud.incrementStatistics(viewUserStat, jsonData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 //TODO
@@ -182,5 +200,22 @@ public class ExploreStats extends AppCompatActivity {
                 Log.d("incrementStats failed: ", jsonError);
             }
         });
+    }
+
+    /**
+     * Switches between viewing user statistics and global statistics
+     */
+    public void toggleStatType(){
+        statField.removeAllViews();
+
+        if(viewUserStat == true){
+            viewUserStat = false;
+        }
+        else{
+            viewUserStat = true;
+        }
+
+        // Reload statistics
+        getStatistics();
     }
 }

@@ -7,7 +7,6 @@
     android:background="@color/bc_background"
     tools:context=".BrainCloudMenu">
 
-
     <TextView
         android:id="@+id/bc_init_status_tv"
         android:layout_width="wrap_content"
@@ -33,12 +32,22 @@
         android:textSize="50dp"
         android:textColor="@color/bc_text"
         android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/toggle_stat_b"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/stats_title_tv"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="@color/bc_button"
+        android:textColor="@color/black"
+        android:text="View Global Stats"/>
     
     <LinearLayout
         android:id="@+id/statistics_field_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/stats_title_tv"
+        android:layout_below="@id/toggle_stat_b"
         android:layout_centerHorizontal="true"
         android:orientation="vertical">
 
