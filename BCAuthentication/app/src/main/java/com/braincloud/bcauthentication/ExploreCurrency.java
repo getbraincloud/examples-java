@@ -17,44 +17,36 @@ import org.json.JSONObject;
 
 public class ExploreCurrency extends AppCompatActivity {
 
-    // brainCloud stuff
     public BCClient brainCloud;
+    private int balance;
+    private int awarded;
+    private int consumed;
+    private String amount;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView currencyStatus;
     private TextView balanceField;
     private TextView awardedField;
     private TextView consumedField;
     private EditText amountField;
-    private Button awardButton;
-    private Button consumeButton;
-    private Button backButton;
-
-    // Currency specific variables
-    private int balance;
-    private int awarded;
-    private int consumed;
-    private String amount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_currency);
 
-        // Get brainCloud wrapper
         brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         currencyStatus = findViewById(R.id.currency_title_tv);
         balanceField = findViewById(R.id.balance_tv);
         awardedField = findViewById(R.id.awarded_tv);
         consumedField = findViewById(R.id.consumed_tv);
         amountField = findViewById(R.id.amount_et);
-        awardButton = findViewById(R.id.award_b);
-        consumeButton = findViewById(R.id.consume_b);
-        backButton = findViewById(R.id.back_b);
+        Button awardButton = findViewById(R.id.award_b);
+        Button consumeButton = findViewById(R.id.consume_b);
+        Button backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
@@ -88,7 +80,6 @@ public class ExploreCurrency extends AppCompatActivity {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 parseCurrencyJSON(jsonData);
-                displayCurrency();
             }
 
             @Override
@@ -125,10 +116,12 @@ public class ExploreCurrency extends AppCompatActivity {
             balance = Integer.parseInt(balanceValue);
             consumed = Integer.parseInt(consumedValue);
             awarded = Integer.parseInt(awardedValue);
-        } catch(JSONException e){
+        } catch (JSONException e){
             e.printStackTrace();
             Log.d("Parse Error: ", "Currency JSON failed to parse");
         }
+
+        displayCurrency();
     }
 
     /**

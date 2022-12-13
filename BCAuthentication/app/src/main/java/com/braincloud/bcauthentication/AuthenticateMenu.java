@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.client.IServerCallback;
 import com.bitheads.braincloud.client.ServiceName;
 import com.bitheads.braincloud.client.ServiceOperation;
@@ -22,11 +23,13 @@ import org.json.JSONObject;
 
 public class AuthenticateMenu extends AppCompatActivity implements IServerCallback {
 
-    // brainCloud stuff
     public static BCClient brainCloud;
 
+    private String selectedAuth;
+    private String userId;
+    private String password;
+
     // UI components
-    private TextView bcInitStatus;
     private TextView bcAuthStatus;
     private Spinner authSelect;
     private LinearLayout loginFields;
@@ -35,11 +38,6 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
     private TextView invalidLogin;
     private Button authButton;
 
-    // Other variables
-    private String selectedAuth;
-    private String userId;
-    private String password;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +45,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
 
         // Get reference to UI components
         bcAuthStatus = findViewById(R.id.bc_auth_status_tv);
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         authSelect = findViewById(R.id.auth_types_s);
         loginFields = findViewById(R.id.login_fields_ll);
         userField = findViewById(R.id.user_field_et);
@@ -55,7 +53,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
         authButton = findViewById(R.id.auth_button_b);
         invalidLogin = findViewById(R.id.invalid_login_tv);
 
-        // Create BrainCloudWrapper
+        // Create and initialize BrainCloudWrapper
         brainCloud = new BCClient();
 
         // Proceed on successful initialization or halt on fail
@@ -143,12 +141,11 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
                         userField.setHint(R.string.email_hint);
                         break;
                 }
-
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                //TODO
+                //
             }
         });
     }

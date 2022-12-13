@@ -20,6 +20,13 @@
     <string name="stats_status">View Statistics</string>
     <string name="script_status">Run Cloud Code Scripts</string>
     <string name="bcl_func_help">brainCloud function help message</string>
+    <string name="player_level">Player Level:</string>
+    <string name="player_xp_accrued">Player XP Accrued:</string>
+    <string name="increment_amount">increment amount</string>
+    <string name="balance">Balance:</string>
+    <string name="awarded">Awarded:</string>
+    <string name="consumed">Consumed:</string>
+    <string name="award_consume_gems">award/consume gems</string>
     <string name="identity_help">
         Attach or merge an email or universal ID to an existing user. Identity information can be
         viewed in the brainCloud portal under:\nUsers > User Summary > Credentials.
@@ -98,6 +105,14 @@
     <string name="default_entity_name">Entity Name:</string>
     <string name="default_entity_age">Entity Age:</string>
     <string name="delete">Delete</string>
+    <string name="user_stats">User Stats</string>
+    <string name="view_global">View Global Stats</string>
+    <string name="global_stats">Global Stats</string>
+    <string name="view_user">View User Stats</string>
+    <string name="increment_xp_button">Increment XP</string>
+    <string name="view_user_stats">View User Stats</string>
+    <string name="award">Award</string>
+    <string name="consume">Consume</string>
 
     <!-- Spinner arrays -->
     <string-array name="auth_types">
@@ -113,7 +128,6 @@
         <item>Experience</item>
         <item>Currency</item>
         <item>Stats</item>
-        <item>Cloud Code</item>
     </string-array>
     <string-array name="identity_types">
         <item>Email</item>

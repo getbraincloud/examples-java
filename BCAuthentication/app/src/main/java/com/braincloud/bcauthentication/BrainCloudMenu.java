@@ -20,35 +20,29 @@ import org.json.JSONObject;
 
 public class BrainCloudMenu extends AppCompatActivity implements IServerCallback {
 
-    // brainCloud stuff
     public BCClient brainCloud;
+    private String selectedFunc;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView bcFunctionStatus;
     private TextView bcFuncHelp;
     private Spinner funcSelect;
     private Button exploreFunc;
-    private Button logOut;
-
-    // Other variables
-    private String selectedFunc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brain_cloud_menu);
 
-        // Get brainCloud wrapper
         brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_menu_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_menu_init_status_tv);
         bcFunctionStatus = findViewById(R.id.bc_menu_status_tv);
         bcFuncHelp = findViewById(R.id.help_box_tv);
         funcSelect = findViewById(R.id.bc_functions_s);
         exploreFunc = findViewById(R.id.explore_func_b);
-        logOut = findViewById(R.id.log_out_b);
+        Button logOut = findViewById(R.id.log_out_b);
 
         bcInitStatus.setText(brainCloud.getWrapper().getClient().getBrainCloudVersion());
 
@@ -71,9 +65,6 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
                     break;
                 case "Stats":
                     exploreStats();
-                    break;
-                case "Cloud Code":
-                    exploreScripts();
                     break;
             }
         });
@@ -195,14 +186,6 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
      */
     public void exploreStats(){
         Intent intent = new Intent(getApplication(), ExploreStats.class);
-        startActivity(intent);
-    }
-
-    /**
-     * Go to the ExploreScripts Activity to run Cloud Code scripts
-     */
-    public void exploreScripts(){
-        Intent intent = new Intent(getApplication(), ExploreScripts.class);
         startActivity(intent);
     }
 

@@ -57,9 +57,13 @@ public class BCClient {
                 _bc.authenticateAnonymous(callback);
                 break;
             case "Universal":
+                _bc.resetStoredProfileId();
+                _bc.resetStoredAnonymousId();
                 _bc.authenticateUniversal(user, pass, true, callback);
                 break;
             case "Email":
+                _bc.resetStoredProfileId();
+                _bc.resetStoredAnonymousId();
                 _bc.authenticateEmailPassword(user, pass, true, callback);
                 break;
         }

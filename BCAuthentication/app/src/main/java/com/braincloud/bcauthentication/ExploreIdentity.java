@@ -20,43 +20,33 @@ import org.json.JSONObject;
 
 public class ExploreIdentity extends AppCompatActivity implements View.OnClickListener {
 
-    // brainCloud stuff
     public BCClient brainCloud;
+    private String idType;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView identityStatus;
     private Spinner identityTypes;
     private EditText userField;
     private EditText passField;
     private TextView invalidLogin;
-    private Button attachButton;
-    private Button mergeButton;
-    private Button backButton;
-
-    // Identity specific variables
-    private String idType;
-    private String userId;
-    private String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_identity);
 
-        // Get brainCloud wrapper
         brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         identityStatus = findViewById(R.id.identity_title_tv);
         identityTypes = findViewById(R.id.id_types_s);
         userField = findViewById(R.id.user_field_et);
         passField = findViewById(R.id.pass_field_et);
         invalidLogin = findViewById(R.id.empty_field_tv);
-        attachButton = findViewById(R.id.attach_b);
-        mergeButton = findViewById(R.id.merge_b);
-        backButton = findViewById(R.id.identity_back_b);
+        Button attachButton = findViewById(R.id.attach_b);
+        Button mergeButton = findViewById(R.id.merge_b);
+        Button backButton = findViewById(R.id.identity_back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
@@ -100,15 +90,15 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                //
             }
         });
     }
 
     @Override
     public void onClick(View view) {
-        userId = userField.getText().toString();
-        password = passField.getText().toString();
+        String userId = userField.getText().toString();
+        String password = passField.getText().toString();
 
         if(userId.isEmpty() || password.isEmpty()){
             invalidLogin.setVisibility(View.VISIBLE);
@@ -116,6 +106,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
         else{
             invalidLogin.setVisibility(View.GONE);
 
+            // Attach identity
             if(view.getId() == R.id.attach_b){
                 identityStatus.setText(R.string.attaching);
 
@@ -123,6 +114,8 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                         identityStatus.setText(R.string.attach_success);
+                        userField.getText().clear();
+                        passField.getText().clear();
                     }
 
                     @Override
@@ -132,6 +125,8 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                     }
                 });
             }
+
+            // Merge Identity
             else{
                 identityStatus.setText(R.string.merging);
 
@@ -139,6 +134,8 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                         identityStatus.setText(R.string.merge_success);
+                        userField.getText().clear();
+                        passField.getText().clear();
                     }
 
                     @Override

@@ -54,7 +54,7 @@
                 android:layout_height="match_parent"
                 android:textSize="18dp"
                 android:ems="18"
-                android:text="Player Level:"/>
+                android:text="@string/player_level"/>
 
         </LinearLayout>
 
@@ -69,7 +69,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textSize="18dp"
-                android:text="Player XP Accrued:"/>
+                android:text="@string/player_xp_accrued"/>
 
         </LinearLayout>
 
@@ -84,7 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textSize="18dp"
-                android:hint="increment amount"
+                android:hint="@string/increment_amount"
                 android:autofillHints="increment_amount"
                 android:inputType="number" />
 
@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/bc_button"
                 android:textColor="@color/black"
-                android:text="Increment XP"/>
+                android:text="@string/increment_xp_button"/>
 
         </LinearLayout>
 

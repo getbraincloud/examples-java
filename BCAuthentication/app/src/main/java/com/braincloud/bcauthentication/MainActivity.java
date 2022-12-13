@@ -8,16 +8,12 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    // UI component(s)
-    private TextView enterBrainCloud;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Get reference to View(s)
-        enterBrainCloud = findViewById(R.id.enter_brainCloud_tv);
+        TextView enterBrainCloud = findViewById(R.id.enter_brainCloud_tv);
 
         // Click to switch activities
         enterBrainCloud.setOnClickListener(view -> enterAuthMenu());
@@ -29,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     public void enterAuthMenu(){
         Intent intent = new Intent(this, AuthenticateMenu.class);
         startActivity(intent);
+
         finish();
     }
 }

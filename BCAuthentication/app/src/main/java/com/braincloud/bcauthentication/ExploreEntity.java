@@ -19,11 +19,13 @@ import org.json.JSONObject;
 
 public class ExploreEntity extends AppCompatActivity {
 
-    // brainCloud stuff
     private BCClient brainCloud;
+    private Entity entity;
+    private String entityName;
+    private String entityAge;
+    private boolean existingEntity;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView entityStatus;
     private TextView entityIdField;
     private TextView entityTypeField;
@@ -32,26 +34,16 @@ public class ExploreEntity extends AppCompatActivity {
     private TextView emptyFields;
     private Button createButton;
     private Button deleteButton;
-    private Button backButton;
-
-    // Entity specific variables
-    private Entity entity;
-    private String entityName;
-    private String entityAge;
-    private boolean existingEntity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_entity);
 
-            // Get brainCloud wrapper
-            brainCloud = AuthenticateMenu.brainCloud;
-
-        entity = new Entity();
+        brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         entityStatus = findViewById(R.id.entity_title_tv);
         entityIdField = findViewById(R.id.entity_id_tv);
         entityTypeField = findViewById(R.id.entity_type_tv);
@@ -60,7 +52,7 @@ public class ExploreEntity extends AppCompatActivity {
         emptyFields = findViewById(R.id.empty_field_tv);
         createButton = findViewById(R.id.create_b);
         deleteButton =findViewById(R.id.delete_b);
-        backButton = findViewById(R.id.back_b);
+        Button backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
@@ -73,6 +65,8 @@ public class ExploreEntity extends AppCompatActivity {
 
         // Create or update entity
         createButton.setOnClickListener(view -> {
+            entity = new Entity();
+
             entityName = entityNameField.getText().toString();
             entityAge = entityAgeField.getText().toString();
 
@@ -100,6 +94,7 @@ public class ExploreEntity extends AppCompatActivity {
         deleteButton.setOnClickListener(view -> {
             entityStatus.setText(R.string.delete_entity);
             deleteEntity();
+            entity = null;
         });
 
         // Return to BrainCloudMenu Activity to select a different brainCloud function
@@ -113,10 +108,7 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.getEntityPage(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-
-                // Parse the JSON object returned from the server (containing existing entities)
                 parseEntityJSON(jsonData);
-                displayEntity();
             }
 
             @Override
@@ -163,6 +155,8 @@ public class ExploreEntity extends AppCompatActivity {
             e.printStackTrace();
             Log.d("Parse error: ", "Entity JSON failed to parse");
         }
+
+        displayEntity();
     }
 
     /**
@@ -205,8 +199,8 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.createEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText(R.string.entity_created);
                 getEntity();
+                entityStatus.setText(R.string.entity_created);
             }
 
             @Override

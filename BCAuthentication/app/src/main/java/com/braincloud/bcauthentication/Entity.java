@@ -2,9 +2,6 @@ package com.braincloud.bcauthentication;
 
 import android.util.Log;
 
-import com.bitheads.braincloud.client.BrainCloudWrapper;
-import com.bitheads.braincloud.client.IServerCallback;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

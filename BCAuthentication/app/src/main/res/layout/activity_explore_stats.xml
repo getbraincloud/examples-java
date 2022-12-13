@@ -41,7 +41,7 @@
         android:layout_centerHorizontal="true"
         android:backgroundTint="@color/bc_button"
         android:textColor="@color/black"
-        android:text="View Global Stats"/>
+        android:text="@string/view_user_stats"/>
     
     <LinearLayout
         android:id="@+id/statistics_field_ll"

@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:text="Balance:"
+                android:text="@string/balance"
                 android:ems="9"/>
 
             <TextView
@@ -61,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:text="Awarded:"
+                android:text="@string/awarded"
                 android:ems="9"/>
 
             <TextView
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:text="Consumed:"
+                android:text="@string/consumed"
                 android:ems="18"/>
 
         </LinearLayout>
@@ -85,7 +85,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
-                android:hint="award/consume gems"
+                android:hint="@string/award_consume_gems"
                 android:autofillHints="amount"
                 android:inputType="number"
                 android:ems="18"/>
@@ -105,8 +105,9 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/bc_button"
                 android:textColor="@color/black"
-                android:text="Award"
-                android:layout_weight="1"/>
+                android:text="@string/award"
+                android:layout_weight="1"
+                style="?android:attr/buttonBarButtonStyle" />
 
             <Button
                 android:id="@+id/consume_b"
@@ -114,8 +115,9 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/bc_button"
                 android:textColor="@color/black"
-                android:text="Consume"
-                android:layout_weight="1"/>
+                android:text="@string/consume"
+                android:layout_weight="1"
+                style="?android:attr/buttonBarButtonStyle" />
 
         </LinearLayout>
 

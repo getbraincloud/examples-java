@@ -17,39 +17,31 @@ import org.json.JSONObject;
 
 public class ExploreXP extends AppCompatActivity {
 
-    // brainCloud stuff
-    public BCClient brainCloud;
+    private BCClient brainCloud;
+    private int playerLevel;
+    private int playerXP;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView xpStatus;
     private TextView playerLevelField;
     private TextView playerXpAccruedField;
     private EditText incrementAmountField;
-    private Button incrementButton;
-    private Button backButton;
-
-    // XP specific variables
-    private int playerLevel;
-    private int playerXP;
-    private int xpIncrementAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_xp);
 
-        // Get brainCloud wrapper
         brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         xpStatus = findViewById(R.id.xp_title_tv);
         playerLevelField = findViewById(R.id.player_level_tv);
         playerXpAccruedField = findViewById(R.id.player_xp_accrued_tv);
         incrementAmountField = findViewById(R.id.increment_et);
-        incrementButton = findViewById(R.id.increment_b);
-        backButton = findViewById(R.id.back_b);
+        Button incrementButton = findViewById(R.id.increment_b);
+        Button backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
 
@@ -73,9 +65,8 @@ public class ExploreXP extends AppCompatActivity {
     public void getXP(){
         brainCloud.getXP(new IServerCallback() {
             @Override
-            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+            public void serverCallback(ServiceName serviceName,ServiceOperation serviceOperation, JSONObject jsonData) {
                 parsePlayerStateJSON(jsonData);
-                displayXP();
             }
 
             @Override
@@ -105,6 +96,8 @@ public class ExploreXP extends AppCompatActivity {
             e.printStackTrace();
             Log.d("Parse error: ", "player XP JSON failed to parse");
         }
+
+        displayXP();
     }
 
     /**
@@ -127,7 +120,7 @@ public class ExploreXP extends AppCompatActivity {
      * Increase player's experience points
      */
     public void incrementXP(){
-        xpIncrementAmount = Integer.parseInt(incrementAmountField.getText().toString());
+        int xpIncrementAmount = Integer.parseInt(incrementAmountField.getText().toString());
         incrementAmountField.getText().clear();
 
         brainCloud.incrementXP(xpIncrementAmount, new IServerCallback() {

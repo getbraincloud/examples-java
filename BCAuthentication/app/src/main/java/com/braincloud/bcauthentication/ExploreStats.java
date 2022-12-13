@@ -21,21 +21,13 @@ import java.util.ArrayList;
 
 public class ExploreStats extends AppCompatActivity {
 
-    // brainCloud stuff
     private BCClient brainCloud;
+    private boolean viewUserStat;
 
     // UI components
-    private TextView bcInitStatus;
     private TextView statStatus;
     private Button toggleStatView;
     private LinearLayout statField;
-    private Button backButton;
-
-    // Statistic specific variables
-    private ArrayList<Statistic> userStatistics;
-    private ArrayList<Statistic> globalStatistics;
-    private ArrayList<Statistic> stats;
-    private boolean viewUserStat = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,19 +38,21 @@ public class ExploreStats extends AppCompatActivity {
         brainCloud = AuthenticateMenu.brainCloud;
 
         // Get reference to UI components
-        bcInitStatus = findViewById(R.id.bc_init_status_tv);
+        TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
         statStatus = findViewById(R.id.stats_title_tv);
         toggleStatView = findViewById(R.id.toggle_stat_b);
         statField = findViewById(R.id.statistics_field_ll);
-        backButton = findViewById(R.id.back_b);
+        Button backButton = findViewById(R.id.back_b);
 
         bcInitStatus.setText(brainCloud.getVersion());
+
+        toggleStatView.setVisibility(View.GONE);
 
         statStatus.setText(R.string.loading);
         getStatistics();
 
         toggleStatView.setOnClickListener(view -> {
-            statStatus.setText("Loading...");
+            statStatus.setText(R.string.loading);
             toggleStatType();
         });
 
@@ -108,14 +102,15 @@ public class ExploreStats extends AppCompatActivity {
 
     /**
      * Create list of statistics from data returned from brainCloud
-     * @param jsonData
+     * @param jsonData JSON object containing statistic data
      */
     public void parseStats(JSONObject jsonData){
         JSONObject data;
         JSONObject statistics;
         String name;
         String value;
-        stats = new ArrayList<>();
+        // Statistic specific variables
+        ArrayList<Statistic> stats = new ArrayList<>();
 
         try {
             data = jsonData.getJSONObject("data");
@@ -173,12 +168,12 @@ public class ExploreStats extends AppCompatActivity {
         // Update status to reflect which statistics are being displayed
         toggleStatView.setVisibility(View.VISIBLE);
         if(viewUserStat){
-            statStatus.setText("User Stats");
-            toggleStatView.setText("View Global Stats");
+            statStatus.setText(R.string.user_stats);
+            toggleStatView.setText(R.string.view_global);
         }
         else{
-            statStatus.setText("Global Stats");
-            toggleStatView.setText("View User Stats");
+            statStatus.setText(R.string.global_stats);
+            toggleStatView.setText(R.string.view_user);
         }
     }
 
@@ -192,12 +187,12 @@ public class ExploreStats extends AppCompatActivity {
         brainCloud.incrementStatistics(viewUserStat, jsonData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                //TODO
+                Log.d("increment success: ", jsonData.toString());
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                Log.d("incrementStats failed: ", jsonError);
+                Log.d("increment failed: ", jsonError);
             }
         });
     }
@@ -206,9 +201,10 @@ public class ExploreStats extends AppCompatActivity {
      * Switches between viewing user statistics and global statistics
      */
     public void toggleStatType(){
+        toggleStatView.setVisibility(View.GONE);
         statField.removeAllViews();
 
-        if(viewUserStat == true){
+        if(viewUserStat){
             viewUserStat = false;
         }
         else{
