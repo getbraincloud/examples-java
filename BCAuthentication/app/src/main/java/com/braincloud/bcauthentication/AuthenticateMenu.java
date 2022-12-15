@@ -58,7 +58,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
 
         // Proceed on successful initialization or halt on fail
         if(brainCloud.getWrapper().getClient().isInitialized()){
-           bcInitStatus.setText(brainCloud.getVersion());
+            bcInitStatus.setText(brainCloud.getVersion());
 
             brainCloud.setApplicationContext(AuthenticateMenu.this);
 
@@ -152,6 +152,8 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
 
     @Override
     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+        Log.d("Authenticated! ", jsonData.toString());
+
         Intent intent = new Intent(getApplication(), BrainCloudMenu.class);
         startActivity(intent);
     }

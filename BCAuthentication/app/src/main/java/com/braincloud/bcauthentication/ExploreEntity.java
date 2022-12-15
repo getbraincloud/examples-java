@@ -56,6 +56,8 @@ public class ExploreEntity extends AppCompatActivity {
 
         bcInitStatus.setText(brainCloud.getVersion());
 
+        entity = new Entity();
+
         // Look for existing entities
         entityStatus.setText(R.string.find_entity);
         getEntity();
@@ -65,8 +67,6 @@ public class ExploreEntity extends AppCompatActivity {
 
         // Create or update entity
         createButton.setOnClickListener(view -> {
-            entity = new Entity();
-
             entityName = entityNameField.getText().toString();
             entityAge = entityAgeField.getText().toString();
 
@@ -94,7 +94,6 @@ public class ExploreEntity extends AppCompatActivity {
         deleteButton.setOnClickListener(view -> {
             entityStatus.setText(R.string.delete_entity);
             deleteEntity();
-            entity = null;
         });
 
         // Return to BrainCloudMenu Activity to select a different brainCloud function
@@ -108,6 +107,7 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.getEntityPage(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("getPage success!", jsonData.toString());
                 parseEntityJSON(jsonData);
             }
 
@@ -199,8 +199,8 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.createEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("createEntity success!", jsonData.toString());
                 getEntity();
-                entityStatus.setText(R.string.entity_created);
             }
 
             @Override
@@ -218,7 +218,7 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.updateEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText(R.string.entity_updated);
+                Log.d("updateEntity success!", jsonData.toString());
                 getEntity();
             }
 
@@ -237,7 +237,7 @@ public class ExploreEntity extends AppCompatActivity {
         brainCloud.deleteEntity(entity, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                entityStatus.setText(R.string.entity_deleted);
+                Log.d("deleteEntity success!", jsonData.toString());
                 getEntity();
             }
 

@@ -49,7 +49,7 @@ public class BCClient {
      * @param authType the type of authentication that will be attempted
      * @param user username/email (used for non-anonymous authentication)
      * @param pass password (used for non-anonymous authentication)
-     * @param callback callback is passed from the AuthenticateMenu class
+     * @param callback proceed to BrainCloudMenu on success or display error message on fail
      */
     public void authenticate(String authType, String user, String pass, IServerCallback callback){
         switch(authType){

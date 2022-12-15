@@ -28,26 +28,26 @@
     <string name="consumed">Consumed:</string>
     <string name="award_consume_gems">award/consume gems</string>
     <string name="identity_help">
-        Attach or merge an email or universal ID to an existing user. Identity information can be
+        Attach or merge an email or universal ID to an existing user. \nIdentity information can be
         viewed in the brainCloud portal under:\nUsers > User Summary > Credentials.
     </string>
     <string name="entity_help">
-        Create a new entity or delete/modify an existing one. Entities can be viewed in the
+        Create a new entity or delete/modify an existing one. \nEntities can be viewed in the
         brainCloud portal under:\nUsers > Data > User Entities.
     </string>
     <string name="xp_help">
         Define XP Levels on the brainCloud portal under:\nDesign > Gamification > XP Levels.\nIf no
-        XP Levels are defined, only XP Points will be modified. XP information can be viewed under:
+        XP Levels are defined, only XP Points will be modified. \nXP information can be viewed under:
         \nUsers > User Summary > Account Details.
     </string>
     <string name="currency_help">
-        "Gems" are the defined Virtual Currency used in this demo. Create Virtual Currencies in the
+        "Gems" are the defined Virtual Currency used in this demo. \nCreate Virtual Currencies in the
         brainCloud portal under:\nDesign > Marketplace > Virtual Currencies.
     </string>
     <string name="stats_help">
         Player Statistics are user-scoped and are only accessible to the user they belong to.
         Global Statistics are accessible to any user.
-        Define Player Statistics in the brainCloud portal under:\nUsers > Data > Statistics.
+        \nDefine Player Statistics in the brainCloud portal under:\nUsers > Data > Statistics.
         \nDefine Global Statistics under:\nGlobal > Global Data > Global Statistics.
     </string>
 

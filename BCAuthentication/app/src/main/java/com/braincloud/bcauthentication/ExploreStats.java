@@ -90,6 +90,7 @@ public class ExploreStats extends AppCompatActivity {
         brainCloud.getStatistics(viewUserStat, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("readUserStats success!", jsonData.toString());
                 parseStats(jsonData);
             }
 
@@ -109,7 +110,6 @@ public class ExploreStats extends AppCompatActivity {
         JSONObject statistics;
         String name;
         String value;
-        // Statistic specific variables
         ArrayList<Statistic> stats = new ArrayList<>();
 
         try {

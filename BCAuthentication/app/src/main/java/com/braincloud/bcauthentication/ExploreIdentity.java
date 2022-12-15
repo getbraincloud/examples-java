@@ -113,6 +113,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                 brainCloud.attachIdentity(idType, userId, password, new IServerCallback() {
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                        Log.d("attachIdentity success!", jsonData.toString());
                         identityStatus.setText(R.string.attach_success);
                         userField.getText().clear();
                         passField.getText().clear();
@@ -133,6 +134,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
                 brainCloud.mergeIdentity(idType, userId, password, new IServerCallback() {
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                        Log.d("mergeIdentity success!", jsonData.toString());
                         identityStatus.setText(R.string.merge_success);
                         userField.getText().clear();
                         passField.getText().clear();

@@ -66,6 +66,7 @@ public class ExploreXP extends AppCompatActivity {
         brainCloud.getXP(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName,ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("readUserState success!", jsonData.toString());
                 parsePlayerStateJSON(jsonData);
             }
 
@@ -126,6 +127,7 @@ public class ExploreXP extends AppCompatActivity {
         brainCloud.incrementXP(xpIncrementAmount, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("incrementXP success!", jsonData.toString());
                 getXP();
             }
 

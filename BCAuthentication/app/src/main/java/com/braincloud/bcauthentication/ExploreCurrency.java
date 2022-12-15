@@ -79,6 +79,7 @@ public class ExploreCurrency extends AppCompatActivity {
         brainCloud.getCurrency(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("getCurrency success!", jsonData.toString());
                 parseCurrencyJSON(jsonData);
             }
 
@@ -155,6 +156,7 @@ public class ExploreCurrency extends AppCompatActivity {
         brainCloud.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("runScript success!", jsonData.toString());
                 getCurrency();
             }
 
@@ -177,6 +179,7 @@ public class ExploreCurrency extends AppCompatActivity {
         brainCloud.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                Log.d("runScript success!", jsonData.toString());
                 getCurrency();
             }
 
