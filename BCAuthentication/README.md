@@ -4,6 +4,9 @@ This is an Android application that demonstrates how some of the common brainClo
 ## Getting Setup
 This application uses the Java Client Library for brainCloud. It was created with Android Studio 2021.3.1 and uses Java 1.8.
 
+### Application IDs
+AppId, secretKey, and serverUrl will need to be filled in in the BCClient.java class in order to use this application.
+
 ### Downloads
 - **The Java Client Library:** https://github.com/getbraincloud/braincloud-java
 - **Android Studio:** https://developer.android.com/studio
@@ -15,6 +18,33 @@ This application uses the Java Client Library for brainCloud. It was created wit
 - **Currency:** The Virtual Currency used in this example is *"gems"*. It modifies a user's balance via Cloud Code Scripts.
 	- Two scripts are necessary for this example: *AwardCurrency*, and *ConsumeCurrency*.
 		- Create scripts on the **Scripts** page via **Design > Cloud Code > Scripts**.
+		#### *Parameters*
+		```
+		"vcId": "gems",
+		"vcAmount": "0"
+		```
+		*AwardCurrency*
+		```
+		var vc_id = data.vcId;
+		var vc_amount = data.vcAmount;
+		
+		var virtualCurrencyProxy = bridge.getVirtualCurrencyServiceProxy();
+		
+		var postResult = virtualCurrencyProxy.awardCurrency(vc_id, vc_amount);
+		
+		postResult;
+		```
+		*ConsumeCurrency*
+		```
+		var vc_id = data.vcId;
+		var vc_amount = data.vcAmount;
+		
+		var virtualCurrencyProxy = bridge.getVirtualCurrencyServiceProxy();
+		
+		var postResult = virtualCurrencyProxy.consumeCurrency(vc_id, vc_amount);
+		
+		postResult;
+		```
 	- Create virtual currencies from the **Virtual Currencies** page via **Design > Marketplace > Virtual Currencies**
 		- NOTE: if you wish to create a currency with a different name you will need to modify the currency functions within the project.
 			- getCurrency() at BCClient.java L201
