@@ -12,7 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "BCAuthentication"
+rootProject.name = "BrainCloudDemo-Android"
 include ':app'
 include ':brainCloud'
 project(':brainCloud').projectDir =
