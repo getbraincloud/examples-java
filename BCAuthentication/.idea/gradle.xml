@@ -11,7 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/brainCloud" />
+            <option value="$PROJECT_DIR$/../thirdparty/braincloud-java/TestBCClient-Android/brainCloud" />
           </set>
         </option>
       </GradleProjectSettings>
