@@ -17,8 +17,10 @@ public class BCClient
     {
         //Initialize BrainCloud wrapper
         _bcWrapper = new BrainCloudWrapper("bcWrapper");
+
+        //TODO Replace values with application IDs
         //the info filled out is according to the app created on braincloud.
-        _bcWrapper.initialize("23712", "62459b71-98be-49c6-9d93-66a0a7adcfd4", "1.0.0");
+        //_bcWrapper.initialize(*appId*, *secretKey*, *appVersion*, *serverUrl*);
 
         //create a timer that will run the callbacks of our wrapper
         new CountDownTimer(10000, 1000) {

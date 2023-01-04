@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.BCAuthentication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#003f83</item>
+        <item name="colorPrimaryVariant">#045fac</item>
+        <item name="colorOnPrimary">#dedfdc</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#0484dc</item>
+        <item name="colorSecondaryVariant">#dedfdc</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

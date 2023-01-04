@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bc_background"
+    tools:context=".BrainCloudMenu">
+
+
+    <TextView
+        android:id="@+id/bc_init_status_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_init"
+        android:textColor="@color/bc_text"/>
+
+    <ImageView
+        android:id="@+id/bc_logo_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/bc_logo"
+        android:contentDescription="@null"/>
+
+    <TextView
+        android:id="@+id/xp_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bc_logo_iv"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-70dp"
+        android:text="@string/xp_header"
+        android:textSize="50dp"
+        android:textColor="@color/bc_text"
+        android:textAlignment="center"/>
+
+    <LinearLayout
+        android:id="@+id/xp_field_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/xp_title_tv"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <TextView
+                android:id="@+id/player_level_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textSize="18dp"
+                android:ems="18"
+                android:text="@string/player_level"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <TextView
+                android:id="@+id/player_xp_accrued_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="18dp"
+                android:text="@string/player_xp_accrued"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bc_button">
+
+            <EditText
+                android:id="@+id/increment_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="18dp"
+                android:hint="@string/increment_amount"
+                android:autofillHints="increment_amount"
+                android:inputType="number" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+
+            <Button
+                android:id="@+id/increment_b"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/bc_button"
+                android:textColor="@color/black"
+                android:text="@string/increment_xp_button"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/back_b"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/xp_field_ll"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="@color/bc_button"
+        android:text="@string/back_button"
+        android:textColor="@color/black"/>
+
+</RelativeLayout>
