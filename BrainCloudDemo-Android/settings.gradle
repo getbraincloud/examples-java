@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "BrainCloudDemo-Android"
+include ':app'
+include ':brainCloud'
+project(':brainCloud').projectDir =
+        new File(settingsDir, '../thirdparty/braincloud-java/TestBCClient-Android/brainCloud')

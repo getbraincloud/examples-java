@@ -117,5 +117,6 @@ public class Login extends AppCompatActivity implements  IServerCallback
     {
         TextView statusTextView = findViewById(R.id.statusTextView);
         statusTextView.setText("Fail!");
+        Log.d("BC_LOG", jsonError);
     }
 }
