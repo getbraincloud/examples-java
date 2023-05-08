@@ -18,7 +18,7 @@ public class BCClient {
         _bc = new BrainCloudWrapperAndroid();
 
         // TODO Replace values with application IDs
-        _bc.initialize("26205", "1f794474-24a1-4dca-9605-9415a798a036", "1", "https://api.internal.braincloudservers.com/dispatcherv2");
+        //_bc.initialize("appId", "secretKey", "appVersion", "serverUrl");
 
         // Run callbacks
         new CountDownTimer(10000, 1000) {
