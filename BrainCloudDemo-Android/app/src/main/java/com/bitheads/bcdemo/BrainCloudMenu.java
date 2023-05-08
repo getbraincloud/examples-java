@@ -1,4 +1,4 @@
-package com.braincloud.bcauthentication;
+package com.bitheads.bcdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 

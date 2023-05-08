@@ -1,4 +1,4 @@
-BCAuthentication Demo App
+brainCloud Demo App
 This is an Android application that demonstrates how some of the common brainCloud functions work.
 
 Getting Setup

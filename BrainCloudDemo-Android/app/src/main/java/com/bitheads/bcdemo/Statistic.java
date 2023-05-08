@@ -1,4 +1,4 @@
-package com.braincloud.bcauthentication;
+package com.bitheads.bcdemo;
 
 public class Statistic {
 

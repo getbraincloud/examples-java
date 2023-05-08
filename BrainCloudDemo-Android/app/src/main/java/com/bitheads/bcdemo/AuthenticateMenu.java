@@ -1,4 +1,4 @@
-package com.braincloud.bcauthentication;
+package com.bitheads.bcdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.client.IServerCallback;
 import com.bitheads.braincloud.client.ServiceName;
 import com.bitheads.braincloud.client.ServiceOperation;

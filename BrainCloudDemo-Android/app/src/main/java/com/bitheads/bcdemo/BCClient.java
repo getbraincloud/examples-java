@@ -1,10 +1,10 @@
-package com.braincloud.bcauthentication;
+package com.bitheads.bcdemo;
 
 import android.content.Context;
 import android.os.CountDownTimer;
 import android.util.Log;
 
-import com.bitheads.braincloud.client.BrainCloudWrapper;
+import com.bitheads.braincloud.client.BrainCloudWrapperAndroid;
 import com.bitheads.braincloud.client.IServerCallback;
 
 import org.json.JSONException;
@@ -12,13 +12,13 @@ import org.json.JSONObject;
 
 public class BCClient {
 
-    private BrainCloudWrapper _bc;
+    private BrainCloudWrapperAndroid _bc;
 
     public BCClient(){
-        _bc = new BrainCloudWrapper();
+        _bc = new BrainCloudWrapperAndroid();
 
         // TODO Replace values with application IDs
-        //_bc.initialize(*appId*, *secretKey*, *appVersion*, *serverUrl*);
+        _bc.initialize("26205", "1f794474-24a1-4dca-9605-9415a798a036", "1", "https://api.internal.braincloudservers.com/dispatcherv2");
 
         // Run callbacks
         new CountDownTimer(10000, 1000) {
@@ -35,7 +35,7 @@ public class BCClient {
         return _bc.getClient().getBrainCloudVersion();
     }
 
-    public BrainCloudWrapper getWrapper(){
+    public BrainCloudWrapperAndroid getWrapper(){
         return _bc;
     }
 

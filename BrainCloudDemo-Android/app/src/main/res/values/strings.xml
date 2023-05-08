@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BCAuthentication</string>
+    <string name="app_name">BCDemo</string>
 
     <!-- Labels/Headers/Hints -->
     <string name="select_auth_type">Select Authentication Type:</string>
