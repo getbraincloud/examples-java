@@ -1,4 +1,0 @@
-include ':app'
-include ':brainCloud'
-project(':brainCloud').projectDir =
-        new File(settingsDir, '../thirdparty/braincloud-java/TestBCClient-Android/brainCloud')
