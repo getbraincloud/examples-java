@@ -56,15 +56,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
         _bcWrapper = new BrainCloudWrapper();
 
-        // Replace ids.appId, ids.appSecret, ids.url with your own.
-        if (ids.url == null)
-        {
-            _bcWrapper.initialize(ids.appId, ids.appSecret, Version.version);
-        }
-        else
-        {
-            _bcWrapper.initialize(ids.appId, ids.appSecret, Version.version, ids.url);
-        }
+        //TODO Replace values with application IDs
+        //_bcWrapper.initialize("appId", "secretKey", "appVersion", "serverUrl");
 
         _bcWrapper.getClient().enableLogging(true);
 
@@ -453,7 +446,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
     public void onGameStart()
     {
-        state.user.isReady = true;
+    	state.user.isReady = true;
         _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady, "{\"colorIndex\":" + state.user.colorIndex + "}", null);
         onStateChanged();
     }

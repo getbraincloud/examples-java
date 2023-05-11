@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.BCAuthentication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.BCDemo" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#003f83</item>
         <item name="colorPrimaryVariant">#045fac</item>
