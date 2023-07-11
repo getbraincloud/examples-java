@@ -78,14 +78,14 @@ class GameScreen extends Screen
         try
         {
             _cursors = new BufferedImage[] {
-                ImageIO.read(new File("bin/assets/arrow0.png")),
-                ImageIO.read(new File("bin/assets/arrow1.png")),
-                ImageIO.read(new File("bin/assets/arrow2.png")),
-                ImageIO.read(new File("bin/assets/arrow3.png")),
-                ImageIO.read(new File("bin/assets/arrow4.png")),
-                ImageIO.read(new File("bin/assets/arrow5.png")),
-                ImageIO.read(new File("bin/assets/arrow6.png")),
-                ImageIO.read(new File("bin/assets/arrow7.png"))
+                ImageIO.read(new File("src/resources/arrow0.png")),
+                ImageIO.read(new File("src/resources/arrow1.png")),
+                ImageIO.read(new File("src/resources/arrow2.png")),
+                ImageIO.read(new File("src/resources/arrow3.png")),
+                ImageIO.read(new File("src/resources/arrow4.png")),
+                ImageIO.read(new File("src/resources/arrow5.png")),
+                ImageIO.read(new File("src/resources/arrow6.png")),
+                ImageIO.read(new File("src/resources/arrow7.png"))
             };
         }
         catch (Exception e)
