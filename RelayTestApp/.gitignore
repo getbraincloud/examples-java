@@ -1,3 +1,4 @@
 *.class
 ids.java
 /target/
+/bin/
