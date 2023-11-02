@@ -10,7 +10,7 @@
 	  <dependency>
 		  <groupId>com.bitheads</groupId>
 		  <artifactId>braincloud-java</artifactId>
-		  <version>5.0.0</version>
+		  <version>5.1.0</version>
 	  </dependency>
   </dependencies>
   
