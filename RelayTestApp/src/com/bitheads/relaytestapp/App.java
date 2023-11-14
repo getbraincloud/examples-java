@@ -1,13 +1,10 @@
 package com.bitheads.relaytestapp;
 
-import com.bitheads.braincloud.client.BrainCloudClient;
 import com.bitheads.braincloud.client.BrainCloudWrapper;
-import com.bitheads.braincloud.services.EventService;
 import com.bitheads.braincloud.services.RelayService;
 import com.bitheads.braincloud.client.IRelayCallback;
 import com.bitheads.braincloud.client.IRelayConnectCallback;
 import com.bitheads.braincloud.client.IRelaySystemCallback;
-import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTConnectCallback;
 import com.bitheads.braincloud.client.IServerCallback;
@@ -20,11 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.File;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class App implements IRelayCallback, IRelaySystemCallback
