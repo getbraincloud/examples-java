@@ -58,7 +58,8 @@ class GameScreen extends Screen
                 }
                 int size = shockwave.time * 128 / 30;
                 g.setColor(shockwave.color);
-                g.drawArc(shockwave.pos.x - size / 2, shockwave.pos.y - size / 2, size, size, 0, 360);
+                
+                g.drawArc((int)(shockwave.pos.getX() * 800) - size / 2, (int)(shockwave.pos.getY() * 600) - size / 2, size, size, 0, 360);
             }
 
             // Players' arrows
@@ -67,7 +68,7 @@ class GameScreen extends Screen
                 User member = state.lobby.members.get(i);
                 if (member.pos != null)
                 {
-                    g.drawImage(_cursors[member.colorIndex], member.pos.x, member.pos.y, null);
+                    g.drawImage(_cursors[member.colorIndex], (int)(member.pos.getX() * 800), (int)(member.pos.getY() * 600), null);
                 }
             }
         }
@@ -113,7 +114,7 @@ class GameScreen extends Screen
         JFrame frame = App.getInstance().frame;
         Dimension screenRes = frame.getPreferredSize();
 
-        // Tittle
+        // Title
         {
             JLabel lblTitle = new JLabel("Move mouse around and Click", SwingConstants.CENTER);
             lblTitle.setSize(screenRes.width, screenRes.height / 2 - 350);
@@ -200,13 +201,19 @@ class GameScreen extends Screen
                 @Override
                 public void mouseMoved(MouseEvent e)
                 {
-                    App.getInstance().onPlayerMove(e.getX(), e.getY());
+                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
+                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
+
+                    App.getInstance().onPlayerMove(normalizedX, normalizedY);
                 }
 
                 @Override
                 public void mouseDragged(MouseEvent e)
                 {
-                    App.getInstance().onPlayerMove(e.getX(), e.getY());
+                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
+                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
+
+                    App.getInstance().onPlayerMove(normalizedX, normalizedY);
                 }
             });
 
@@ -215,7 +222,10 @@ class GameScreen extends Screen
                 @Override
                 public void mousePressed(MouseEvent e)
                 {
-                    App.getInstance().onPlayerShockwave(e.getX(), e.getY());
+                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
+                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
+                    
+                    App.getInstance().onPlayerShockwave(normalizedX, normalizedY);
                 }
 
                 @Override
