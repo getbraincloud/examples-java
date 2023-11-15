@@ -7,3 +7,7 @@ ConcentrationGame/app/.project
 RelayTestApp/.classpath
 RelayTestApp/.project
 RelayTestApp/.settings/org.eclipse.jdt.core.prefs
+ConcentrationGame/.project
+*.prefs
+ConcentrationGame/app/.classpath
+ConcentrationGame/app/.project

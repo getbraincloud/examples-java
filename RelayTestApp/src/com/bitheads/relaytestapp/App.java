@@ -1,13 +1,10 @@
 package com.bitheads.relaytestapp;
 
-import com.bitheads.braincloud.client.BrainCloudClient;
 import com.bitheads.braincloud.client.BrainCloudWrapper;
-import com.bitheads.braincloud.services.EventService;
 import com.bitheads.braincloud.services.RelayService;
 import com.bitheads.braincloud.client.IRelayCallback;
 import com.bitheads.braincloud.client.IRelayConnectCallback;
 import com.bitheads.braincloud.client.IRelaySystemCallback;
-import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTCallback;
 import com.bitheads.braincloud.client.IRTTConnectCallback;
 import com.bitheads.braincloud.client.IServerCallback;
@@ -20,10 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.io.File;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class App implements IRelayCallback, IRelaySystemCallback
@@ -251,13 +247,13 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 case "move":
                 {
                     JSONObject posJson = json.getJSONObject("data");
-                    user.pos = new Point(posJson.getInt("x"), posJson.getInt("y"));
+                    user.pos = new Point2D.Float(posJson.getFloat("x"), posJson.getFloat("y"));
                     break;
                 }
                 case "shockwave":
                 {
                     JSONObject posJson = json.getJSONObject("data");
-                    state.shockwaves.add(new Shockwave(new Point(posJson.getInt("x"), posJson.getInt("y")), Colors.COLORS[user.colorIndex]));
+                    state.shockwaves.add(new Shockwave(new Point2D.Float(posJson.getFloat("x"), posJson.getFloat("y")), Colors.COLORS[user.colorIndex]));
                     break;
                 }
             }
@@ -456,8 +452,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
         JSONObject data = new JSONObject();
         data.put("op", "move");
         JSONObject posJson = new JSONObject();
-        posJson.put("x", state.user.pos.x);
-        posJson.put("y", state.user.pos.y);
+        posJson.put("x", state.user.pos.getX());
+        posJson.put("y", state.user.pos.getY());
         data.put("data", posJson);
 
         _bcWrapper.getRelayService().sendToAll(
@@ -469,10 +465,10 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _lastMoveSendTime = System.currentTimeMillis();
     }
 
-    public void onPlayerMove(int x, int y)
+    public void onPlayerMove(float x, float y)
     {
         // Update our own position right away
-        state.user.pos = new Point(x, y);
+        state.user.pos = new Point2D.Float(x, y);
 
         User myUser = null;
         for (int i = 0; i < state.lobby.members.size(); ++i)
@@ -486,7 +482,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
         if (myUser != null)
         {
-            myUser.pos = new Point(x, y);
+            myUser.pos = new Point2D.Float(x, y);
         }
 
         // Make sure we don't send faster than 60 fps. Java seems to trigger mouse move events
@@ -494,9 +490,9 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _pendingMoveSend = true;
     }
 
-    public void onPlayerShockwave(int x, int y)
-    {
-        state.shockwaves.add(new Shockwave(new Point(x, y), Colors.COLORS[state.user.colorIndex]));
+    public void onPlayerShockwave(float x, float y)
+    {    	
+        state.shockwaves.add(new Shockwave(new Point2D.Float(x, y), Colors.COLORS[state.user.colorIndex]));
 
         JSONObject data = new JSONObject();
         data.put("op", "shockwave");
