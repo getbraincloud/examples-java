@@ -72,7 +72,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
         // Log out of brainCloud
         logOut.setOnClickListener(view -> {
             bcFunctionStatus.setText(R.string.attempt_log_out);
-            brainCloud.getWrapper().getPlayerStateService().logout(this);
+            brainCloud.getWrapper().logout(true, this);
         });
     }
 
