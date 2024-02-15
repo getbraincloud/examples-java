@@ -29,6 +29,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'com.google.firebase:firebase-core:21.1.1'
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
-    implementation group: 'com.bitheads', name: 'braincloud-java-android', version: '5.1.1'
+    implementation group: 'com.bitheads', name: 'braincloud-java-android', version: '5.2.0'
 }
 apply plugin: 'com.google.gms.google-services'
