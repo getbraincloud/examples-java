@@ -53,7 +53,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper = new BrainCloudWrapper();
 
         //TODO Replace values with application IDs
-        //_bcWrapper.initialize("appId", "secretKey", "appVersion", "serverUrl");
+        //_bcWrapper.initialize("appID", "appSecret", "appVersion", "https://api.braincloudservers.com/dispatcherv2");
 
         _bcWrapper.getClient().enableLogging(true);
 
@@ -116,7 +116,30 @@ public class App implements IRelayCallback, IRelaySystemCallback
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent)
             {
-                System.exit(0);
+                if(_bcWrapper.getClient().isAuthenticated()){
+                    _bcWrapper.logout(false, new IServerCallback() {
+
+                        @Override
+                        public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
+                                JSONObject jsonData) {
+                            
+                            System.out.println("Log Out Success");
+                            System.exit(0);
+                        }
+
+                        @Override
+                        public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
+                                int statusCode, int reasonCode, String jsonError) {
+                            
+                            System.out.println("Log Out Failed");
+                            System.exit(0);
+                        }
+                        
+                    });
+                }
+                else{
+                    System.exit(0);
+                }
             }
         });
         frame.pack();
