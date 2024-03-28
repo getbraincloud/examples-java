@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -185,6 +186,26 @@ public class theGame extends AppCompatActivity implements IServerCallback
                 HandleCardChoice(card12);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("LogoutOnExit", "OnDestroy");
+        Login._bc.GetWrapper().logout(false, new IServerCallback() {
+            @Override
+            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                System.out.println("Logged out");
+                Log.d("LogoutOnExit", "Success");
+            }
+
+            @Override
+            public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
+                System.out.println("Failed to log out");
+                Log.d("LogoutOnExit", "Fail");
+            }
+        });
+
+        super.onDestroy();
     }
 
     //a simple shuffle algorithm
