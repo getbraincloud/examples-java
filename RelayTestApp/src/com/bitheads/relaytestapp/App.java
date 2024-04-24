@@ -53,7 +53,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper = new BrainCloudWrapper();
 
         //TODO Replace values with application IDs
-        //_bcWrapper.initialize("appID", "appSecret", "appVersion", "https://api.braincloudservers.com/dispatcherv2");
+        _bcWrapper.initialize("23649", "a754a2c0-72d9-46ce-9fdf-18e9c19a556c", "5.2.0", "https://api.internal.braincloudservers.com/dispatcherv2");
 
         _bcWrapper.getClient().enableLogging(true);
 
@@ -148,7 +148,36 @@ public class App implements IRelayCallback, IRelaySystemCallback
         frame.validate();
         frame.repaint();
 
-        goToLoginScreen();
+        if(_bcWrapper.canReconnect()){
+            _bcWrapper.reconnect(new IServerCallback() {
+                @Override
+                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
+                {                    
+                    // TODO:  get player name from response
+                    JSONObject data = result.getJSONObject("data");
+                    String playerName = data.getString("playerName");
+                    System.out.println("Player name: " + playerName);
+
+                    // Update username stored in brainCloud.
+                    // This is necessary because the login username is not necessarily the app username (Player name)
+                    _bcWrapper.getPlayerStateService().updateUserName(playerName, null);
+
+                    // Set the state with our user information. 7 is default white color index.
+                    state.user = new User("", playerName, 7, false);
+                    state.user.allowSendTo = false; // We don't relay packet to ourself
+                    goToMainMenuScreen();
+                }
+
+                @Override
+                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
+                {
+                    dieWithMessage("Failed to authenticate.");
+                }
+            });
+        }
+        else{
+            goToLoginScreen();
+        }
     }
 
     void changeScreen(Screen screen)
@@ -219,12 +248,10 @@ public class App implements IRelayCallback, IRelaySystemCallback
             {
                 @Override
                 public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
-                {
-                    JSONObject jsonData = result.getJSONObject("data");
-                    
+                {                    
                     // Update username stored in brainCloud.
-                    // This is necessary because the login username is not necessary the app username (Player name)
-                    _bcWrapper.getPlayerStateService().updateName(username, null);
+                    // This is necessary because the login username is not necessarily the app username (Player name)
+                    _bcWrapper.getPlayerStateService().updateUserName(username, null);
 
                     // Set the state with our user information. 7 is default white color index.
                     state.user = new User("", username, 7, false);
@@ -437,6 +464,35 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 }
             });
         }
+    }
+
+    public void onLogoutClicked(){
+        goToLoadingScreen("Logging out...");
+
+        _bcWrapper.logout(true, new IServerCallback() {
+
+            @Override
+            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
+                    JSONObject jsonData) {
+                        goToLoginScreen();
+            }
+
+            @Override
+            public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode,
+                    int reasonCode, String jsonError) {
+                        System.out.println("Log out failed: " + jsonError);
+                        if(_bcWrapper.getClient().isAuthenticated()){
+                            goToMainMenuScreen();
+                        }
+                        else{
+                            dieWithMessage(jsonError);
+                        }
+            }
+            
+        });
+        
+        goToLoginScreen();
+
     }
 
     public void onGameScreenClose()
