@@ -53,7 +53,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper = new BrainCloudWrapper();
 
         //TODO Replace values with application IDs
-        _bcWrapper.initialize("23649", "a754a2c0-72d9-46ce-9fdf-18e9c19a556c", "5.2.0", "https://api.internal.braincloudservers.com/dispatcherv2");
+        //_bc.initialize("appId", "secretKey", "appVersion", "serverUrl");
 
         _bcWrapper.getClient().enableLogging(true);
 
@@ -490,7 +490,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
             }
             
         });
-        
+
         goToLoginScreen();
 
     }
