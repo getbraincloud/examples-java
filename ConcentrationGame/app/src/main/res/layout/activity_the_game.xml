@@ -41,6 +41,8 @@
             app:layout_constraintTop_toBottomOf="@+id/chancesTextView">
 
             <include layout="@layout/gamebuttons" />
+
+
         </LinearLayout>
 
         <TextView
@@ -106,6 +108,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/findNumbersTextView" />
+
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+            android:text="LOG OUT" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

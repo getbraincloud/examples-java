@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,6 +28,8 @@ public class theGame extends AppCompatActivity implements IServerCallback
     Button card1, card2, card3, card4, card5, card6, card7, card8, card9, card10, card11, card12;
     //want to keep track of the first and second i press
     Button[] cardChoices;
+
+    Button logoutButton;
     int chances = 20;
     int winsForAchievement = 0;
 
@@ -184,6 +188,30 @@ public class theGame extends AppCompatActivity implements IServerCallback
             public void onClick(View v) {
                 HandleCardChoice(card12);
             }
+        });
+
+        logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(view -> {
+            Login._bc.GetWrapper().logout(true, new IServerCallback() {
+
+                @Override
+                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                    Intent myIntent = new Intent(getApplication(), Login.class);
+                    startActivity(myIntent);
+                }
+
+                @Override
+                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
+                    if(Login._bc.GetWrapper().getClient().isAuthenticated()){
+                        System.out.println("Logout failed: " + jsonError);
+                        Log.e("brainCloud Request Error", "Logout failed: " + jsonError);
+                    }
+                    else{
+                        Intent myIntent = new Intent(getApplication(), Login.class);
+                        startActivity(myIntent);
+                    }
+                }
+            });
         });
     }
 
