@@ -22,6 +22,8 @@ import org.json.JSONObject;
 
 public class theGame extends AppCompatActivity implements IServerCallback
 {
+    BrainCloudManager brainCloudManager;
+
     IServerCallback theCallback;
 
     //need cards which will be buttons
@@ -44,13 +46,15 @@ public class theGame extends AppCompatActivity implements IServerCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_the_game);
 
+        brainCloudManager = BrainCloudManager.getInstance(theGame.this);
+
         //set the callback
         theGameCallback = this;
 
         CheckAchievements();
 
         //read the stats off braincloud and display them in the text. (the callback success will update the ui)
-        Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
+        brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
 
         //handle local ui
         TextView chancestext = findViewById(R.id.chancesTextView);
@@ -192,7 +196,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
 
         logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(view -> {
-            Login._bc.GetWrapper().logout(true, new IServerCallback() {
+            brainCloudManager.getBrainCloudWrapper().logout(true, new IServerCallback() {
 
                 @Override
                 public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
@@ -202,7 +206,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
 
                 @Override
                 public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                    if(Login._bc.GetWrapper().getClient().isAuthenticated()){
+                    if(brainCloudManager.getBrainCloudWrapper().getClient().isAuthenticated()){
                         System.out.println("Logout failed: " + jsonError);
                         Log.e("brainCloud Request Error", "Logout failed: " + jsonError);
                     }
@@ -281,7 +285,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("Lose", 1);
-                Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
+                brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
             }
             catch(JSONException e) {
                 e.printStackTrace();
@@ -309,7 +313,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("Win", 1);
-                Login._bc.GetWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
+                brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
             }
             catch(JSONException e) {
                 e.printStackTrace();
@@ -327,7 +331,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
         chancestext.setText("Chances Left: " + chances);
 
         //read the new stats off braincloud and display them in the text.
-        Login._bc.GetWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
+        brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
 
         //Reset the game
         card1.setEnabled(true);
@@ -432,7 +436,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
             //very bare bones, but can pass in much more to affect specific values of the achievement when you award it. 
             String[] achievementArr = new String[1];
             achievementArr[0] = "Win5Games";
-            Login._bc.GetWrapper().getGamificationService().awardAchievements(achievementArr, theGameCallback);
+            brainCloudManager.getBrainCloudWrapper().getGamificationService().awardAchievements(achievementArr, theGameCallback);
         }
     }
 }
