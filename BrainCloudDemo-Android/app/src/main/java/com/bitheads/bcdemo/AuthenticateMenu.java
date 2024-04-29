@@ -22,8 +22,7 @@ import org.json.JSONObject;
 
 public class AuthenticateMenu extends AppCompatActivity implements IServerCallback {
 
-    public static BCClient brainCloud;
-
+    private BrainCloudManager brainCloudManager;
     private String selectedAuth;
     private String userId;
     private String password;
@@ -42,6 +41,8 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authenticate_menu);
 
+        brainCloudManager = BrainCloudManager.getInstance(AuthenticateMenu.this);
+
         // Get reference to UI components
         bcAuthStatus = findViewById(R.id.bc_auth_status_tv);
         TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
@@ -51,27 +52,6 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
         passField = findViewById(R.id.pass_field_et);
         authButton = findViewById(R.id.auth_button_b);
         invalidLogin = findViewById(R.id.invalid_login_tv);
-
-        // Create and initialize BrainCloudWrapper
-        brainCloud = new BCClient();
-
-        // Proceed on successful initialization or halt on fail
-        if(brainCloud.getWrapper().getClient().isInitialized()){
-            bcInitStatus.setText(brainCloud.getVersion());
-
-            brainCloud.setApplicationContext(AuthenticateMenu.this);
-
-            brainCloud.getWrapper().getClient().enableLogging(true);
-        }
-        else{
-            authSelect.setVisibility(View.GONE);
-            loginFields.setVisibility(View.GONE);
-            authButton.setVisibility(View.GONE);
-
-            bcInitStatus.setText(R.string.bc_init_fail);
-            
-            bcAuthStatus.setText(R.string.retry_init);
-        }
 
         // Create the dropdown menu (Spinner component) to select authentication type
         configureAuthSpinner();
@@ -88,7 +68,7 @@ public class AuthenticateMenu extends AppCompatActivity implements IServerCallba
                 invalidLogin.setVisibility(View.GONE);
                 bcAuthStatus.setText(R.string.attempt_auth);
 
-                brainCloud.authenticate(selectedAuth, userId, password, this);
+                brainCloudManager.authenticate(selectedAuth, userId, password, this);
             }
         });
     }
