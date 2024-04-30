@@ -35,6 +35,45 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //set the callback to this class
         theCallback = this;
 
+        // Attempt reconnect authentication
+        if(brainCloudManager.getBrainCloudWrapper().canReconnect()){
+            Log.d("brainCloud Message", "canReconnect is true");
+
+            TextView statusTextView1 = findViewById(R.id.statusTextView);
+            statusTextView1.setText("Reconnecting");
+
+            brainCloudManager.getBrainCloudWrapper().reconnect(new IServerCallback() {
+                @Override
+                public void serverCallback(ServiceName serviceName,
+                                           ServiceOperation serviceOperation,
+                                           JSONObject jsonData) {
+                    Log.v("brainCloud msg", "reconnect success: " + jsonData.toString());
+
+                    //change the app activity
+                    Intent loadApp = new Intent(getApplication(), theGame.class);
+                    startActivity(loadApp);
+                }
+
+                @Override
+                public void serverError(ServiceName serviceName,
+                                        ServiceOperation serviceOperation,
+                                        int statusCode,
+                                        int reasonCode,
+                                        String jsonError) {
+                    Log.v("brainCloud msg", "reconnect fail: " + jsonError);
+                    displayLoginMenu();
+                }
+            });
+
+
+        }
+        else{
+            Log.d("brainCloud Message", "canReconnect is false");
+            displayLoginMenu();
+        }
+    }
+
+    private void displayLoginMenu(){
         //get a reference to the button of the app
         Button loginButton = findViewById(R.id.loginButton);
 

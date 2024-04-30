@@ -20,7 +20,7 @@
         android:id="@+id/enter_brainCloud_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/enter_brain_cloud"
+        android:text="@string/attempt_reconnect"
         android:textSize="50dp"
         android:textColor="@color/bc_text"
         app:layout_constraintTop_toTopOf="parent"

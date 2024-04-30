@@ -28,11 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
         brainCloudManager.getBrainCloudWrapper().getClient().enableLogging(true);
 
-        // TODO:  check reconnect
-        /*
-         * if can't reconnect, go to authMenu
-         * if CAN reconnect, go to whatever auth does
-         */
         if(brainCloudManager.getBrainCloudWrapper().canReconnect()){
             Log.d("brainCloud Message", "canReconnect is true");
 
