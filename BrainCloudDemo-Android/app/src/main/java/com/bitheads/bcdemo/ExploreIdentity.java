@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 public class ExploreIdentity extends AppCompatActivity implements View.OnClickListener {
 
-    public BCClient brainCloud;
+    public BrainCloudManager brainCloudManager;
     private String idType;
 
     // UI components
@@ -35,7 +35,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_identity);
 
-        brainCloud = AuthenticateMenu.brainCloud;
+        brainCloudManager = BrainCloudManager.getInstance(ExploreIdentity.this);
 
         // Get reference to UI components
         TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
@@ -48,7 +48,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
         Button mergeButton = findViewById(R.id.merge_b);
         Button backButton = findViewById(R.id.identity_back_b);
 
-        bcInitStatus.setText(brainCloud.getVersion());
+        bcInitStatus.setText(brainCloudManager.getBrainCloudClientVersion());
 
         // Create the dropdown menu (Spinner component) to select identity type to update
         configureIdSpinner();
@@ -110,7 +110,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
             if(view.getId() == R.id.attach_b){
                 identityStatus.setText(R.string.attaching);
 
-                brainCloud.attachIdentity(idType, userId, password, new IServerCallback() {
+                brainCloudManager.attachIdentity(idType, userId, password, new IServerCallback() {
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                         Log.d("attachIdentity success!", jsonData.toString());
@@ -131,7 +131,7 @@ public class ExploreIdentity extends AppCompatActivity implements View.OnClickLi
             else{
                 identityStatus.setText(R.string.merging);
 
-                brainCloud.mergeIdentity(idType, userId, password, new IServerCallback() {
+                brainCloudManager.mergeIdentity(idType, userId, password, new IServerCallback() {
                     @Override
                     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                         Log.d("mergeIdentity success!", jsonData.toString());

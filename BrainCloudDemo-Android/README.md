@@ -5,7 +5,7 @@ This is an Android application that demonstrates how some of the common brainClo
 This application uses the Java Client Library for brainCloud. It was created with Android Studio 2021.3.1 and uses Java 1.8.
 
 ### Application IDs
-AppId, secretKey, and serverUrl will need to be filled in in the BCClient.java class in order to use this application.
+AppId, secretKey, and serverUrl will need to be filled in in the BrainCloudManager.java class in order to use this application.
 
 ### Downloads
 - **The Java Client Library:** https://github.com/getbraincloud/braincloud-java
@@ -47,7 +47,7 @@ AppId, secretKey, and serverUrl will need to be filled in in the BCClient.java c
 		```
 	- Create virtual currencies from the **Virtual Currencies** page via **Design > Marketplace > Virtual Currencies**
 		- NOTE: if you wish to create a currency with a different name you will need to modify the currency functions within the project.
-			- getCurrency() at BCClient.java L201
+			- getCurrency() at BrainCloudManager.java L227
 			- parseCurrencyJSON() at ExploreCurrency.java L111
 			- awardCurrency() at ExploreCurrency.java L152
 			- consumeCurrency() at ExploreCurrency.java L175

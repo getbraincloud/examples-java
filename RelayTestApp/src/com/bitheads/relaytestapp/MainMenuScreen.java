@@ -55,15 +55,30 @@ class MainMenuScreen extends Screen
         btnPlay.setLocation(x - 100, y + 100);
         panel.add(btnPlay);
 
+        // Log Out
+        JButton btnLogout = new JButton("Log Out");
+        btnLogout.setSize(200, 30);
+        btnLogout.setLocation(x - 100, y + 150);
+        panel.add(btnLogout);
+
         // Event listeners
-        btnPlay.addActionListener(new ActionListener()
-        {
+        // OnPlayClicked
+        btnPlay.addActionListener(new ActionListener() {
+
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 String protocolStr = _cboProtocol.getSelectedItem().toString();
                 String lobbyTypeStr = _cboLobbyType.getSelectedItem().toString();
                 App.getInstance().onPlayClicked(protocolStr, lobbyTypeStr);
+            }
+        });
+
+        // OnLogoutClicked
+        btnLogout.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                App.getInstance().onLogoutClicked();
             }
         });
     }
