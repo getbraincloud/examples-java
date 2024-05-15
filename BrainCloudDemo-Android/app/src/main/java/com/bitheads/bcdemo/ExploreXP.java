@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class ExploreXP extends AppCompatActivity {
 
-    private BCClient brainCloud;
+    private BrainCloudManager brainCloudManager;
     private int playerLevel;
     private int playerXP;
 
@@ -32,7 +32,7 @@ public class ExploreXP extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_xp);
 
-        brainCloud = AuthenticateMenu.brainCloud;
+        brainCloudManager = BrainCloudManager.getInstance(ExploreXP.this);
 
         // Get reference to UI components
         TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
@@ -43,7 +43,7 @@ public class ExploreXP extends AppCompatActivity {
         Button incrementButton = findViewById(R.id.increment_b);
         Button backButton = findViewById(R.id.back_b);
 
-        bcInitStatus.setText(brainCloud.getVersion());
+        bcInitStatus.setText(brainCloudManager.getBrainCloudClientVersion());
 
         // Get current XP info
         xpStatus.setText(R.string.update_xp);
@@ -63,7 +63,7 @@ public class ExploreXP extends AppCompatActivity {
      * Retrieve player's current XP
      */
     public void getXP(){
-        brainCloud.getXP(new IServerCallback() {
+        brainCloudManager.getXP(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName,ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("readUserState success!", jsonData.toString());
@@ -124,7 +124,7 @@ public class ExploreXP extends AppCompatActivity {
         int xpIncrementAmount = Integer.parseInt(incrementAmountField.getText().toString());
         incrementAmountField.getText().clear();
 
-        brainCloud.incrementXP(xpIncrementAmount, new IServerCallback() {
+        brainCloudManager.incrementXP(xpIncrementAmount, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("incrementXP success!", jsonData.toString());

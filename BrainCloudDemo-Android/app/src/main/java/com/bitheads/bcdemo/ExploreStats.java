@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class ExploreStats extends AppCompatActivity {
 
-    private BCClient brainCloud;
+    private BrainCloudManager brainCloudManager;
     private boolean viewUserStat;
 
     // UI components
@@ -34,8 +34,7 @@ public class ExploreStats extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_stats);
 
-        // Get brainCloud wrapper
-        brainCloud = AuthenticateMenu.brainCloud;
+        brainCloudManager = BrainCloudManager.getInstance(ExploreStats.this);
 
         // Get reference to UI components
         TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
@@ -44,7 +43,7 @@ public class ExploreStats extends AppCompatActivity {
         statField = findViewById(R.id.statistics_field_ll);
         Button backButton = findViewById(R.id.back_b);
 
-        bcInitStatus.setText(brainCloud.getVersion());
+        bcInitStatus.setText(brainCloudManager.getBrainCloudClientVersion());
 
         toggleStatView.setVisibility(View.GONE);
 
@@ -87,7 +86,7 @@ public class ExploreStats extends AppCompatActivity {
      * Retrieve user/global statistics depending on which view is selected
      */
     public void getStatistics(){
-        brainCloud.getStatistics(viewUserStat, new IServerCallback() {
+        brainCloudManager.getStatistics(viewUserStat, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("readUserStats success!", jsonData.toString());
@@ -184,7 +183,7 @@ public class ExploreStats extends AppCompatActivity {
     public void incrementStats(String statName){
         String jsonData = "{\"" + statName + "\":1}";
 
-        brainCloud.incrementStatistics(viewUserStat, jsonData, new IServerCallback() {
+        brainCloudManager.incrementStatistics(viewUserStat, jsonData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("increment success: ", jsonData.toString());

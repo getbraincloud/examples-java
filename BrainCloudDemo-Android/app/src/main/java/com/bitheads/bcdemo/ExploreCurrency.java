@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class ExploreCurrency extends AppCompatActivity {
 
-    public BCClient brainCloud;
+    public BrainCloudManager brainCloudManager;
     private int balance;
     private int awarded;
     private int consumed;
@@ -35,7 +35,7 @@ public class ExploreCurrency extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_explore_currency);
 
-        brainCloud = AuthenticateMenu.brainCloud;
+        brainCloudManager = BrainCloudManager.getInstance(ExploreCurrency.this);
 
         // Get reference to UI components
         TextView bcInitStatus = findViewById(R.id.bc_init_status_tv);
@@ -48,7 +48,7 @@ public class ExploreCurrency extends AppCompatActivity {
         Button consumeButton = findViewById(R.id.consume_b);
         Button backButton = findViewById(R.id.back_b);
 
-        bcInitStatus.setText(brainCloud.getVersion());
+        bcInitStatus.setText(brainCloudManager.getBrainCloudClientVersion());
 
         // Get current currency info
         currencyStatus.setText(R.string.update_currency);
@@ -76,7 +76,7 @@ public class ExploreCurrency extends AppCompatActivity {
      * Retrieve player's current currency
      */
     public void getCurrency(){
-        brainCloud.getCurrency(new IServerCallback() {
+        brainCloudManager.getCurrency(new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("getCurrency success!", jsonData.toString());
@@ -153,7 +153,7 @@ public class ExploreCurrency extends AppCompatActivity {
 
         amountField.getText().clear();
 
-        brainCloud.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
+        brainCloudManager.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("runScript success!", jsonData.toString());
@@ -176,7 +176,7 @@ public class ExploreCurrency extends AppCompatActivity {
 
         amountField.getText().clear();
 
-        brainCloud.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
+        brainCloudManager.runCloudCodeScript(scriptName, scriptData, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
                 Log.d("runScript success!", jsonData.toString());

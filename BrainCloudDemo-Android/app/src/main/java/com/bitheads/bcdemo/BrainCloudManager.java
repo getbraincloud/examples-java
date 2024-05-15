@@ -10,37 +10,57 @@ import com.bitheads.braincloud.client.IServerCallback;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BCClient {
+/**
+ * Handles brainCloud requests/data.
+ */
+public class BrainCloudManager {
+    private static BrainCloudManager instance;
 
-    private BrainCloudWrapperAndroid _bc;
+    private static BrainCloudWrapperAndroid brainCloudWrapper;
 
-    public BCClient(){
-        _bc = new BrainCloudWrapperAndroid();
+    private BrainCloudManager(){
 
-        // TODO Replace values with application IDs
-        //_bc.initialize("appId", "secretKey", "appVersion", "serverUrl");
-
-        // Run callbacks
-        new CountDownTimer(10000, 1000) {
-            public void onTick(long millisUntilFinished) {
-                _bc.runCallbacks();
-            }
-            public void onFinish() {
-                start(); // Restart the timer
-            }
-        }.start();
     }
 
-    public String getVersion(){
-        return _bc.getClient().getBrainCloudVersion();
+    public static synchronized BrainCloudManager getInstance(Context context){
+        if(instance == null){
+            Context appContext = context.getApplicationContext();
+            instance = new BrainCloudManager();
+
+            brainCloudWrapper = new BrainCloudWrapperAndroid();
+
+            /*
+             *  TODO:  Initialize with your app's IDs.
+             *         Found in the brainCloud portal (Design > Core App Info > Application IDs)
+             */
+            brainCloudWrapper.initialize(
+                    appContext,
+                    "",
+                    "",
+                    "2.0.0",
+                    "https://api.internal.braincloudservers.com/dispatcherv2"
+            );
+
+            // Run callbacks
+            new CountDownTimer(10000, 1000) {
+                public void onTick(long millisUntilFinished) {
+                    brainCloudWrapper.runCallbacks();
+                }
+                public void onFinish() {
+                    start(); // Restart the timer
+                }
+            }.start();
+        }
+
+        return instance;
     }
 
-    public BrainCloudWrapperAndroid getWrapper(){
-        return _bc;
+    public BrainCloudWrapperAndroid getBrainCloudWrapper(){
+        return brainCloudWrapper;
     }
 
-    public void setApplicationContext(Context appContext){
-        _bc.setContext(appContext);
+    public String getBrainCloudClientVersion() {
+        return brainCloudWrapper.getClient().getBrainCloudVersion();
     }
 
     /**
@@ -53,17 +73,13 @@ public class BCClient {
     public void authenticate(String authType, String user, String pass, IServerCallback callback){
         switch(authType){
             case "Anonymous":
-                _bc.authenticateAnonymous(callback);
+                brainCloudWrapper.authenticateAnonymous(callback);
                 break;
             case "Universal":
-                _bc.resetStoredProfileId();
-                _bc.resetStoredAnonymousId();
-                _bc.authenticateUniversal(user, pass, true, callback);
+                brainCloudWrapper.authenticateUniversal(user, pass, true, callback);
                 break;
             case "Email":
-                _bc.resetStoredProfileId();
-                _bc.resetStoredAnonymousId();
-                _bc.authenticateEmailPassword(user, pass, true, callback);
+                brainCloudWrapper.authenticateEmailPassword(user, pass, true, callback);
                 break;
         }
     }
@@ -77,10 +93,10 @@ public class BCClient {
      */
     public void attachIdentity(String idType, String user, String pass, IServerCallback callback){
         if(idType.equals("Email")){
-            _bc.getIdentityService().attachEmailIdentity(user, pass, callback);
+            brainCloudWrapper.getIdentityService().attachEmailIdentity(user, pass, callback);
         }
         else{
-            _bc.getIdentityService().attachUniversalIdentity(user, pass, callback);
+            brainCloudWrapper.getIdentityService().attachUniversalIdentity(user, pass, callback);
         }
     }
 
@@ -93,10 +109,10 @@ public class BCClient {
      */
     public void mergeIdentity(String idType, String user, String pass, IServerCallback callback){
         if(idType.equals("Email")){
-            _bc.getIdentityService().mergeEmailIdentity(user, pass, callback);
+            brainCloudWrapper.getIdentityService().mergeEmailIdentity(user, pass, callback);
         }
         else{
-            _bc.getIdentityService().mergeUniversalIdentity(user, pass, callback);
+            brainCloudWrapper.getIdentityService().mergeUniversalIdentity(user, pass, callback);
         }
     }
 
@@ -129,7 +145,7 @@ public class BCClient {
 
         String context = jsonContext.toString();
 
-        _bc.getEntityService().getPage(context, callback);
+        brainCloudWrapper.getEntityService().getPage(context, callback);
     }
 
     /**
@@ -138,7 +154,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreEntity class
      */
     public void createEntity(Entity entity, IServerCallback callback){
-        _bc.getEntityService().createEntity(
+        brainCloudWrapper.getEntityService().createEntity(
                 entity.getEntityType(),
                 entity.getJsonData(),
                 entity.getJsonAcl(),
@@ -152,7 +168,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreEntity class
      */
     public void updateEntity(Entity entity, IServerCallback callback){
-        _bc.getEntityService().updateEntity(
+        brainCloudWrapper.getEntityService().updateEntity(
                 entity.getEntityId(),
                 entity.getEntityType(),
                 entity.getJsonData(),
@@ -168,7 +184,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreEntity class
      */
     public void deleteEntity(Entity entity, IServerCallback callback){
-        _bc.getEntityService().deleteEntity(
+        brainCloudWrapper.getEntityService().deleteEntity(
                 entity.getEntityId(),
                 -1,
                 callback
@@ -180,7 +196,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreXP class
      */
     public void getXP(IServerCallback callback){
-        _bc.getPlayerStateService().readUserState(callback);
+        brainCloudWrapper.getPlayerStateService().readUserState(callback);
     }
 
     /**
@@ -189,7 +205,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreXP class
      */
     public void incrementXP(int incrementAmount, IServerCallback callback){
-        _bc.getPlayerStatisticsService().incrementExperiencePoints(incrementAmount, callback);
+        brainCloudWrapper.getPlayerStatisticsService().incrementExperiencePoints(incrementAmount, callback);
     }
 
     /**
@@ -197,7 +213,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreCurrency class
      */
     public void getCurrency(IServerCallback callback){
-        _bc.getVirtualCurrencyService().getCurrency("gems", callback);
+        brainCloudWrapper.getVirtualCurrencyService().getCurrency("gems", callback);
     }
 
     /**
@@ -207,7 +223,7 @@ public class BCClient {
      * @param callback callback is passed from the ExploreCurrency class
      */
     public void runCloudCodeScript(String scriptName, String scriptData, IServerCallback callback){
-        _bc.getScriptService().runScript(scriptName, scriptData, callback);
+        brainCloudWrapper.getScriptService().runScript(scriptName, scriptData, callback);
     }
 
     /**
@@ -217,10 +233,10 @@ public class BCClient {
      */
     public void getStatistics(Boolean userStat, IServerCallback callback){
         if(userStat){
-            _bc.getPlayerStatisticsService().readAllUserStats(callback);
+            brainCloudWrapper.getPlayerStatisticsService().readAllUserStats(callback);
         }
         else{
-            _bc.getGlobalStatisticsService().readAllGlobalStats(callback);
+            brainCloudWrapper.getGlobalStatisticsService().readAllGlobalStats(callback);
         }
     }
 
@@ -232,10 +248,12 @@ public class BCClient {
      */
     public void incrementStatistics(Boolean userStat, String jsonData, IServerCallback callback){
         if(userStat){
-            _bc.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
+            brainCloudWrapper.getPlayerStatisticsService().incrementUserStats(jsonData, callback);
         }
         else{
-            _bc.getGlobalStatisticsService().incrementGlobalStats(jsonData, callback);
+            brainCloudWrapper.getGlobalStatisticsService().incrementGlobalStats(jsonData, callback);
         }
     }
+
+
 }

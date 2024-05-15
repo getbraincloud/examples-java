@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 public class BrainCloudMenu extends AppCompatActivity implements IServerCallback {
 
-    public BCClient brainCloud;
+    public BrainCloudManager brainCloudManager;
     private String selectedFunc;
 
     // UI components
@@ -34,7 +34,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brain_cloud_menu);
 
-        brainCloud = AuthenticateMenu.brainCloud;
+        brainCloudManager = BrainCloudManager.getInstance(BrainCloudMenu.this);
 
         // Get reference to UI components
         TextView bcInitStatus = findViewById(R.id.bc_menu_init_status_tv);
@@ -44,7 +44,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
         exploreFunc = findViewById(R.id.explore_func_b);
         Button logOut = findViewById(R.id.log_out_b);
 
-        bcInitStatus.setText(brainCloud.getWrapper().getClient().getBrainCloudVersion());
+        bcInitStatus.setText(brainCloudManager.getBrainCloudClientVersion());
 
         // Create the dropdown menu (Spinner component) to select brainCloud function
         configureFunctionSpinner();
@@ -72,7 +72,7 @@ public class BrainCloudMenu extends AppCompatActivity implements IServerCallback
         // Log out of brainCloud
         logOut.setOnClickListener(view -> {
             bcFunctionStatus.setText(R.string.attempt_log_out);
-            brainCloud.getWrapper().logout(true, this);
+            brainCloudManager.getBrainCloudWrapper().logout(true, this);
         });
     }
 
