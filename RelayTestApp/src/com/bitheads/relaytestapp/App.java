@@ -53,7 +53,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper = new BrainCloudWrapper();
 
         //TODO Replace values with application IDs
-        //_bc.initialize("appId", "secretKey", "appVersion", "serverUrl");
+        //_bcWrapper.initialize("appId", "secretKey", "appVersion", "serverUrl");
 
         _bcWrapper.getClient().enableLogging(true);
 
@@ -171,7 +171,8 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 @Override
                 public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
                 {
-                    dieWithMessage("Failed to authenticate.");
+                    System.out.println("Reconnect failed. Going to login screen");
+                    goToLoginScreen();
                 }
             });
         }
