@@ -28,4 +28,4 @@ This application is a multiplayer game where you see other players' mouse moveme
 
 5. To run the project via CLI:
       - Clean the package and create and executable JAR: `mvn clean package`
-      - Execute the created JAR: `java -jar target/relay-test-app-1.jar`
+      - Execute the created JAR: `java -jar target/cursor-party-1.jar`

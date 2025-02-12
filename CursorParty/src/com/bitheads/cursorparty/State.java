@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.cursorparty;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.cursorparty;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
