@@ -1,16 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.bitheads</groupId>
-  <artifactId>relay-test-app</artifactId>
+  <groupId>com.bitheads.cursorparty</groupId>
+  <artifactId>cursor-party</artifactId>
   <version>1</version>
   <packaging>jar</packaging>
   
-  <name>Relay Test App</name>
+  <name>Cursor Party</name>
   <dependencies>
 	  <dependency>
 		  <groupId>com.bitheads</groupId>
 		  <artifactId>braincloud-java</artifactId>
-		  <version>5.4.0</version>
+		  <version>5.5.0</version>
 	  </dependency>
   </dependencies>
   
@@ -55,7 +55,7 @@
               <addClasspath>true</addClasspath>
               <classpathPrefix>libs/</classpathPrefix>
               <mainClass>
-                com.bitheads.relaytestapp.App
+                com.bitheads.cursorparty.App
               </mainClass>
             </manifest>
           </archive>

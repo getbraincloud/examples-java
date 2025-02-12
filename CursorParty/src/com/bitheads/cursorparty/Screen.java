@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.cursorparty;
 
 import javax.swing.JPanel;
 

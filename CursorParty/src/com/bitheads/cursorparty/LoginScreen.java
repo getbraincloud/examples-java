@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.cursorparty;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -33,7 +33,7 @@ class LoginScreen extends Screen
         int y = screenRes.height / 2 - (240) / 2;
 
         // Tittle
-        JLabel lblTitle = new JLabel("brainCloud Relay Test App", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel("brainCloud Cursor Party", SwingConstants.CENTER);
         lblTitle.setSize(screenRes.width, 40);
         lblTitle.setLocation(0, 40);
         Font font = lblTitle.getFont();
@@ -72,7 +72,7 @@ class LoginScreen extends Screen
         btnConnect.setLocation(x, y + 140);
         panel.add(btnConnect);
 
-        JLabel lblVersion = new JLabel("Version: " + Version.version);
+        JLabel lblVersion = new JLabel("Version: " + App.getInstance().clientVersion);
         lblVersion.setSize(200, 20);
         lblVersion.setLocation(x, y + 200);
         panel.add(lblVersion);
