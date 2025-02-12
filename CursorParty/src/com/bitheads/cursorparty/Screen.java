@@ -1,4 +1,4 @@
-package com.bitheads.braincloud;
+package com.bitheads.cursorparty;
 
 import javax.swing.JPanel;
 

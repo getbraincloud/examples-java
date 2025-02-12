@@ -1,4 +1,4 @@
-package com.bitheads.braincloud;
+package com.bitheads.cursorparty;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -33,7 +33,7 @@ class LoginScreen extends Screen
         int y = screenRes.height / 2 - (240) / 2;
 
         // Tittle
-        JLabel lblTitle = new JLabel("brainCloud Relay Test App", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel("brainCloud Cursor Party", SwingConstants.CENTER);
         lblTitle.setSize(screenRes.width, 40);
         lblTitle.setLocation(0, 40);
         Font font = lblTitle.getFont();

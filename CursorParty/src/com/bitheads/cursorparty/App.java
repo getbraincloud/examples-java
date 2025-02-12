@@ -1,4 +1,4 @@
-package com.bitheads.braincloud;
+package com.bitheads.cursorparty;
 
 import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.services.RelayService;
@@ -110,7 +110,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
     void createAndShowGUI()
     {
         // Main window frame
-        frame = new JFrame("Relay Test App");
+        frame = new JFrame("Cursor Party");
         frame.getContentPane().setPreferredSize(new Dimension(1024, 768));
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
