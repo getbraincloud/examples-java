@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.braincloud;
 
 import com.bitheads.braincloud.client.BrainCloudWrapper;
 import com.bitheads.braincloud.services.RelayService;
@@ -34,6 +34,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
     public JFrame frame; // Main window frame
 
     BrainCloudWrapper _bcWrapper;
+    String clientVersion;
     boolean _isConnectingRTT = false;
     boolean _disconnecting = false;
     RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
@@ -53,9 +54,11 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper = new BrainCloudWrapper();
 
         //TODO Replace values with application IDs
-        //_bcWrapper.initialize("appId", "secretKey", "appVersion", "serverUrl");
+        _bcWrapper.initialize("12944", "35b0746e-fc38-499c-9b52-03533aac64a7", "1.0.0", "https://api.braincloudservers.com/dispatcherv2");
 
         _bcWrapper.getClient().enableLogging(true);
+
+        clientVersion = _bcWrapper.getClient().getBrainCloudVersion();
 
         startCallbackLoop();
 

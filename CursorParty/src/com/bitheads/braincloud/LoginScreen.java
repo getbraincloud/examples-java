@@ -1,4 +1,4 @@
-package com.bitheads.relaytestapp;
+package com.bitheads.braincloud;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -72,7 +72,7 @@ class LoginScreen extends Screen
         btnConnect.setLocation(x, y + 140);
         panel.add(btnConnect);
 
-        JLabel lblVersion = new JLabel("Version: " + Version.version);
+        JLabel lblVersion = new JLabel("Version: " + App.getInstance().clientVersion);
         lblVersion.setSize(200, 20);
         lblVersion.setLocation(x, y + 200);
         panel.add(lblVersion);
