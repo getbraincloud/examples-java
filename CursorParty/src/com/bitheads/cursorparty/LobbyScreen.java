@@ -2,10 +2,11 @@ package com.bitheads.cursorparty;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Font;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -14,11 +15,16 @@ import javax.swing.SwingConstants;
 
 class LobbyScreen extends Screen
 {
+    private static final int COLS    = 10;
+    private static final int ROWS    = Colors.NUM_COLORS / COLS; // 4
+    private static final int BTN_W   = 40;
+    private static final int BTN_H   = 28;
+    private static final int BTN_GAP = 2;
+
     public LobbyScreen()
     {
         panel = new JPanel();
         panel.setLayout(null);
-
         refreshUI();
     }
 
@@ -35,64 +41,95 @@ class LobbyScreen extends Screen
 
         JFrame frame = App.getInstance().frame;
         Dimension screenRes = frame.getPreferredSize();
+        int cx = screenRes.width / 2;
 
-        int x = screenRes.width / 2;
+        panel.setBackground(Colors.BG_COLOR);
 
-        panel.setBackground(Color.decode("#282c34"));
-
-        // Tittle
+        // Title
         {
             JLabel lblTitle = new JLabel("Lobby", SwingConstants.CENTER);
             lblTitle.setSize(screenRes.width, 40);
             lblTitle.setLocation(0, 40);
-            Font font = lblTitle.getFont();
-            lblTitle.setFont(new Font(font.getName(), Font.PLAIN, 32));
-            lblTitle.setForeground(Color.WHITE);
+            lblTitle.setFont(new Font(lblTitle.getFont().getName(), Font.PLAIN, 32));
+            lblTitle.setForeground(Colors.TEXT_COLOR);
             panel.add(lblTitle);
+
+            // Lobby ID — persistent reference shown below the title
+            String lobbyId = state.lobby != null ? state.lobby.lobbyId : "";
+            JLabel lblLobbyId = new JLabel(lobbyId, SwingConstants.CENTER);
+            lblLobbyId.setSize(screenRes.width, 20);
+            lblLobbyId.setLocation(0, 84);
+            lblLobbyId.setFont(new Font("Monospaced", Font.PLAIN, 11));
+            lblLobbyId.setForeground(new Color(130, 140, 160));
+            panel.add(lblLobbyId);
         }
 
-        // Color choices
-        for (int i = 0; i < 8; ++i)
+        // Colour picker — 4 rows × 10 = 40 colours
         {
-            JButton btnColor = new JButton(Integer.toString(i));
-            btnColor.setSize(45, 30);
-            btnColor.setLocation(x - 8 * 40 / 2 + i * 40, 130);
-            Font font = btnColor.getFont();
-            btnColor.setFont(new Font(font.getName(), Font.PLAIN, 20));
-            btnColor.setBackground(Colors.COLORS[i]);
-            btnColor.setForeground(Color.WHITE);
-            btnColor.setOpaque(true);
-            panel.add(btnColor);
-            final int index = i;
-            
-            btnColor.addActionListener(new ActionListener()
+            int paletteW = COLS * (BTN_W + BTN_GAP) - BTN_GAP;
+            int paletteX = cx - paletteW / 2;
+            int paletteY = 100;
+
+            for (int row = 0; row < ROWS; row++)
             {
-                @Override
-                public void actionPerformed(ActionEvent e)
+                for (int col = 0; col < COLS; col++)
                 {
-                    App.getInstance().onColorChanged(index);
+                    int colorIndex = row * COLS + col;
+                    int bx = paletteX + col * (BTN_W + BTN_GAP);
+                    int by = paletteY + row * (BTN_H + BTN_GAP);
+
+                    JButton btn = new JButton();
+                    btn.setSize(BTN_W, BTN_H);
+                    btn.setLocation(bx, by);
+                    btn.setBackground(Colors.COLORS[colorIndex]);
+                    btn.setOpaque(true);
+                    btn.setBorderPainted(true);
+
+                    if (colorIndex == state.user.colorIndex)
+                        btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+                    else
+                        btn.setBorder(BorderFactory.createLineBorder(new Color(60, 63, 65), 1));
+
+                    panel.add(btn);
+                    final int idx = colorIndex;
+                    btn.addActionListener(new ActionListener()
+                    {
+                        @Override
+                        public void actionPerformed(ActionEvent e)
+                        {
+                            App.getInstance().onColorChanged(idx);
+                        }
+                    });
                 }
-            });
+            }
         }
 
-        // Members
-        for (int i = 0; i < state.lobby.members.size(); ++i)
+        // Members list
         {
-            User member = state.lobby.members.get(i);
+            int membersY = 100 + ROWS * (BTN_H + BTN_GAP) + 20;
+            Font memberFont = new Font("SansSerif", Font.PLAIN, 18);
 
-            JLabel lblMember = new JLabel(member.name, SwingConstants.CENTER);
-            lblMember.setSize(200, 30);
-            lblMember.setLocation(x - 100, 200 + i * 30);
-            Font font = lblMember.getFont();
-            lblMember.setFont(new Font(font.getName(), Font.PLAIN, 20));
-            lblMember.setForeground(Colors.COLORS[member.cxId.equals(state.user.cxId) ? state.user.colorIndex : member.colorIndex]);
-            panel.add(lblMember);
+            for (int i = 0; i < state.lobby.members.size(); ++i)
+            {
+                User member = state.lobby.members.get(i);
+                int colorIdx = member.cxId.equals(state.user.cxId)
+                        ? state.user.colorIndex : member.colorIndex;
+
+                JLabel lbl = new JLabel(member.name, SwingConstants.CENTER);
+                lbl.setSize(280, 26);
+                lbl.setLocation(cx - 140, membersY + i * 28);
+                lbl.setFont(memberFont);
+                lbl.setForeground(Colors.COLORS[colorIdx % Colors.NUM_COLORS]);
+                panel.add(lbl);
+            }
         }
 
         // Buttons
+        int btnY = screenRes.height - 80;
+
         JButton btnLeave = new JButton("Leave");
-        btnLeave.setSize(200, 30);
-        btnLeave.setLocation(x - 250, 200 + 320);
+        btnLeave.setSize(160, 30);
+        btnLeave.setLocation(cx - 200, btnY);
         panel.add(btnLeave);
         btnLeave.addActionListener(new ActionListener()
         {
@@ -102,15 +139,13 @@ class LobbyScreen extends Screen
                 App.getInstance().onGameScreenClose();
             }
         });
-        
-        // We only put a start button if we are the owner
+
         if (state.lobby.ownerCxId.equals(state.user.cxId) && !state.user.isReady)
         {
             JButton btnStart = new JButton("Start");
-            btnStart.setSize(200, 30);
-            btnStart.setLocation(x + 50, 200 + 320);
+            btnStart.setSize(160, 30);
+            btnStart.setLocation(cx + 40, btnY);
             panel.add(btnStart);
-                
             btnStart.addActionListener(new ActionListener()
             {
                 @Override
