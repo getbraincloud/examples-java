@@ -19,6 +19,7 @@ public class State
     public long    lobbySearchStartTime = 0;  // epoch ms for loading screen timer
     public int     splotchDurationSec  = -1;  // -1 = forever
     public ArrayList<String> appLobbies = new ArrayList<String>();
-    public String  lobbyStatusText      = "";  // "" = idle; non-empty = show status + timer in LobbyScreen
+    public String  lobbyStatusText      = "";  // "" = idle; non-empty = show banner in LobbyScreen
+    public String  lobbySubStatus       = "";  // secondary line (progresses through provisioning steps)
     public long    lobbyStatusStartTime = 0;   // epoch ms when lobbyStatusText was last set
 }

@@ -171,11 +171,23 @@ class LobbyScreen extends Screen
             statusBanner.add(_lblStatus);
 
             _lblStatusTimer = new JLabel("0:00", SwingConstants.CENTER);
-            _lblStatusTimer.setSize(screenRes.width, 18);
+            _lblStatusTimer.setSize(screenRes.width / 2, 18);
             _lblStatusTimer.setLocation(0, 24);
             _lblStatusTimer.setFont(new Font("Monospaced", Font.PLAIN, 12));
             _lblStatusTimer.setForeground(new Color(190, 200, 220));
             statusBanner.add(_lblStatusTimer);
+
+            if (!state.lobbySubStatus.isEmpty())
+            {
+                JLabel lblSub = new JLabel(state.lobbySubStatus, SwingConstants.CENTER);
+                lblSub.setSize(screenRes.width, 18);
+                lblSub.setLocation(0, 24);
+                lblSub.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                lblSub.setForeground(new Color(170, 185, 210));
+                statusBanner.add(lblSub);
+                // Move timer to left half so sub-status can share the same row
+                _lblStatusTimer.setHorizontalAlignment(SwingConstants.RIGHT);
+            }
 
             updateStatusTimer();
         }

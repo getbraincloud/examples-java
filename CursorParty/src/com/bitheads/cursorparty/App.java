@@ -541,12 +541,25 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 onGameScreenClose();
             }
         } else if (operation.equals("STARTING")) {
+            // Reset timer here — this event arrives on ALL clients simultaneously
             state.lobbyStatusText = "Starting...";
+            state.lobbySubStatus = "Provisioning server...";
             state.lobbyStatusStartTime = System.currentTimeMillis();
             SwingUtilities.invokeLater(() -> onStateChanged());
+        } else if (operation.equals("ROOM_PROGRESS")) {
+            int curStep = jsonData.optInt("curStep", 0);
+            int ofStep = jsonData.optInt("ofStep", 0);
+            String msg = jsonData.optString("msg", "");
+            state.lobbySubStatus = (curStep > 0)
+                ? curStep + "/" + ofStep + ": " + msg
+                : (msg.isEmpty() ? "Starting server..." : msg);
+            SwingUtilities.invokeLater(() -> onStateChanged());
+        } else if (operation.equals("ROOM_ASSIGNED")) {
+            state.lobbySubStatus = "Server assigned...";
+            SwingUtilities.invokeLater(() -> onStateChanged());
         } else if (operation.equals("ROOM_READY")) {
-            state.lobbyStatusText = "Provisioning server...";
-            state.lobbyStatusStartTime = System.currentTimeMillis();
+            // Update text only — timer continues from when STARTING fired (matches JS/C++)
+            state.lobbySubStatus = "Connecting...";
             SwingUtilities.invokeLater(() -> onStateChanged());
             _bcWrapper.getRelayService().registerRelayCallback(this);
             _bcWrapper.getRelayService().registerSystemCallback(this);
@@ -710,6 +723,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         }
         state.gameStartTime = 0;
         state.lobbyStatusText = "";
+        state.lobbySubStatus = "";
         state.lobbyStatusStartTime = 0;
         state.splotches.clear();
         _pendingMoveSend = false;
@@ -783,6 +797,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         state.lobby = null;
         state.user.isReady = false;
         state.lobbyStatusText = "";
+        state.lobbySubStatus = "";
         state.lobbyStatusStartTime = 0;
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
@@ -798,6 +813,10 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
     public void onGameStart() {
         state.user.isReady = true;
+        // Show status immediately on the host; STARTING event will refresh it on all clients
+        state.lobbyStatusText = "Starting...";
+        state.lobbySubStatus = "";
+        state.lobbyStatusStartTime = System.currentTimeMillis();
         _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
                 "{\"colorIndex\":" + state.user.colorIndex + "}", null);
         onStateChanged();
