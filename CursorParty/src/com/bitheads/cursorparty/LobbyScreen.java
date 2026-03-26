@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 class LobbyScreen extends Screen
 {
@@ -21,17 +22,42 @@ class LobbyScreen extends Screen
     private static final int BTN_H   = 28;
     private static final int BTN_GAP = 2;
 
+    private JLabel _lblStatus;
+    private JLabel _lblStatusTimer;
+    private javax.swing.Timer _statusTimer;
+
     public LobbyScreen()
     {
         panel = new JPanel();
         panel.setLayout(null);
         refreshUI();
+
+        // Swing timer updates the elapsed-time counter every second while status is active
+        _statusTimer = new javax.swing.Timer(1000, null);
+        _statusTimer.addActionListener(e -> {
+            if (App.getInstance().state.screen != LobbyScreen.this) {
+                _statusTimer.stop();
+                return;
+            }
+            updateStatusTimer();
+        });
+        _statusTimer.start();
     }
 
     @Override
     public void onStateChanged(State state)
     {
         refreshUI();
+    }
+
+    private void updateStatusTimer()
+    {
+        State state = App.getInstance().state;
+        if (_lblStatusTimer == null || state.lobbyStatusText.isEmpty()) return;
+        long elapsedSec = Math.max(0, (System.currentTimeMillis() - state.lobbyStatusStartTime) / 1000);
+        long min = elapsedSec / 60;
+        long sec = elapsedSec % 60;
+        _lblStatusTimer.setText(String.format("%d:%02d", min, sec));
     }
 
     void refreshUI()
@@ -122,6 +148,36 @@ class LobbyScreen extends Screen
                 lbl.setForeground(Colors.COLORS[colorIdx % Colors.NUM_COLORS]);
                 panel.add(lbl);
             }
+        }
+
+        // Status banner — shown while STARTING / ROOM_READY provisioning is in progress
+        _lblStatus = null;
+        _lblStatusTimer = null;
+        if (!state.lobbyStatusText.isEmpty())
+        {
+            int bannerY = screenRes.height - 130;
+
+            JPanel statusBanner = new JPanel(null);
+            statusBanner.setSize(screenRes.width, 44);
+            statusBanner.setLocation(0, bannerY);
+            statusBanner.setBackground(new Color(0x0F, 0x24, 0x61));
+            panel.add(statusBanner);
+
+            _lblStatus = new JLabel(state.lobbyStatusText, SwingConstants.CENTER);
+            _lblStatus.setSize(screenRes.width, 22);
+            _lblStatus.setLocation(0, 2);
+            _lblStatus.setFont(new Font("SansSerif", Font.BOLD, 14));
+            _lblStatus.setForeground(Color.WHITE);
+            statusBanner.add(_lblStatus);
+
+            _lblStatusTimer = new JLabel("0:00", SwingConstants.CENTER);
+            _lblStatusTimer.setSize(screenRes.width, 18);
+            _lblStatusTimer.setLocation(0, 24);
+            _lblStatusTimer.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            _lblStatusTimer.setForeground(new Color(190, 200, 220));
+            statusBanner.add(_lblStatusTimer);
+
+            updateStatusTimer();
         }
 
         // Buttons

@@ -541,8 +541,13 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 onGameScreenClose();
             }
         } else if (operation.equals("STARTING")) {
-            goToLoadingScreen("Connecting...");
+            state.lobbyStatusText = "Starting...";
+            state.lobbyStatusStartTime = System.currentTimeMillis();
+            SwingUtilities.invokeLater(() -> onStateChanged());
         } else if (operation.equals("ROOM_READY")) {
+            state.lobbyStatusText = "Provisioning server...";
+            state.lobbyStatusStartTime = System.currentTimeMillis();
+            SwingUtilities.invokeLater(() -> onStateChanged());
             _bcWrapper.getRelayService().registerRelayCallback(this);
             _bcWrapper.getRelayService().registerSystemCallback(this);
 
@@ -704,6 +709,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             _autoEndTimer = null;
         }
         state.gameStartTime = 0;
+        state.lobbyStatusText = "";
+        state.lobbyStatusStartTime = 0;
         state.splotches.clear();
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
@@ -775,6 +782,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
         state.lobby = null;
         state.user.isReady = false;
+        state.lobbyStatusText = "";
+        state.lobbyStatusStartTime = 0;
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
         goToMainMenuScreen();
