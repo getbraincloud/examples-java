@@ -33,22 +33,24 @@ import javax.swing.SwingUtilities;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-public class App implements IRelayCallback, IRelaySystemCallback
-{
+public class App implements IRelayCallback, IRelaySystemCallback {
     static final int MATCH_DURATION_SEC = 90;
     static final int COUNTDOWN_FROM_SEC = 80;
 
     static App _instance = null;
-    static public App getInstance()
-    {
+
+    static public App getInstance() {
         return _instance;
     }
+
+    static final String APP_VERSION = "1.0";
 
     public State state = new State();
     public JFrame frame;
 
     BrainCloudWrapper _bcWrapper;
     String clientVersion;
+    JLabel _serverVersionLabel = null;
     boolean _isConnectingRTT = false;
     boolean _disconnecting = false;
     RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
@@ -57,44 +59,37 @@ public class App implements IRelayCallback, IRelaySystemCallback
     private java.util.Timer _autoEndTimer = null;
     private JPanel _versionOverlay = null;
 
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
         _instance = new App();
     }
 
-    public App()
-    {
-        File dir1 = new File (".");
+    public App() {
+        File dir1 = new File(".");
         System.out.println("current directory: " + dir1.getAbsolutePath());
 
         _bcWrapper = new BrainCloudWrapper();
+        _bcWrapper.initialize("", "", "1.0.0",
+                "https://api.braincloudservers.com/dispatcherv2");
         _bcWrapper.getClient().enableLogging(true);
 
         clientVersion = _bcWrapper.getClient().getBrainCloudVersion();
 
         startCallbackLoop();
 
-        javax.swing.SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
                 createAndShowGUI();
             }
         });
     }
 
-    void startCallbackLoop()
-    {
+    void startCallbackLoop() {
         App that = this;
 
-        Thread bcThread = new Thread(() ->
-        {
-            synchronized(that)
-            {
-                try
-                {
-                    while (true)
-                    {
+        Thread bcThread = new Thread(() -> {
+            synchronized (that) {
+                try {
+                    while (true) {
                         _bcWrapper.runCallbacks();
                         wait(1);
 
@@ -105,9 +100,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                             }
                         }
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -115,18 +108,15 @@ public class App implements IRelayCallback, IRelaySystemCallback
         bcThread.start();
     }
 
-    void createAndShowGUI()
-    {
+    void createAndShowGUI() {
         frame = new JFrame("Cursor Party");
         frame.getContentPane().setPreferredSize(new Dimension(1024, 768));
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.addWindowListener(new java.awt.event.WindowAdapter()
-        {
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent)
-            {
-                if(_bcWrapper.getClient().isAuthenticated()){
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (_bcWrapper.getClient().isAuthenticated()) {
                     _bcWrapper.logout(false, new IServerCallback() {
                         @Override
                         public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
@@ -134,6 +124,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                             System.out.println("Log Out Success");
                             System.exit(0);
                         }
+
                         @Override
                         public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
                                 int statusCode, int reasonCode, String jsonError) {
@@ -141,8 +132,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
                             System.exit(0);
                         }
                     });
-                }
-                else{
+                } else {
                     System.exit(0);
                 }
             }
@@ -162,25 +152,28 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
         Font overlayFont = new Font("SansSerif", Font.PLAIN, 10);
         Color overlayText = new Color(190, 190, 190);
-        String serverLabel = "internal";
 
-        for (String line : new String[]{"v" + clientVersion, "App: 23649", serverLabel})
-        {
+        for (String line : new String[] {
+                "App:    " + APP_VERSION,
+                "Client: " + clientVersion,
+                "Server: ..." }) {
             JLabel lbl = new JLabel(line);
             lbl.setFont(overlayFont);
             lbl.setForeground(overlayText);
             _versionOverlay.add(lbl);
+            if (line.startsWith("Server:"))
+                _serverVersionLabel = lbl;
         }
 
         frame.getRootPane().getLayeredPane().add(_versionOverlay, JLayeredPane.POPUP_LAYER);
         int contentH = frame.getContentPane().getPreferredSize().height;
         _versionOverlay.setBounds(6, contentH - 58, 130, 52);
 
-        if(_bcWrapper.canReconnect()){
+        if (_bcWrapper.canReconnect()) {
             _bcWrapper.reconnect(new IServerCallback() {
                 @Override
-                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
-                {
+                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
+                        JSONObject result) {
                     JSONObject data = result.getJSONObject("data");
                     String playerName = data.getString("playerName");
                     System.out.println("Player name: " + playerName);
@@ -188,115 +181,124 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     state.user = new User("", playerName, 7, false);
                     state.user.allowSendTo = false;
                     fetchAppProperties();
+                    fetchServerVersion();
                     goToMainMenuScreen();
                 }
+
                 @Override
-                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
-                {
+                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode,
+                        int reasonCode, String jsonError) {
                     System.out.println("Reconnect failed. Going to login screen");
                     goToLoginScreen();
                 }
             });
-        }
-        else{
+        } else {
             goToLoginScreen();
         }
     }
 
-    void fetchAppProperties()
-    {
-        _bcWrapper.getGlobalAppService().readProperties(new IServerCallback()
-        {
+    void fetchServerVersion() {
+        _bcWrapper.getClient().getAuthenticationService().getServerVersion(new IServerCallback() {
             @Override
-            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
-            {
-                try
-                {
+            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result) {
+                try {
+                    String sv = result.getJSONObject("data").getString("serverVersion");
+                    if (_serverVersionLabel != null) {
+                        SwingUtilities.invokeLater(() -> {
+                            _serverVersionLabel.setText("Server: " + sv);
+                            _versionOverlay.revalidate();
+                            _versionOverlay.repaint();
+                        });
+                    }
+                } catch (Exception e) {
+                    System.out.println("Failed to get server version: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
+                    int statusCode, int reasonCode, String jsonError) {
+                System.out.println("getServerVersion failed: " + jsonError);
+            }
+        });
+    }
+
+    void fetchAppProperties() {
+        _bcWrapper.getGlobalAppService().readProperties(new IServerCallback() {
+            @Override
+            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result) {
+                try {
                     JSONObject data = result.getJSONObject("data");
-                    if (data.has("AllLobbyTypes"))
-                    {
+                    if (data.has("AllLobbyTypes")) {
                         String rawValue = data.getJSONObject("AllLobbyTypes").getString("value");
                         JSONObject lobbyTypesJson = new JSONObject(rawValue);
                         ArrayList<String> lobbies = new ArrayList<>();
-                        for (String key : lobbyTypesJson.keySet())
-                        {
+                        for (String key : lobbyTypesJson.keySet()) {
                             JSONObject entry = lobbyTypesJson.getJSONObject(key);
-                            if (entry.has("lobby"))
-                            {
+                            if (entry.has("lobby")) {
                                 lobbies.add(entry.getString("lobby"));
                             }
                         }
-                        if (!lobbies.isEmpty()) state.appLobbies = lobbies;
+                        if (!lobbies.isEmpty())
+                            state.appLobbies = lobbies;
                     }
 
-                    if (data.has("SplotchDuration"))
-                    {
+                    if (data.has("SplotchDuration")) {
                         state.splotchDurationSec = Integer.parseInt(
                                 data.getJSONObject("SplotchDuration").getString("value"));
                     }
 
                     onStateChanged();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     System.out.println("Failed to parse app properties: " + e.getMessage());
                 }
             }
 
             @Override
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
-                    int statusCode, int reasonCode, String jsonError)
-            {
+                    int statusCode, int reasonCode, String jsonError) {
                 System.out.println("readProperties failed: " + jsonError);
             }
         });
     }
 
-    void changeScreen(Screen screen)
-    {
+    void changeScreen(Screen screen) {
         state.screen = screen;
         frame.getContentPane().removeAll();
         frame.getContentPane().add(state.screen.panel);
         onStateChanged();
     }
 
-    public void onStateChanged()
-    {
+    public void onStateChanged() {
         state.screen.onStateChanged(state);
         frame.pack();
         frame.validate();
         frame.repaint();
     }
 
-    public void goToLoginScreen()
-    {
+    public void goToLoginScreen() {
         changeScreen(new LoginScreen());
     }
 
-    public void goToLoadingScreen(String text)
-    {
+    public void goToLoadingScreen(String text) {
         changeScreen(new LoadingScreen(text));
     }
 
-    public void goToMainMenuScreen()
-    {
+    public void goToMainMenuScreen() {
         changeScreen(new MainMenuScreen());
     }
 
-    public void goToLobbyScreen()
-    {
+    public void goToLobbyScreen() {
         changeScreen(new LobbyScreen());
     }
 
-    public void goToGameScreen()
-    {
+    public void goToGameScreen() {
         state.shockwaves.clear();
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
 
         // Host sends game_start to all players and starts the match timer
-        if (state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId))
-        {
+        if (state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId)) {
             long startTime = System.currentTimeMillis();
             state.gameStartTime = startTime; // Host sets own time directly (no relay echo)
 
@@ -312,23 +314,14 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
             // Schedule auto-end after MATCH_DURATION_SEC
             _autoEndTimer = new java.util.Timer();
-            _autoEndTimer.schedule(new java.util.TimerTask()
-            {
+            _autoEndTimer.schedule(new java.util.TimerTask() {
                 @Override
-                public void run()
-                {
-                    synchronized(App.this)
-                    {
-                        if (_bcWrapper.getClient().isAuthenticated())
-                        {
-                            JSONObject endMsg = new JSONObject();
-                            endMsg.put("op", "END_MATCH");
-                            _bcWrapper.getRelayService().sendToAll(
-                                    endMsg.toString().getBytes(StandardCharsets.US_ASCII),
-                                    true, true, RelayService.CHANNEL_HIGH_PRIORITY_2);
+                public void run() {
+                    synchronized (App.this) {
+                        if (_bcWrapper.getClient().isAuthenticated()) {
+                            _bcWrapper.getRelayService().endMatch(new JSONObject());
                         }
                     }
-                    SwingUtilities.invokeLater(() -> onGameScreenToLobby());
                 }
             }, MATCH_DURATION_SEC * 1000L);
         }
@@ -336,8 +329,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         changeScreen(new GameScreen());
     }
 
-    public void dieWithMessage(String message)
-    {
+    public void dieWithMessage(String message) {
         _bcWrapper.getRelayService().disconnect();
         _bcWrapper.getRelayService().deregisterSystemCallback();
         _bcWrapper.getRelayService().deregisterRelayCallback();
@@ -349,27 +341,25 @@ public class App implements IRelayCallback, IRelaySystemCallback
         goToLoginScreen();
     }
 
-    public void brainCloudConnect(String username, String password)
-    {
+    public void brainCloudConnect(String username, String password) {
         goToLoadingScreen("Connecting...");
 
-        synchronized(this)
-        {
-            _bcWrapper.authenticateUniversal(username, password, true, new IServerCallback()
-            {
+        synchronized (this) {
+            _bcWrapper.authenticateUniversal(username, password, true, new IServerCallback() {
                 @Override
-                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result)
-                {
+                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
+                        JSONObject result) {
                     _bcWrapper.getPlayerStateService().updateUserName(username, null);
                     state.user = new User("", username, 7, false);
                     state.user.allowSendTo = false;
                     fetchAppProperties();
+                    fetchServerVersion();
                     goToMainMenuScreen();
                 }
 
                 @Override
-                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
-                {
+                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode,
+                        int reasonCode, String jsonError) {
                     dieWithMessage("Failed to authenticate.");
                 }
             });
@@ -377,29 +367,24 @@ public class App implements IRelayCallback, IRelaySystemCallback
     }
 
     @Override
-    public void relayCallback(int netId, byte[] bytes)
-    {
-        try
-        {
+    public void relayCallback(int netId, byte[] bytes) {
+        try {
             String jsonString = new String(bytes, StandardCharsets.US_ASCII);
             JSONObject json = new JSONObject(jsonString);
             String op = json.getString("op");
 
             // Game-level ops (no sender lookup needed)
-            if (op.equals("game_start"))
-            {
+            if (op.equals("game_start")) {
                 JSONObject d = json.getJSONObject("data");
                 state.gameStartTime = d.getLong("startTime");
-                state.roundNumber   = d.optInt("round", state.roundNumber);
+                state.roundNumber = d.optInt("round", state.roundNumber);
                 return;
             }
-            if (op.equals("END_MATCH"))
-            {
-                SwingUtilities.invokeLater(() -> onGameScreenToLobby());
+            // END_MATCH is handled via relaySystemCallback (relay.endMatch() path)
+            if (op.equals("END_MATCH")) {
                 return;
             }
-            if (op.equals("clear_splotches"))
-            {
+            if (op.equals("clear_splotches")) {
                 state.splotches.clear();
                 return;
             }
@@ -407,27 +392,23 @@ public class App implements IRelayCallback, IRelaySystemCallback
             // Find sender
             String cxId = _bcWrapper.getRelayService().getCxIdForNetId(netId);
             User user = null;
-            for (int i = 0; i < state.lobby.members.size(); ++i)
-            {
+            for (int i = 0; i < state.lobby.members.size(); ++i) {
                 User member = state.lobby.members.get(i);
-                if (member.cxId.equals(cxId))
-                {
+                if (member.cxId.equals(cxId)) {
                     user = member;
                     break;
                 }
             }
-            if (user == null) return;
+            if (user == null)
+                return;
 
-            switch (op)
-            {
-                case "move":
-                {
+            switch (op) {
+                case "move": {
                     JSONObject posJson = json.getJSONObject("data");
                     user.pos = new Point2D.Float(posJson.getFloat("x"), posJson.getFloat("y"));
                     break;
                 }
-                case "shockwave":
-                {
+                case "shockwave": {
                     JSONObject posJson = json.getJSONObject("data");
                     float rx = posJson.getFloat("x");
                     float ry = posJson.getFloat("y");
@@ -437,18 +418,17 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     createSplotch(rx, ry, user.colorIndex);
                     break;
                 }
-                case "splotch_sync":
-                {
+                case "splotch_sync": {
                     JSONObject data = json.getJSONObject("data");
-                    if (data.getBoolean("first")) state.splotches.clear();
+                    if (data.getBoolean("first"))
+                        state.splotches.clear();
                     JSONArray arr = data.getJSONArray("splotches");
-                    for (int i = 0; i < arr.length(); i++)
-                    {
+                    for (int i = 0; i < arr.length(); i++) {
                         JSONObject e = arr.getJSONObject(i);
-                        float sx = (float)e.getDouble("x");
-                        float sy = (float)e.getDouble("y");
-                        int ci   = e.getInt("c");
-                        long t   = e.getLong("t");
+                        float sx = (float) e.getDouble("x");
+                        float sy = (float) e.getDouble("y");
+                        int ci = e.getInt("c");
+                        long t = e.getLong("t");
                         Splotch s = new Splotch(new Point2D.Float(sx, sy), ci);
                         s.startTimeMs = t;
                         state.splotches.add(s);
@@ -456,37 +436,31 @@ public class App implements IRelayCallback, IRelaySystemCallback
                     break;
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             dieWithMessage("Bad packet.");
         }
     }
 
     @Override
-    public void relaySystemCallback(JSONObject jsonData)
-    {
+    public void relaySystemCallback(JSONObject jsonData) {
         String sysOp = jsonData.getString("op");
-        if (sysOp.equals("DISCONNECT"))
-        {
-            for (int i = 0; i < state.lobby.members.size(); ++i)
-            {
+        if (sysOp.equals("DISCONNECT")) {
+            for (int i = 0; i < state.lobby.members.size(); ++i) {
                 User member = state.lobby.members.get(i);
-                if (member.cxId.equals(jsonData.getString("cxId")))
-                {
+                if (member.cxId.equals(jsonData.getString("cxId"))) {
                     member.pos = null;
                 }
             }
-        }
-        else if (sysOp.equals("CONNECT"))
-        {
-            // If we are the host, sync game start time and current splotches to the new player
-            if (state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId))
-            {
+        } else if (sysOp.equals("END_MATCH")) {
+            SwingUtilities.invokeLater(() -> onGameScreenToLobby());
+        } else if (sysOp.equals("CONNECT")) {
+            // If we are the host, sync game start time and current splotches to the new
+            // player
+            if (state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId)) {
                 String newCxId = jsonData.getString("cxId");
                 int newNetId = _bcWrapper.getRelayService().getNetIdForCxId(newCxId);
-                long playerMask = 1L << (long)newNetId;
+                long playerMask = 1L << (long) newNetId;
 
                 // Re-send game_start so the JIP player gets the authoritative start time
                 JSONObject gameStartMsg = new JSONObject();
@@ -506,19 +480,17 @@ public class App implements IRelayCallback, IRelaySystemCallback
 
     private static final int MAX_SPLOTCH_SYNC_BYTES = 900;
 
-    private void sendSplotchSyncToMask(long mask)
-    {
-        if (state.splotches.isEmpty() || mask == 0) return;
+    private void sendSplotchSyncToMask(long mask) {
+        if (state.splotches.isEmpty() || mask == 0)
+            return;
         boolean isFirst = true;
         JSONArray batch = new JSONArray();
         int currentSize = 65; // envelope overhead
 
-        for (int i = 0; i <= state.splotches.size(); i++)
-        {
+        for (int i = 0; i <= state.splotches.size(); i++) {
             String entryStr = null;
             JSONObject entry = null;
-            if (i < state.splotches.size())
-            {
+            if (i < state.splotches.size()) {
                 Splotch s = state.splotches.get(i);
                 entry = new JSONObject()
                         .put("x", s.pos.getX())
@@ -528,9 +500,9 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 entryStr = entry.toString();
             }
 
-            boolean flush = (i == state.splotches.size()) || (entry != null && currentSize + entryStr.length() + 1 > MAX_SPLOTCH_SYNC_BYTES && batch.length() > 0);
-            if (flush && batch.length() > 0)
-            {
+            boolean flush = (i == state.splotches.size()) || (entry != null
+                    && currentSize + entryStr.length() + 1 > MAX_SPLOTCH_SYNC_BYTES && batch.length() > 0);
+            if (flush && batch.length() > 0) {
                 JSONObject syncMsg = new JSONObject();
                 syncMsg.put("op", "splotch_sync");
                 syncMsg.put("data", new JSONObject()
@@ -543,69 +515,55 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 batch = new JSONArray();
                 currentSize = 65;
             }
-            if (entry != null)
-            {
+            if (entry != null) {
                 batch.put(entry);
                 currentSize += entryStr.length() + 1;
             }
         }
     }
 
-    void onLobbyEvent(JSONObject result)
-    {
+    void onLobbyEvent(JSONObject result) {
         JSONObject jsonData = result.getJSONObject("data");
 
-        if (jsonData.has("lobby"))
-        {
+        if (jsonData.has("lobby")) {
             state.lobby = new Lobby(jsonData.getJSONObject("lobby"), jsonData.getString("lobbyId"));
             onStateChanged();
 
-            if (state.screen instanceof LoadingScreen)
-            {
+            if (state.screen instanceof LoadingScreen) {
                 goToLobbyScreen();
             }
         }
 
         String operation = result.getString("operation");
 
-        if (operation.equals("DISBANDED"))
-        {
-            if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY)
-            {
+        if (operation.equals("DISBANDED")) {
+            if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY) {
                 onGameScreenClose();
             }
-        }
-        else if (operation.equals("STARTING"))
-        {
+        } else if (operation.equals("STARTING")) {
             goToLoadingScreen("Connecting...");
-        }
-        else if (operation.equals("ROOM_READY"))
-        {
+        } else if (operation.equals("ROOM_READY")) {
             _bcWrapper.getRelayService().registerRelayCallback(this);
             _bcWrapper.getRelayService().registerSystemCallback(this);
 
             JSONObject connectData = jsonData.getJSONObject("connectData");
-            JSONObject ports       = connectData.getJSONObject("ports");
-            String     host        = connectData.getString("address");
+            JSONObject ports = connectData.getJSONObject("ports");
+            String host = connectData.getString("address");
 
             // GameLift and i3D servers only expose a single WebSocket port.
             // If either is present, force WEBSOCKET regardless of the user's selection.
             RelayConnectionType connectType = _connectionType;
             int port;
 
-            if (ports.has("gamelift") && !ports.isNull("gamelift"))
-            {
-                port        = ports.getInt("gamelift");
+            if (ports.has("gamelift") && !ports.isNull("gamelift")) {
+                port = ports.getInt("gamelift");
                 connectType = RelayConnectionType.WEBSOCKET;
                 System.out.println("ROOM_READY: GameLift server, forcing WS on port " + port);
-            }
-            else if (ports.has("i3d") && !ports.isNull("i3d"))
-            {
-                port        = ports.getInt("i3d");
+            } else if (ports.has("i3d") && !ports.isNull("i3d")) {
+                port = ports.getInt("i3d");
                 connectType = RelayConnectionType.WEBSOCKET;
                 System.out.println("ROOM_READY: i3D server, forcing WS on port " + port);
-            }
-            else if (connectType == RelayConnectionType.WEBSOCKET)
+            } else if (connectType == RelayConnectionType.WEBSOCKET)
                 port = ports.getInt("ws");
             else if (connectType == RelayConnectionType.TCP)
                 port = ports.getInt("tcp");
@@ -613,26 +571,22 @@ public class App implements IRelayCallback, IRelaySystemCallback
                 port = ports.getInt("udp");
 
             JSONObject options = new JSONObject();
-            options.put("ssl",      false);
-            options.put("host",     host);
-            options.put("port",     port);
+            options.put("ssl", false);
+            options.put("host", host);
+            options.put("port", port);
             options.put("passcode", jsonData.getString("passcode"));
-            options.put("lobbyId",  jsonData.getString("lobbyId"));
+            options.put("lobbyId", jsonData.getString("lobbyId"));
 
             final RelayConnectionType finalConnectType = connectType;
-            _bcWrapper.getRelayService().connect(finalConnectType, options, new IRelayConnectCallback()
-            {
+            _bcWrapper.getRelayService().connect(finalConnectType, options, new IRelayConnectCallback() {
                 @Override
-                public void relayConnectSuccess(JSONObject jsonData)
-                {
+                public void relayConnectSuccess(JSONObject jsonData) {
                     goToGameScreen();
                 }
 
                 @Override
-                public void relayConnectFailure(String errorMessage)
-                {
-                    if (!_disconnecting)
-                    {
+                public void relayConnectFailure(String errorMessage) {
+                    if (!_disconnecting) {
                         dieWithMessage("Failed to connect to server, msg: " + errorMessage);
                     }
                 }
@@ -640,64 +594,60 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
     }
 
-    public void onPlayClicked(String protocolStr, String lobbyType)
-    {
+    public void onPlayClicked(String protocolStr, String lobbyType) {
         state.lobbySearchStartTime = System.currentTimeMillis();
         goToLoadingScreen("Joining...");
 
-        switch (protocolStr)
-        {
-            case "WEBSOCKET": _connectionType = RelayConnectionType.WEBSOCKET; break;
-            case "TCP":       _connectionType = RelayConnectionType.TCP;       break;
-            case "UDP":       _connectionType = RelayConnectionType.UDP;       break;
+        switch (protocolStr) {
+            case "WEBSOCKET":
+                _connectionType = RelayConnectionType.WEBSOCKET;
+                break;
+            case "TCP":
+                _connectionType = RelayConnectionType.TCP;
+                break;
+            case "UDP":
+                _connectionType = RelayConnectionType.UDP;
+                break;
         }
 
-        synchronized(this)
-        {
-            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback()
-            {
+        synchronized (this) {
+            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback() {
                 @Override
-                public void rttCallback(JSONObject eventJson)
-                {
+                public void rttCallback(JSONObject eventJson) {
                     onLobbyEvent(eventJson);
                 }
             });
 
             _isConnectingRTT = true;
             _disconnecting = false;
-            _bcWrapper.getRTTService().enableRTT(new IRTTConnectCallback()
-            {
+            _bcWrapper.getRTTService().enableRTT(new IRTTConnectCallback() {
                 @Override
-                public void rttConnectSuccess()
-                {
+                public void rttConnectSuccess() {
                     state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
                     _isConnectingRTT = false;
                     _bcWrapper.getLobbyService().findOrCreateLobby(lobbyType, 0, 1,
                             "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}",
                             "{}", null, "{}", false,
                             "{\"colorIndex\":" + state.user.colorIndex + "}", "all",
-                            new IServerCallback()
-                            {
+                            new IServerCallback() {
                                 @Override
-                                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject result) {}
+                                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
+                                        JSONObject result) {
+                                }
 
                                 @Override
-                                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)
-                                {
+                                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
+                                        int statusCode, int reasonCode, String jsonError) {
                                     dieWithMessage("Failed to find lobby.\n" + reasonCode);
                                 }
                             });
                 }
 
                 @Override
-                public void rttConnectFailure(String errorMessage)
-                {
-                    if (_isConnectingRTT)
-                    {
+                public void rttConnectFailure(String errorMessage) {
+                    if (_isConnectingRTT) {
                         dieWithMessage("Failed to enable RTT");
-                    }
-                    else if (!_disconnecting)
-                    {
+                    } else if (!_disconnecting) {
                         dieWithMessage("RTT Disconnected");
                     }
                 }
@@ -705,8 +655,7 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
     }
 
-    public void onLogoutClicked()
-    {
+    public void onLogoutClicked() {
         goToLoadingScreen("Logging out...");
 
         _bcWrapper.logout(true, new IServerCallback() {
@@ -721,10 +670,9 @@ public class App implements IRelayCallback, IRelaySystemCallback
             public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode,
                     int reasonCode, String jsonError) {
                 System.out.println("Log out failed: " + jsonError);
-                if(_bcWrapper.getClient().isAuthenticated()){
+                if (_bcWrapper.getClient().isAuthenticated()) {
                     goToMainMenuScreen();
-                }
-                else{
+                } else {
                     dieWithMessage(jsonError);
                 }
             }
@@ -734,32 +682,24 @@ public class App implements IRelayCallback, IRelaySystemCallback
     }
 
     // Host: end the match for all players and return to lobby for the next round
-    public void onEndMatch()
-    {
-        if (_autoEndTimer != null)
-        {
+    public void onEndMatch() {
+        if (_autoEndTimer != null) {
             _autoEndTimer.cancel();
             _autoEndTimer = null;
         }
-        synchronized(this)
-        {
-            if (_bcWrapper.getClient().isAuthenticated())
-            {
-                JSONObject endMsg = new JSONObject();
-                endMsg.put("op", "END_MATCH");
-                _bcWrapper.getRelayService().sendToAll(
-                        endMsg.toString().getBytes(StandardCharsets.US_ASCII),
-                        true, true, RelayService.CHANNEL_HIGH_PRIORITY_2);
+        synchronized (this) {
+            if (_bcWrapper.getClient().isAuthenticated()) {
+                _bcWrapper.getRelayService().endMatch(new JSONObject());
             }
         }
-        onGameScreenToLobby();
+        // onGameScreenToLobby() will be triggered for all players (including host)
+        // via the END_MATCH system callback from the server
     }
 
-    // Return to the lobby after a match — relay disconnects but RTT/lobby stay alive
-    public void onGameScreenToLobby()
-    {
-        if (_autoEndTimer != null)
-        {
+    // Return to the lobby after a match — relay disconnects but RTT/lobby stay
+    // alive
+    public void onGameScreenToLobby() {
+        if (_autoEndTimer != null) {
             _autoEndTimer.cancel();
             _autoEndTimer = null;
         }
@@ -778,20 +718,16 @@ public class App implements IRelayCallback, IRelaySystemCallback
         _bcWrapper.getRTTService().deregisterAllCallbacks();
 
         state.user.isReady = false;
-        if (state.lobby != null)
-        {
+        if (state.lobby != null) {
             _bcWrapper.getLobbyService().updateReady(
                     state.lobby.lobbyId, false,
                     "{\"colorIndex\":" + state.user.colorIndex + "}", null);
         }
 
-        synchronized(this)
-        {
-            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback()
-            {
+        synchronized (this) {
+            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback() {
                 @Override
-                public void rttCallback(JSONObject eventJson)
-                {
+                public void rttCallback(JSONObject eventJson) {
                     onLobbyEvent(eventJson);
                 }
             });
@@ -801,13 +737,10 @@ public class App implements IRelayCallback, IRelaySystemCallback
     }
 
     // Host: clear all splotches for every player mid-game
-    public void onClearSplotches()
-    {
+    public void onClearSplotches() {
         state.splotches.clear();
-        synchronized(this)
-        {
-            if (_bcWrapper.getClient().isAuthenticated())
-            {
+        synchronized (this) {
+            if (_bcWrapper.getClient().isAuthenticated()) {
                 JSONObject clearMsg = new JSONObject();
                 clearMsg.put("op", "clear_splotches");
                 _bcWrapper.getRelayService().sendToAll(
@@ -817,18 +750,15 @@ public class App implements IRelayCallback, IRelaySystemCallback
         }
     }
 
-    public void createSplotch(float x, float y, int colorIndex)
-    {
+    public void createSplotch(float x, float y, int colorIndex) {
         state.splotches.add(new Splotch(
                 new java.awt.geom.Point2D.Float(x, y),
                 colorIndex % Colors.NUM_COLORS));
     }
 
-    public void onGameScreenClose()
-    {
+    public void onGameScreenClose() {
         // Cancel auto-end timer if host
-        if (_autoEndTimer != null)
-        {
+        if (_autoEndTimer != null) {
             _autoEndTimer.cancel();
             _autoEndTimer = null;
         }
@@ -850,22 +780,21 @@ public class App implements IRelayCallback, IRelaySystemCallback
         goToMainMenuScreen();
     }
 
-    public void onColorChanged(int colorIndex)
-    {
+    public void onColorChanged(int colorIndex) {
         state.user.colorIndex = colorIndex;
-        _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady, "{\"colorIndex\":" + colorIndex + "}", null);
+        _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
+                "{\"colorIndex\":" + colorIndex + "}", null);
         onStateChanged();
     }
 
-    public void onGameStart()
-    {
+    public void onGameStart() {
         state.user.isReady = true;
-        _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady, "{\"colorIndex\":" + state.user.colorIndex + "}", null);
+        _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
+                "{\"colorIndex\":" + state.user.colorIndex + "}", null);
         onStateChanged();
     }
 
-    public void sendPlayerMove()
-    {
+    public void sendPlayerMove() {
         JSONObject data = new JSONObject();
         data.put("op", "move");
         JSONObject posJson = new JSONObject();
@@ -874,38 +803,33 @@ public class App implements IRelayCallback, IRelaySystemCallback
         data.put("data", posJson);
 
         _bcWrapper.getRelayService().sendToAll(
-            data.toString().getBytes(StandardCharsets.US_ASCII),
-            state.reliable,
-            state.ordered,
-            RelayService.CHANNEL_HIGH_PRIORITY_1);
+                data.toString().getBytes(StandardCharsets.US_ASCII),
+                state.reliable,
+                state.ordered,
+                RelayService.CHANNEL_HIGH_PRIORITY_1);
 
         _lastMoveSendTime = System.currentTimeMillis();
     }
 
-    public void onPlayerMove(float x, float y)
-    {
+    public void onPlayerMove(float x, float y) {
         state.user.pos = new Point2D.Float(x, y);
 
         User myUser = null;
-        for (int i = 0; i < state.lobby.members.size(); ++i)
-        {
+        for (int i = 0; i < state.lobby.members.size(); ++i) {
             User member = state.lobby.members.get(i);
-            if (member.cxId.equals(state.user.cxId))
-            {
+            if (member.cxId.equals(state.user.cxId)) {
                 myUser = member;
                 break;
             }
         }
-        if (myUser != null)
-        {
+        if (myUser != null) {
             myUser.pos = new Point2D.Float(x, y);
         }
 
         _pendingMoveSend = true;
     }
 
-    public void onPlayerShockwave(float x, float y)
-    {
+    public void onPlayerShockwave(float x, float y) {
         state.shockwaves.add(new Shockwave(
                 new Point2D.Float(x, y),
                 Colors.COLORS[state.user.colorIndex % Colors.NUM_COLORS]));
@@ -920,19 +844,19 @@ public class App implements IRelayCallback, IRelaySystemCallback
         data.put("data", posJson);
 
         long playerMask = 0;
-        for (int i = 0; i < state.lobby.members.size(); ++i)
-        {
+        for (int i = 0; i < state.lobby.members.size(); ++i) {
             User user = state.lobby.members.get(i);
-            if (!user.allowSendTo) continue;
+            if (!user.allowSendTo)
+                continue;
             int netId = _bcWrapper.getRelayService().getNetIdForCxId(user.cxId);
-            playerMask |= (1L << (long)netId);
+            playerMask |= (1L << (long) netId);
         }
 
         _bcWrapper.getRelayService().sendToPlayers(
-            data.toString().getBytes(StandardCharsets.US_ASCII),
-            playerMask,
-            true,
-            false,
-            RelayService.CHANNEL_HIGH_PRIORITY_2);
+                data.toString().getBytes(StandardCharsets.US_ASCII),
+                playerMask,
+                true,
+                false,
+                RelayService.CHANNEL_HIGH_PRIORITY_2);
     }
 }
