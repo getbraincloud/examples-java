@@ -1,5 +1,6 @@
 package com.bitheads.cursorparty;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -15,72 +16,64 @@ import javax.swing.SwingConstants;
 
 class LoginScreen extends Screen
 {
-    // Swing UI stuff
-    JTextField _txtUsername;
+    JTextField    _txtUsername;
     JPasswordField _txtPassword;
-    // JCheckBox _chkUseWebSocket;
 
     public LoginScreen()
     {
-        // Create the Swing stuff
         JFrame frame = App.getInstance().frame;
         Dimension screenRes = frame.getPreferredSize();
 
         panel = new JPanel();
         panel.setLayout(null);
+        panel.setBackground(Colors.BG_COLOR);
 
-        int x = screenRes.width / 2 - 100;
-        int y = screenRes.height / 2 - (240) / 2;
+        int x = screenRes.width  / 2 - 100;
+        int y = screenRes.height / 2 - 120;
 
-        // Tittle
         JLabel lblTitle = new JLabel("brainCloud Cursor Party", SwingConstants.CENTER);
         lblTitle.setSize(screenRes.width, 40);
         lblTitle.setLocation(0, 40);
-        Font font = lblTitle.getFont();
-        lblTitle.setFont(new Font(font.getName(), Font.PLAIN, 32));
+        lblTitle.setFont(new Font(lblTitle.getFont().getName(), Font.PLAIN, 32));
+        lblTitle.setForeground(Colors.TEXT_COLOR);
         panel.add(lblTitle);
 
-        // User name (currently used as unique userId)
         JLabel lblUsername = new JLabel("Username");
         lblUsername.setSize(200, 20);
         lblUsername.setLocation(x, y);
+        lblUsername.setForeground(Colors.TEXT_COLOR);
+        lblUsername.setToolTipText("Usernames are unique");
         panel.add(lblUsername);
 
         _txtUsername = new JTextField();
         _txtUsername.setSize(200, 30);
-        _txtUsername.setLocation(x, y + 20);
-        panel.add(_txtUsername);
-        
-        lblUsername.setToolTipText("Usernames are unique");
+        _txtUsername.setLocation(x, y + 22);
         _txtUsername.setToolTipText("Usernames are unique");
+        panel.add(_txtUsername);
 
         JLabel lblPassword = new JLabel("Password");
         lblPassword.setSize(200, 20);
-        lblPassword.setLocation(x, y + 50);
+        lblPassword.setLocation(x, y + 60);
+        lblPassword.setForeground(Colors.TEXT_COLOR);
+        lblPassword.setToolTipText("Will create a new user if it doesn't exist");
         panel.add(lblPassword);
 
         _txtPassword = new JPasswordField();
         _txtPassword.setSize(200, 30);
-        _txtPassword.setLocation(x, y + 70);
+        _txtPassword.setLocation(x, y + 82);
+        _txtPassword.setToolTipText("Will create a new user if it doesn't exist");
         panel.add(_txtPassword);
-
-        lblPassword.setToolTipText("Will create a new user if doesn't exist");
-        _txtPassword.setToolTipText("Will create a new user if doesn't exist");
 
         JButton btnConnect = new JButton("Connect");
         btnConnect.setSize(200, 30);
-        btnConnect.setLocation(x, y + 140);
+        btnConnect.setLocation(x, y + 130);
         panel.add(btnConnect);
 
-        JLabel lblVersion = new JLabel("Version: " + App.getInstance().clientVersion);
+        JLabel lblVersion = new JLabel("v" + App.getInstance().clientVersion);
         lblVersion.setSize(200, 20);
-        lblVersion.setLocation(x, y + 200);
+        lblVersion.setLocation(x, y + 180);
+        lblVersion.setForeground(Color.GRAY);
         panel.add(lblVersion);
-
-        // _chkUseWebSocket = new JCheckBox("Use WebSocket", _prefs.get("useWebSocket", "false").equals("true"));
-        // _chkUseWebSocket.setSize(200, 30);
-        // _chkUseWebSocket.setLocation(x, y + 110);
-        // panel.add(_chkUseWebSocket);
 
         btnConnect.addActionListener(new ActionListener()
         {
@@ -94,26 +87,19 @@ class LoginScreen extends Screen
 
     void connect()
     {
-        // Basic validation
         if (_txtUsername.getText().isEmpty())
         {
             System.out.println("Please specify a username");
             return;
         }
-        if (_txtPassword.getText().isEmpty())
+        if (new String(_txtPassword.getPassword()).isEmpty())
         {
             System.out.println("Please specify a password");
             return;
         }
-
-        // boolean useWebSocket = _chkUseWebSocket.isSelected();
-
-        // _prefs.put("username", _txtUsername.getText().toLowerCase());
-        // _prefs.put("password", _txtPassword.getText());
-        // _prefs.put("useWebSocket", useWebSocket ? "true" : "false");
-
-        // App.getInstance().setUseWebSocket(useWebSocket);
-        App.getInstance().brainCloudConnect(_txtUsername.getText().toLowerCase(), _txtPassword.getText());
+        App.getInstance().brainCloudConnect(
+            _txtUsername.getText().toLowerCase(),
+            new String(_txtPassword.getPassword()));
     }
 
     @Override

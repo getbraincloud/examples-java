@@ -1,14 +1,23 @@
 package com.bitheads.cursorparty;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.Font;
+import java.util.Iterator;
 
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -17,52 +26,106 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonModel;
 
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
 import java.util.Timer;
 import java.util.TimerTask;
 
 class GameScreen extends Screen
 {
-    private BufferedImage _cursors[];
-    private Timer _refreshTimer = new Timer();
+    private static final int SPLOTCH_RADIUS = 16;
+
+    private Timer  _refreshTimer = new Timer();
+    private JLabel _lblGameTimer;
+
+    // Draw an arrow cursor at pixel (x, y) in the given colour
+    private static void drawCursor(Graphics2D g2, int x, int y, Color color)
+    {
+        int[] xPts       = {x,   x+14, x+5 };
+        int[] yPts       = {y,   y+5,  y+14};
+        int[] xShadow    = {x+2, x+16, x+7 };
+        int[] yShadow    = {y+2, y+7,  y+16};
+
+        g2.setColor(new Color(0, 0, 0, 80));
+        g2.fillPolygon(xShadow, yShadow, 3);
+        g2.setColor(color);
+        g2.fillPolygon(xPts, yPts, 3);
+        g2.setColor(Color.WHITE);
+        g2.drawPolygon(xPts, yPts, 3);
+    }
 
     class PlayArea extends JPanel
     {
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(Graphics g)
+        {
             super.paintComponent(g);
-            State state = App.getInstance().state;
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Shockwaves
-            for (int i = 0; i < state.shockwaves.size(); ++i)
+            State state = App.getInstance().state;
+            long nowMs  = System.currentTimeMillis();
+            int  durationSec = state.splotchDurationSec;
+
+            // ── Persistent splotches (bottom layer) ──────────────────────────
+            Composite defaultComposite = g2.getComposite();
+            Iterator<Splotch> splotchIt = state.splotches.iterator();
+            while (splotchIt.hasNext())
             {
-                Shockwave shockwave = state.shockwaves.get(i);
-                shockwave.time++;
-                if (shockwave.time >= 30) // 1sec life
+                Splotch s = splotchIt.next();
+                long ageMs = nowMs - s.startTimeMs;
+
+                // Remove expired splotches
+                if (durationSec >= 0 && ageMs >= durationSec * 1000L)
                 {
-                    state.shockwaves.remove(i);
-                    --i;
+                    splotchIt.remove();
                     continue;
                 }
-                int size = shockwave.time * 128 / 30;
-                g.setColor(shockwave.color);
-                
-                g.drawArc((int)(shockwave.pos.getX() * 800) - size / 2, (int)(shockwave.pos.getY() * 600) - size / 2, size, size, 0, 360);
+
+                // Fade out during the final 3 seconds of life
+                float alpha = 1.0f;
+                if (durationSec > 0)
+                {
+                    long remainingMs = durationSec * 1000L - ageMs;
+                    if (remainingMs < 3000)
+                        alpha = Math.max(0f, remainingMs / 3000.0f);
+                }
+
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                g2.setColor(Colors.COLORS[s.colorIndex % Colors.NUM_COLORS]);
+                int px = (int)(s.pos.getX() * getWidth())  - SPLOTCH_RADIUS;
+                int py = (int)(s.pos.getY() * getHeight()) - SPLOTCH_RADIUS;
+                g2.fillOval(px, py, SPLOTCH_RADIUS * 2, SPLOTCH_RADIUS * 2);
+            }
+            g2.setComposite(defaultComposite);
+
+            // ── Shockwave rings (middle layer) ────────────────────────────────
+            for (int i = 0; i < state.shockwaves.size(); ++i)
+            {
+                Shockwave sw = state.shockwaves.get(i);
+                sw.time++;
+                if (sw.time >= 30)
+                {
+                    state.shockwaves.remove(i--);
+                    continue;
+                }
+                int size = sw.time * 128 / 30;
+                g2.setColor(sw.color);
+                g2.drawArc(
+                    (int)(sw.pos.getX() * getWidth())  - size / 2,
+                    (int)(sw.pos.getY() * getHeight()) - size / 2,
+                    size, size, 0, 360);
             }
 
-            // Players' arrows
+            // ── Player cursors (top layer) ────────────────────────────────────
             for (int i = 0; i < state.lobby.members.size(); ++i)
             {
                 User member = state.lobby.members.get(i);
                 if (member.pos != null)
                 {
-                    g.drawImage(_cursors[member.colorIndex], (int)(member.pos.getX() * 800), (int)(member.pos.getY() * 600), null);
+                    drawCursor(g2,
+                        (int)(member.pos.getX() * getWidth()),
+                        (int)(member.pos.getY() * getHeight()),
+                        Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
                 }
             }
         }
@@ -70,27 +133,9 @@ class GameScreen extends Screen
 
     public GameScreen()
     {
-        try
-        {
-            _cursors = new BufferedImage[] {
-                ImageIO.read(new File("src/resources/arrow0.png")),
-                ImageIO.read(new File("src/resources/arrow1.png")),
-                ImageIO.read(new File("src/resources/arrow2.png")),
-                ImageIO.read(new File("src/resources/arrow3.png")),
-                ImageIO.read(new File("src/resources/arrow4.png")),
-                ImageIO.read(new File("src/resources/arrow5.png")),
-                ImageIO.read(new File("src/resources/arrow6.png")),
-                ImageIO.read(new File("src/resources/arrow7.png"))
-            };
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
         panel = new JPanel();
         panel.setLayout(null);
-
+        panel.setBackground(Colors.BG_COLOR);
         refreshUI();
     }
 
@@ -102,92 +147,93 @@ class GameScreen extends Screen
 
     void refreshUI()
     {
+        _refreshTimer.cancel();
+        _refreshTimer = new Timer();
         panel.removeAll();
-        State state = App.getInstance().state;
+        panel.setBackground(Colors.BG_COLOR);
 
+        State state = App.getInstance().state;
         JFrame frame = App.getInstance().frame;
         Dimension screenRes = frame.getPreferredSize();
 
-        // Title
-        {
-            JLabel lblTitle = new JLabel("Move mouse around and Click", SwingConstants.CENTER);
-            lblTitle.setSize(screenRes.width, screenRes.height / 2 - 350);
-            lblTitle.setLocation(0, 40);
-            Font font = lblTitle.getFont();
-            lblTitle.setFont(new Font(font.getName(), Font.PLAIN, 32));
-            panel.add(lblTitle);
-        }
+        // Game timer — upper centre
+        _lblGameTimer = new JLabel("", SwingConstants.CENTER);
+        _lblGameTimer.setSize(400, 28);
+        _lblGameTimer.setLocation(screenRes.width / 2 - 200, 8);
+        _lblGameTimer.setFont(new Font("SansSerif", Font.BOLD, 15));
+        _lblGameTimer.setForeground(Colors.TEXT_COLOR);
+        panel.add(_lblGameTimer);
 
-        // Options
+        // ── Options panel (left side) ────────────────────────────────────────
         {
-            JLabel lblPlayerMasks = new JLabel("Player Mask (For shockwaves)");
-            lblPlayerMasks.setSize(200, 16);
+            JLabel lblPlayerMasks = new JLabel("Player Mask (For splotches)");
+            lblPlayerMasks.setSize(220, 16);
             lblPlayerMasks.setLocation(8, 8);
+            lblPlayerMasks.setForeground(Colors.TEXT_COLOR);
             panel.add(lblPlayerMasks);
 
             int i = 0;
             for (; i < state.lobby.members.size(); ++i)
             {
                 User member = state.lobby.members.get(i);
-                JCheckBox chkPlayer = new JCheckBox(member.name, member.allowSendTo);
-                chkPlayer.setSize(200, 16);
-                chkPlayer.setLocation(8, 8 + 32 + i * 16);
-                ChangeListener orderedChangeListener = new ChangeListener()
+                JCheckBox chk = new JCheckBox(member.name, member.allowSendTo);
+                chk.setSize(220, 16);
+                chk.setLocation(8, 8 + 32 + i * 16);
+                chk.setBackground(Colors.BG_COLOR);
+                chk.setForeground(Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
+                chk.addChangeListener(new ChangeListener()
                 {
-                    public void stateChanged(ChangeEvent changeEvent)
+                    public void stateChanged(ChangeEvent e)
                     {
-                        AbstractButton abstractButton = (AbstractButton)changeEvent.getSource();
-                        ButtonModel buttonModel = abstractButton.getModel();
-                        member.allowSendTo = buttonModel.isSelected();
+                        member.allowSendTo = ((AbstractButton)e.getSource()).getModel().isSelected();
                     }
-                };
-                chkPlayer.addChangeListener(orderedChangeListener);
-                panel.add(chkPlayer);
+                });
+                panel.add(chk);
             }
 
+            int optY = 8 + 32 + i * 16 + 24;
+
             JLabel lblRelayOptions = new JLabel("Relay Options (For cursor position)");
-            lblRelayOptions.setSize(200, 16);
-            lblRelayOptions.setLocation(8, 8 + 32 + i * 16 + 32);
+            lblRelayOptions.setSize(220, 16);
+            lblRelayOptions.setLocation(8, optY);
+            lblRelayOptions.setForeground(Colors.TEXT_COLOR);
             panel.add(lblRelayOptions);
-        
+
             JCheckBox chkReliable = new JCheckBox("Reliable", state.reliable);
-            chkReliable.setSize(200, 16);
-            chkReliable.setLocation(8, 8 + 32 + i * 16 + 32 + 32);
-            ChangeListener reliableChangeListener = new ChangeListener()
+            chkReliable.setSize(220, 16);
+            chkReliable.setLocation(8, optY + 24);
+            chkReliable.setBackground(Colors.BG_COLOR);
+            chkReliable.setForeground(Colors.TEXT_COLOR);
+            chkReliable.addChangeListener(new ChangeListener()
             {
-                public void stateChanged(ChangeEvent changeEvent)
+                public void stateChanged(ChangeEvent e)
                 {
-                    AbstractButton abstractButton = (AbstractButton)changeEvent.getSource();
-                    ButtonModel buttonModel = abstractButton.getModel();
-                    state.reliable = buttonModel.isSelected();
+                    state.reliable = ((AbstractButton)e.getSource()).getModel().isSelected();
                 }
-            };
-            chkReliable.addChangeListener(reliableChangeListener);
+            });
             panel.add(chkReliable);
 
-        
             JCheckBox chkOrdered = new JCheckBox("Ordered", state.ordered);
-            chkOrdered.setSize(200, 16);
-            chkOrdered.setLocation(8, 8 + 32 + i * 16 + 32 + 32 + 16);
-            ChangeListener orderedChangeListener = new ChangeListener()
+            chkOrdered.setSize(220, 16);
+            chkOrdered.setLocation(8, optY + 44);
+            chkOrdered.setBackground(Colors.BG_COLOR);
+            chkOrdered.setForeground(Colors.TEXT_COLOR);
+            chkOrdered.addChangeListener(new ChangeListener()
             {
-                public void stateChanged(ChangeEvent changeEvent)
+                public void stateChanged(ChangeEvent e)
                 {
-                    AbstractButton abstractButton = (AbstractButton)changeEvent.getSource();
-                    ButtonModel buttonModel = abstractButton.getModel();
-                    state.ordered = buttonModel.isSelected();
+                    state.ordered = ((AbstractButton)e.getSource()).getModel().isSelected();
                 }
-            };
-            chkReliable.addChangeListener(orderedChangeListener);
+            });
             panel.add(chkOrdered);
         }
 
-        // Play area
+        // ── Play area (right side) ────────────────────────────────────────────
         {
             JPanel playArea = new PlayArea();
             playArea.setSize(800, 600);
             playArea.setLocation(screenRes.width - 808, screenRes.height / 2 - 300);
-            playArea.setBackground(Color.decode("#282c34"));
+            playArea.setBackground(Colors.BG_COLOR);
             panel.add(playArea);
 
             playArea.addMouseMotionListener(new MouseMotionListener()
@@ -195,19 +241,16 @@ class GameScreen extends Screen
                 @Override
                 public void mouseMoved(MouseEvent e)
                 {
-                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
-                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
-
-                    App.getInstance().onPlayerMove(normalizedX, normalizedY);
+                    App.getInstance().onPlayerMove(
+                        (float)e.getX() / playArea.getWidth(),
+                        (float)e.getY() / playArea.getHeight());
                 }
-
                 @Override
                 public void mouseDragged(MouseEvent e)
                 {
-                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
-                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
-
-                    App.getInstance().onPlayerMove(normalizedX, normalizedY);
+                    App.getInstance().onPlayerMove(
+                        (float)e.getX() / playArea.getWidth(),
+                        (float)e.getY() / playArea.getHeight());
                 }
             });
 
@@ -216,20 +259,14 @@ class GameScreen extends Screen
                 @Override
                 public void mousePressed(MouseEvent e)
                 {
-                    float normalizedX = ((float)e.getX() / (float)playArea.getWidth());
-                    float normalizedY = ((float)e.getY() / (float)playArea.getHeight());
-                    
-                    App.getInstance().onPlayerShockwave(normalizedX, normalizedY);
+                    App.getInstance().onPlayerShockwave(
+                        (float)e.getX() / playArea.getWidth(),
+                        (float)e.getY() / playArea.getHeight());
                 }
-
-                @Override
-                public void mouseClicked(MouseEvent e) {}
-                @Override
-                public void mouseReleased(MouseEvent e) {}
-                @Override
-                public void mouseEntered(MouseEvent e) {}
-                @Override
-                public void mouseExited(MouseEvent e) {}
+                @Override public void mouseClicked(MouseEvent e)  {}
+                @Override public void mouseReleased(MouseEvent e) {}
+                @Override public void mouseEntered(MouseEvent e)  {}
+                @Override public void mouseExited(MouseEvent e)   {}
             });
 
             _refreshTimer.schedule(new TimerTask()
@@ -238,24 +275,109 @@ class GameScreen extends Screen
                 public void run()
                 {
                     playArea.repaint();
+                    updateGameTimer();
                 }
-            }, 0, 1000 / 60);
+            }, 0, 1000 / 30);
         }
 
-        // Leave button
+        // ── Bottom buttons ────────────────────────────────────────────────────
         {
-            JButton btnLeave = new JButton("Leave");
-            btnLeave.setSize(200, 30);
-            btnLeave.setLocation(screenRes.width / 2 - 100, screenRes.height / 2 + 310);
-            panel.add(btnLeave);
-            btnLeave.addActionListener(new ActionListener()
+            boolean isHost = state.lobby != null &&
+                    state.lobby.ownerCxId.equals(state.user.cxId);
+            int btnY = screenRes.height / 2 + 310;
+            int cx   = screenRes.width / 2;
+
+            if (isHost)
             {
-                @Override
-                public void actionPerformed(ActionEvent e)
+                // Host: "End Match" ends the game for everyone (same as leaving)
+                JButton btnEnd = new JButton("End Match");
+                btnEnd.setSize(160, 30);
+                btnEnd.setLocation(cx - 250, btnY);
+                panel.add(btnEnd);
+                btnEnd.addActionListener(new ActionListener()
                 {
-                    App.getInstance().onGameScreenClose();
-                }
-            });
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        App.getInstance().onEndMatch();
+                    }
+                });
+
+                // Host: clear splotches for all players mid-game
+                JButton btnClear = new JButton("Clear Splotches");
+                btnClear.setSize(160, 30);
+                btnClear.setLocation(cx - 80, btnY);
+                panel.add(btnClear);
+                btnClear.addActionListener(new ActionListener()
+                {
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        App.getInstance().onClearSplotches();
+                    }
+                });
+
+                // Host: Leave also ends the match so no orphaned game remains
+                JButton btnLeave = new JButton("Leave");
+                btnLeave.setSize(100, 30);
+                btnLeave.setLocation(cx + 100, btnY);
+                panel.add(btnLeave);
+                btnLeave.addActionListener(new ActionListener()
+                {
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        App.getInstance().onEndMatch();
+                    }
+                });
+            }
+            else
+            {
+                JButton btnLeave = new JButton("Leave");
+                btnLeave.setSize(200, 30);
+                btnLeave.setLocation(cx - 100, btnY);
+                panel.add(btnLeave);
+                btnLeave.addActionListener(new ActionListener()
+                {
+                    @Override
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        App.getInstance().onGameScreenClose();
+                    }
+                });
+            }
+        }
+    }
+
+    private void updateGameTimer()
+    {
+        if (_lblGameTimer == null) return;
+        State state = App.getInstance().state;
+
+        if (state.gameStartTime == 0)
+        {
+            _lblGameTimer.setText("Waiting for host...");
+            _lblGameTimer.setForeground(Color.GRAY);
+            return;
+        }
+
+        long elapsedSec = Math.max(0, (System.currentTimeMillis() - state.gameStartTime) / 1000);
+        long remaining  = App.MATCH_DURATION_SEC - elapsedSec;
+
+        if (remaining <= 0)
+        {
+            _lblGameTimer.setText("Match Over");
+            _lblGameTimer.setForeground(Color.RED);
+        }
+        else if (elapsedSec >= App.COUNTDOWN_FROM_SEC)
+        {
+            _lblGameTimer.setText("Ending in " + remaining + "...");
+            _lblGameTimer.setForeground(Color.RED);
+        }
+        else
+        {
+            _lblGameTimer.setText(String.format("Game Time: %d:%02d", elapsedSec / 60, elapsedSec % 60));
+            _lblGameTimer.setForeground(Colors.TEXT_COLOR);
         }
     }
 }
