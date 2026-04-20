@@ -1,6 +1,7 @@
 package com.bitheads.cursorparty;
 
 import java.awt.geom.Point2D;
+import java.util.HashMap;
 
 public class User
 {
@@ -10,6 +11,8 @@ public class User
     public boolean isReady = false;
     public Point2D pos = null;
     public boolean allowSendTo = true;
+    public HashMap<String, Integer> pings = new HashMap<>(); /* Pre-game region latencies shared via lobby extra (ms) */
+    public int activePing = -1; /* Live relay-server RTT broadcast during gameplay (ms); -1 = not yet received */
 
     public User(String in_cxId, String in_name, int in_colorIndex, boolean in_isReady)
     {
