@@ -36,6 +36,7 @@ class GameScreen extends Screen
 
     private Timer  _refreshTimer = new Timer();
     private JLabel _lblGameTimer;
+    private java.util.List<JLabel> _pingLabels = new java.util.ArrayList<>();
 
     // Draw an arrow cursor at pixel (x, y) in the given colour
     private static void drawCursor(Graphics2D g2, int x, int y, Color color)
@@ -149,6 +150,7 @@ class GameScreen extends Screen
     {
         _refreshTimer.cancel();
         _refreshTimer = new Timer();
+        _pingLabels.clear();
         panel.removeAll();
         panel.setBackground(Colors.BG_COLOR);
 
@@ -177,7 +179,7 @@ class GameScreen extends Screen
             {
                 User member = state.lobby.members.get(i);
                 JCheckBox chk = new JCheckBox(member.name, member.allowSendTo);
-                chk.setSize(220, 16);
+                chk.setSize(160, 16);
                 chk.setLocation(8, 8 + 32 + i * 16);
                 chk.setBackground(Colors.BG_COLOR);
                 chk.setForeground(Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
@@ -189,6 +191,15 @@ class GameScreen extends Screen
                     }
                 });
                 panel.add(chk);
+
+                // Active relay ping display
+                JLabel lblPing = new JLabel("...");
+                lblPing.setSize(60, 16);
+                lblPing.setLocation(170, 8 + 32 + i * 16);
+                lblPing.setFont(new Font("SansSerif", Font.PLAIN, 11));
+                lblPing.setForeground(new Color(140, 150, 160));
+                panel.add(lblPing);
+                _pingLabels.add(lblPing);
             }
 
             int optY = 8 + 32 + i * 16 + 24;
@@ -276,6 +287,7 @@ class GameScreen extends Screen
                 {
                     playArea.repaint();
                     updateGameTimer();
+                    updatePingLabels();
                 }
             }, 0, 1000 / 30);
         }
@@ -346,6 +358,19 @@ class GameScreen extends Screen
                     }
                 });
             }
+        }
+    }
+
+    private void updatePingLabels()
+    {
+        State state = App.getInstance().state;
+        if (state.lobby == null || _pingLabels.isEmpty()) return;
+        int count = Math.min(_pingLabels.size(), state.lobby.members.size());
+        for (int i = 0; i < count; i++)
+        {
+            int ap = state.lobby.members.get(i).activePing;
+            String text = ap < 0 ? "..." : ap >= 999 ? "T/O" : ap + " ms";
+            _pingLabels.get(i).setText(text);
         }
     }
 

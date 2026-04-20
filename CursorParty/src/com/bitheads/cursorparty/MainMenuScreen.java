@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,6 +18,7 @@ class MainMenuScreen extends Screen
 {
     private JComboBox<String> _cboProtocol;
     private JComboBox<String> _cboLobbyType;
+    private JCheckBox _chkUsePingData;
 
     public MainMenuScreen()
     {
@@ -60,14 +62,21 @@ class MainMenuScreen extends Screen
         panel.add(_cboLobbyType);
         refreshLobbyList();
 
+        _chkUsePingData = new JCheckBox("With Ping Region Data");
+        _chkUsePingData.setSize(200, 24);
+        _chkUsePingData.setLocation(x - 100, y + 126);
+        _chkUsePingData.setBackground(Colors.BG_COLOR);
+        _chkUsePingData.setForeground(Colors.TEXT_COLOR);
+        panel.add(_chkUsePingData);
+
         JButton btnPlay = new JButton("Play");
         btnPlay.setSize(200, 30);
-        btnPlay.setLocation(x - 100, y + 130);
+        btnPlay.setLocation(x - 100, y + 158);
         panel.add(btnPlay);
 
         JButton btnLogout = new JButton("Log Out");
         btnLogout.setSize(200, 30);
-        btnLogout.setLocation(x - 100, y + 170);
+        btnLogout.setLocation(x - 100, y + 198);
         panel.add(btnLogout);
 
         btnPlay.addActionListener(new ActionListener() {
@@ -75,7 +84,8 @@ class MainMenuScreen extends Screen
             public void actionPerformed(ActionEvent e) {
                 App.getInstance().onPlayClicked(
                     _cboProtocol.getSelectedItem().toString(),
-                    _cboLobbyType.getSelectedItem().toString());
+                    _cboLobbyType.getSelectedItem().toString(),
+                    _chkUsePingData.isSelected());
             }
         });
 

@@ -43,8 +43,6 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         return _instance;
     }
 
-    static final String APP_VERSION = "1.0";
-
     public State state = new State();
     public JFrame frame;
 
@@ -57,6 +55,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     long _lastMoveSendTime = System.currentTimeMillis();
     boolean _pendingMoveSend = false;
     private java.util.Timer _autoEndTimer = null;
+    private long _lastPingBroadcastTime = 0;
     private JPanel _versionOverlay = null;
 
     public static void main(String args[]) {
@@ -68,8 +67,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         System.out.println("current directory: " + dir1.getAbsolutePath());
 
         _bcWrapper = new BrainCloudWrapper();
-        _bcWrapper.initialize("", "", "1.0.0",
-                "https://api.braincloudservers.com/dispatcherv2");
+        _bcWrapper.initialize(ids.appId, ids.appSecret, ids.version, ids.url);
         _bcWrapper.getClient().enableLogging(true);
 
         clientVersion = _bcWrapper.getClient().getBrainCloudVersion();
@@ -97,6 +95,15 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                             long nowMs = System.currentTimeMillis();
                             if (nowMs - _lastMoveSendTime >= 1000 / 60) {
                                 sendPlayerMove();
+                            }
+                        }
+
+                        // Broadcast relay RTT to all players every 2 seconds while in game
+                        if (state != null && state.screen instanceof GameScreen) {
+                            long nowMs = System.currentTimeMillis();
+                            if (nowMs - _lastPingBroadcastTime >= 2000) {
+                                _lastPingBroadcastTime = nowMs;
+                                broadcastRelayPing();
                             }
                         }
                     }
@@ -154,7 +161,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         Color overlayText = new Color(190, 190, 190);
 
         for (String line : new String[] {
-                "App:    " + APP_VERSION,
+                "App:    " + ids.version,
                 "Client: " + clientVersion,
                 "Server: ..." }) {
             JLabel lbl = new JLabel(line);
@@ -403,6 +410,10 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 return;
 
             switch (op) {
+                case "relay_ping": {
+                    user.activePing = json.getJSONObject("data").getInt("ping");
+                    break;
+                }
                 case "move": {
                     JSONObject posJson = json.getJSONObject("data");
                     user.pos = new Point2D.Float(posJson.getFloat("x"), posJson.getFloat("y"));
@@ -551,8 +562,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             int ofStep = jsonData.optInt("ofStep", 0);
             String msg = jsonData.optString("msg", "");
             state.lobbySubStatus = (curStep > 0)
-                ? curStep + "/" + ofStep + ": " + msg
-                : (msg.isEmpty() ? "Starting server..." : msg);
+                    ? curStep + "/" + ofStep + ": " + msg
+                    : (msg.isEmpty() ? "Starting server..." : msg);
             SwingUtilities.invokeLater(() -> onStateChanged());
         } else if (operation.equals("ROOM_ASSIGNED")) {
             state.lobbySubStatus = "Server assigned...";
@@ -612,7 +623,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         }
     }
 
-    public void onPlayClicked(String protocolStr, String lobbyType) {
+    public void onPlayClicked(String protocolStr, String lobbyType, boolean usePingData) {
+        state.usePingData = usePingData;
         state.lobbySearchStartTime = System.currentTimeMillis();
         goToLoadingScreen("Joining...");
 
@@ -627,6 +639,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 _connectionType = RelayConnectionType.UDP;
                 break;
         }
+
+        final String lobbyAlgo = "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}";
 
         synchronized (this) {
             _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback() {
@@ -643,22 +657,61 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 public void rttConnectSuccess() {
                     state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
                     _isConnectingRTT = false;
-                    _bcWrapper.getLobbyService().findOrCreateLobby(lobbyType, 0, 1,
-                            "{\"strategy\":\"ranged-absolute\",\"alignment\":\"center\",\"ranges\":[1000]}",
-                            "{}", null, "{}", false,
-                            "{\"colorIndex\":" + state.user.colorIndex + "}", "all",
-                            new IServerCallback() {
-                                @Override
-                                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
-                                        JSONObject result) {
-                                }
 
-                                @Override
-                                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation,
-                                        int statusCode, int reasonCode, String jsonError) {
-                                    dieWithMessage("Failed to find lobby.\n" + reasonCode);
-                                }
-                            });
+                    if (usePingData) {
+                        // Ping regions then use ping-aware matchmaking
+                        _bcWrapper.getLobbyService().getRegionsForLobbies(
+                                new String[] { lobbyType },
+                                new IServerCallback() {
+                                    @Override
+                                    public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject result) {
+                                        _bcWrapper.getLobbyService().pingRegions(new IServerCallback() {
+                                            @Override
+                                            public void serverCallback(ServiceName sn, ServiceOperation so,
+                                                    JSONObject r) {
+                                                // Store ping data
+                                                JSONObject pd = _bcWrapper.getLobbyService().getPingData();
+                                                state.pingData.clear();
+                                                if (pd != null) {
+                                                    for (String region : pd.keySet()) {
+                                                        state.pingData.put(region, pd.getInt(region));
+                                                    }
+                                                }
+                                                _bcWrapper.getLobbyService().findOrCreateLobbyWithPingData(
+                                                        lobbyType, 0, 1, lobbyAlgo, "{}", null, "{}",
+                                                        false, buildExtraJson(state.user.colorIndex), "all",
+                                                        new IServerCallback() {
+                                                            @Override
+                                                            public void serverCallback(ServiceName sn,
+                                                                    ServiceOperation so, JSONObject r) {
+                                                            }
+
+                                                            @Override
+                                                            public void serverError(ServiceName sn, ServiceOperation so,
+                                                                    int sc, int rc, String je) {
+                                                                dieWithMessage("Failed to find lobby.\n" + rc);
+                                                            }
+                                                        });
+                                            }
+
+                                            @Override
+                                            public void serverError(ServiceName sn, ServiceOperation so, int sc, int rc,
+                                                    String je) {
+                                                // Fall back to standard lobby on ping failure
+                                                fallbackFindLobby(lobbyType, lobbyAlgo);
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void serverError(ServiceName sn, ServiceOperation so, int sc, int rc,
+                                            String je) {
+                                        fallbackFindLobby(lobbyType, lobbyAlgo);
+                                    }
+                                });
+                    } else {
+                        fallbackFindLobby(lobbyType, lobbyAlgo);
+                    }
                 }
 
                 @Override
@@ -671,6 +724,22 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 }
             });
         }
+    }
+
+    private void fallbackFindLobby(String lobbyType, String lobbyAlgo) {
+        _bcWrapper.getLobbyService().findOrCreateLobby(lobbyType, 0, 1,
+                lobbyAlgo, "{}", null, "{}", false,
+                buildExtraJson(state.user.colorIndex), "all",
+                new IServerCallback() {
+                    @Override
+                    public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject r) {
+                    }
+
+                    @Override
+                    public void serverError(ServiceName sn, ServiceOperation so, int sc, int rc, String je) {
+                        dieWithMessage("Failed to find lobby.\n" + rc);
+                    }
+                });
     }
 
     public void onLogoutClicked() {
@@ -742,7 +811,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         if (state.lobby != null) {
             _bcWrapper.getLobbyService().updateReady(
                     state.lobby.lobbyId, false,
-                    "{\"colorIndex\":" + state.user.colorIndex + "}", null);
+                    buildExtraJson(state.user.colorIndex), null);
         }
 
         synchronized (this) {
@@ -804,21 +873,60 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         goToMainMenuScreen();
     }
 
+    // Build the extra JSON for lobby join/updateReady calls.
+    // Always includes colorIndex; includes per-region pings when available.
+    private String buildExtraJson(int colorIndex) {
+        JSONObject extra = new JSONObject();
+        extra.put("colorIndex", colorIndex);
+        if (!state.pingData.isEmpty()) {
+            JSONObject pingsJson = new JSONObject();
+            for (java.util.Map.Entry<String, Integer> entry : state.pingData.entrySet()) {
+                pingsJson.put(entry.getKey(), entry.getValue());
+            }
+            extra.put("pings", pingsJson);
+        }
+        return extra.toString();
+    }
+
+    // Broadcast our current relay RTT to all players. Called every 2 seconds while
+    // in game.
+    private void broadcastRelayPing() {
+        if (!_bcWrapper.getClient().isAuthenticated())
+            return;
+        synchronized (this) {
+            int ping = _bcWrapper.getRelayService().getPing();
+            // Update own entry immediately
+            for (int i = 0; i < state.lobby.members.size(); ++i) {
+                if (state.lobby.members.get(i).cxId.equals(state.user.cxId)) {
+                    state.lobby.members.get(i).activePing = ping;
+                    break;
+                }
+            }
+            JSONObject msg = new JSONObject();
+            msg.put("op", "relay_ping");
+            msg.put("data", new JSONObject().put("ping", ping));
+            _bcWrapper.getRelayService().sendToAll(
+                    msg.toString().getBytes(StandardCharsets.US_ASCII),
+                    false, false, RelayService.CHANNEL_HIGH_PRIORITY_1);
+        }
+    }
+
     public void onColorChanged(int colorIndex) {
         state.user.colorIndex = colorIndex;
         _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
-                "{\"colorIndex\":" + colorIndex + "}", null);
+                buildExtraJson(colorIndex), null);
         onStateChanged();
     }
 
     public void onGameStart() {
         state.user.isReady = true;
-        // Show status immediately on the host; STARTING event will refresh it on all clients
+        // Show status immediately on the host; STARTING event will refresh it on all
+        // clients
         state.lobbyStatusText = "Starting...";
         state.lobbySubStatus = "";
         state.lobbyStatusStartTime = System.currentTimeMillis();
         _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
-                "{\"colorIndex\":" + state.user.colorIndex + "}", null);
+                buildExtraJson(state.user.colorIndex), null);
         onStateChanged();
     }
 

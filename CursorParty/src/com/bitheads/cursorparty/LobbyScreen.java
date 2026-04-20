@@ -5,6 +5,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -150,44 +154,139 @@ class LobbyScreen extends Screen
             }
         }
 
+        // contentBottom tracks the lowest occupied Y so the status banner never overlaps
+        int contentBottom = 100 + ROWS * (BTN_H + BTN_GAP) + 20
+                          + state.lobby.members.size() * 28 + 16;
+
+        // Ping data table — only shown when usePingData is enabled
+        if (state.usePingData)
+        {
+            int rowY = contentBottom;
+
+            // Region quality label
+            String lobbyIdStr = state.lobby != null ? state.lobby.lobbyId : "";
+            int colonIdx = lobbyIdStr.indexOf(':');
+            String lobbyRegion = (colonIdx > 0 && !lobbyIdStr.substring(0, colonIdx).matches("\\d+"))
+                ? lobbyIdStr.substring(0, colonIdx) : "";
+            if (!lobbyRegion.isEmpty() && !state.pingData.isEmpty())
+            {
+                int bestPing = state.pingData.values().stream().mapToInt(Integer::intValue).min().orElse(0);
+                Integer lobbyPing = state.pingData.get(lobbyRegion);
+                boolean isGood = lobbyPing != null && (lobbyPing - bestPing) <= 30;
+                JLabel lblRegion = new JLabel("Region: " + lobbyRegion, SwingConstants.CENTER);
+                lblRegion.setSize(screenRes.width, 16);
+                lblRegion.setLocation(0, rowY);
+                lblRegion.setFont(new Font("Monospaced", Font.PLAIN, 11));
+                lblRegion.setForeground(isGood ? new Color(0x44, 0xEE, 0x44) : new Color(0xEE, 0x44, 0x44));
+                panel.add(lblRegion);
+                rowY += 18;
+            }
+
+            // Collect all unique region names from our pingData and members' pings
+            TreeSet<String> regionSet = new TreeSet<>(state.pingData.keySet());
+            for (User member : state.lobby.members)
+                regionSet.addAll(member.pings.keySet());
+
+            if (!regionSet.isEmpty())
+            {
+                List<String> regions = new ArrayList<>(regionSet);
+                Font monoFont = new Font("Monospaced", Font.PLAIN, 11);
+                Color dimColor = new Color(140, 150, 160);
+                int rowH = 16;
+
+                JLabel lblTitle = new JLabel("Ping Data (ms)", SwingConstants.CENTER);
+                lblTitle.setSize(screenRes.width, rowH);
+                lblTitle.setLocation(0, rowY);
+                lblTitle.setFont(new Font("SansSerif", Font.BOLD, 11));
+                lblTitle.setForeground(dimColor);
+                panel.add(lblTitle);
+                rowY += rowH + 2;
+
+                // Header row
+                StringBuilder header = new StringBuilder(String.format("%-18s", ""));
+                for (String r : regions) header.append(String.format("  %-14s", r));
+                JLabel lblHeader = new JLabel(header.toString(), SwingConstants.CENTER);
+                lblHeader.setSize(screenRes.width, rowH);
+                lblHeader.setLocation(0, rowY);
+                lblHeader.setFont(monoFont);
+                lblHeader.setForeground(dimColor);
+                panel.add(lblHeader);
+                rowY += rowH;
+
+                for (User member : state.lobby.members)
+                {
+                    HashMap<String, Integer> pings = member.pings.isEmpty()
+                        && member.cxId.equals(state.user.cxId) && !state.pingData.isEmpty()
+                        ? state.pingData : member.pings;
+                    if (pings.isEmpty()) continue;
+
+                    String nameCol = member.name;
+                    if (member.cxId.equals(state.lobby.ownerCxId)) nameCol += " [H]";
+                    StringBuilder row = new StringBuilder(String.format("%-18s", nameCol));
+                    for (String r : regions)
+                    {
+                        Integer ms = pings.get(r);
+                        if (ms == null) row.append(String.format("  %-14s", "-"));
+                        else if (ms >= 999) row.append(String.format("  %-14s", "T/O"));
+                        else row.append(String.format("  %-14d", ms));
+                    }
+
+                    JLabel lbl = new JLabel(row.toString(), SwingConstants.CENTER);
+                    lbl.setSize(screenRes.width, rowH);
+                    lbl.setLocation(0, rowY);
+                    lbl.setFont(monoFont);
+                    int colorIdx = member.cxId.equals(state.user.cxId)
+                        ? state.user.colorIndex : member.colorIndex;
+                    lbl.setForeground(member.cxId.equals(state.user.cxId)
+                        ? Colors.COLORS[colorIdx % Colors.NUM_COLORS] : dimColor);
+                    panel.add(lbl);
+                    rowY += rowH;
+                }
+            }
+
+            contentBottom = rowY + 8;
+        }
+
         // Status banner — shown while STARTING / ROOM_READY provisioning is in progress
         _lblStatus = null;
         _lblStatusTimer = null;
         if (!state.lobbyStatusText.isEmpty())
         {
-            int bannerY = screenRes.height - 130;
+            // Place banner below all content, with a minimum gap from the bottom buttons
+            int bannerY = Math.max(contentBottom + 8, screenRes.height - 130);
+
+            boolean hasSub = !state.lobbySubStatus.isEmpty();
+            int bannerHeight = hasSub ? 64 : 44;
 
             JPanel statusBanner = new JPanel(null);
-            statusBanner.setSize(screenRes.width, 44);
+            statusBanner.setSize(screenRes.width, bannerHeight);
             statusBanner.setLocation(0, bannerY);
             statusBanner.setBackground(new Color(0x0F, 0x24, 0x61));
             panel.add(statusBanner);
 
             _lblStatus = new JLabel(state.lobbyStatusText, SwingConstants.CENTER);
             _lblStatus.setSize(screenRes.width, 22);
-            _lblStatus.setLocation(0, 2);
+            _lblStatus.setLocation(0, 4);
             _lblStatus.setFont(new Font("SansSerif", Font.BOLD, 14));
             _lblStatus.setForeground(Color.WHITE);
             statusBanner.add(_lblStatus);
 
-            _lblStatusTimer = new JLabel("0:00", SwingConstants.CENTER);
-            _lblStatusTimer.setSize(screenRes.width / 2, 18);
-            _lblStatusTimer.setLocation(0, 24);
-            _lblStatusTimer.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            _lblStatusTimer.setForeground(new Color(190, 200, 220));
-            statusBanner.add(_lblStatusTimer);
-
-            if (!state.lobbySubStatus.isEmpty())
+            if (hasSub)
             {
                 JLabel lblSub = new JLabel(state.lobbySubStatus, SwingConstants.CENTER);
                 lblSub.setSize(screenRes.width, 18);
-                lblSub.setLocation(0, 24);
+                lblSub.setLocation(0, 28);
                 lblSub.setFont(new Font("SansSerif", Font.PLAIN, 12));
                 lblSub.setForeground(new Color(170, 185, 210));
                 statusBanner.add(lblSub);
-                // Move timer to left half so sub-status can share the same row
-                _lblStatusTimer.setHorizontalAlignment(SwingConstants.RIGHT);
             }
+
+            _lblStatusTimer = new JLabel("0:00", SwingConstants.CENTER);
+            _lblStatusTimer.setSize(screenRes.width, 16);
+            _lblStatusTimer.setLocation(0, hasSub ? 46 : 26);
+            _lblStatusTimer.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            _lblStatusTimer.setForeground(new Color(190, 200, 220));
+            statusBanner.add(_lblStatusTimer);
 
             updateStatusTimer();
         }

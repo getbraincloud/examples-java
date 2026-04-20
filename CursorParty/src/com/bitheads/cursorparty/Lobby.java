@@ -21,11 +21,19 @@ public class Lobby
         for (int i = 0; i < jsonMembers.length(); ++i)
         {
             JSONObject jsonMember = jsonMembers.getJSONObject(i);
-            User user = new User(jsonMember.getString("cxId"), 
-                                 jsonMember.getString("name"), 
-                                 jsonMember.getJSONObject("extra").getInt("colorIndex"), 
+            JSONObject extra = jsonMember.getJSONObject("extra");
+            User user = new User(jsonMember.getString("cxId"),
+                                 jsonMember.getString("name"),
+                                 extra.getInt("colorIndex"),
                                  false);
-            if (user.cxId.equals(state.user.cxId)) user.allowSendTo = false;   
+            if (user.cxId.equals(state.user.cxId)) user.allowSendTo = false;
+            // Parse per-region ping data shared by this member via lobby extra
+            if (extra.has("pings")) {
+                JSONObject pingsJson = extra.getJSONObject("pings");
+                for (String region : pingsJson.keySet()) {
+                    user.pings.put(region, pingsJson.getInt(region));
+                }
+            }
             members.add(user);
         }
     }

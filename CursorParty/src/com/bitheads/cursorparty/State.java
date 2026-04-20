@@ -1,6 +1,7 @@
 package com.bitheads.cursorparty;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONObject;
 
@@ -10,6 +11,8 @@ public class State
     public User user;
     public Lobby lobby;
     public JSONObject server;
+    public boolean usePingData = false;
+    public HashMap<String, Integer> pingData = new HashMap<>();
     public ArrayList<Shockwave> shockwaves   = new ArrayList<Shockwave>();
     public ArrayList<Splotch>  splotches     = new ArrayList<Splotch>();
     public boolean reliable = false;
