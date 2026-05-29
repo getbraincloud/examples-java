@@ -59,6 +59,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     private JPanel _versionOverlay = null;
 
     public static void main(String args[]) {
+        System.setProperty("apple.awt.application.name", "Cursor Party");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Cursor Party");
         _instance = new App();
     }
 
@@ -146,6 +148,24 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         });
         frame.pack();
         frame.setLocationRelativeTo(null);
+
+        java.net.URL iconURL = App.class.getResource("/resources/icon.png");
+        if (iconURL != null) {
+            java.awt.Image icon = new javax.swing.ImageIcon(iconURL).getImage();
+            frame.setIconImage(icon);
+            try {
+                Class<?> taskbarClass = Class.forName("java.awt.Taskbar");
+                Object taskbar = taskbarClass.getMethod("getTaskbar").invoke(null);
+                taskbarClass.getMethod("setIconImage", java.awt.Image.class).invoke(taskbar, icon);
+            } catch (Exception e) {
+                try {
+                    Class<?> cls = Class.forName("com.apple.eawt.Application");
+                    Object app = cls.getMethod("getApplication").invoke(null);
+                    cls.getMethod("setDockIconImage", java.awt.Image.class).invoke(app, icon);
+                } catch (Exception ignored) {}
+            }
+        }
+
         frame.setVisible(true);
         frame.validate();
         frame.repaint();
@@ -253,6 +273,20 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                     if (data.has("SplotchDuration")) {
                         state.splotchDurationSec = Integer.parseInt(
                                 data.getJSONObject("SplotchDuration").getString("value"));
+                    }
+
+                    if (data.has("Colors")) {
+                        try {
+                            JSONArray colorsJson = new JSONArray(
+                                    data.getJSONObject("Colors").getString("value"));
+                            Color[] newColors = new Color[colorsJson.length()];
+                            for (int i = 0; i < colorsJson.length(); i++) {
+                                newColors[i] = Color.decode(colorsJson.getString(i));
+                            }
+                            Colors.COLORS = newColors;
+                        } catch (Exception e) {
+                            System.out.println("Failed to parse Colors property: " + e.getMessage());
+                        }
                     }
 
                     onStateChanged();
