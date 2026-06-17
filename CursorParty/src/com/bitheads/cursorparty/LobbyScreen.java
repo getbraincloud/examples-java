@@ -247,16 +247,21 @@ class LobbyScreen extends Screen
             contentBottom = rowY + 8;
         }
 
-        // Status banner — shown while STARTING / ROOM_READY provisioning is in progress
+        // Status banner — shown while STARTING / ROOM_READY provisioning is in progress.
         _lblStatus = null;
         _lblStatusTimer = null;
+
+        // The button row is pinned to the bottom; compute it first so the banner can
+        // be placed ABOVE it (with a gap) and never overlap the Leave/Start buttons.
+        int btnY = screenRes.height - 80;
+
         if (!state.lobbyStatusText.isEmpty())
         {
-            // Place banner below all content, with a minimum gap from the bottom buttons
-            int bannerY = Math.max(contentBottom + 8, screenRes.height - 130);
-
             boolean hasSub = !state.lobbySubStatus.isEmpty();
             int bannerHeight = hasSub ? 64 : 44;
+
+            // Below all content, but always at least an 8px gap above the buttons.
+            int bannerY = Math.max(contentBottom + 8, btnY - 8 - bannerHeight);
 
             JPanel statusBanner = new JPanel(null);
             statusBanner.setSize(screenRes.width, bannerHeight);
@@ -291,9 +296,7 @@ class LobbyScreen extends Screen
             updateStatusTimer();
         }
 
-        // Buttons
-        int btnY = screenRes.height - 80;
-
+        // Buttons (btnY computed above so the status banner can sit clear of them)
         JButton btnLeave = new JButton("Leave");
         btnLeave.setSize(160, 30);
         btnLeave.setLocation(cx - 200, btnY);
