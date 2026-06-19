@@ -457,10 +457,12 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                     JSONObject posJson = json.getJSONObject("data");
                     float rx = posJson.getFloat("x");
                     float ry = posJson.getFloat("y");
+                    // Use the sender's synced rotation (default random if an older client omits it)
+                    double rAngle = posJson.has("angle") ? posJson.getDouble("angle") : Math.random() * Math.PI * 2.0;
                     state.shockwaves.add(new Shockwave(
                             new Point2D.Float(rx, ry),
                             Colors.COLORS[user.colorIndex % Colors.NUM_COLORS]));
-                    createSplotch(rx, ry, user.colorIndex);
+                    createSplotch(rx, ry, user.colorIndex, rAngle);
                     break;
                 }
                 case "splotch_sync": {
@@ -473,8 +475,10 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                         float sx = (float) e.getDouble("x");
                         float sy = (float) e.getDouble("y");
                         int ci = e.getInt("c");
+                        // "a" = synced rotation (default random if absent); "t" = original timestamp
+                        double sa = e.has("a") ? e.getDouble("a") : Math.random() * Math.PI * 2.0;
                         long t = e.getLong("t");
-                        Splotch s = new Splotch(new Point2D.Float(sx, sy), ci);
+                        Splotch s = new Splotch(new Point2D.Float(sx, sy), ci, sa);
                         s.startTimeMs = t;
                         state.splotches.add(s);
                     }
@@ -541,6 +545,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                         .put("x", s.pos.getX())
                         .put("y", s.pos.getY())
                         .put("c", s.colorIndex)
+                        .put("a", s.angle)
                         .put("t", s.startTimeMs);
                 entryStr = entry.toString();
             }
@@ -874,10 +879,11 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         }
     }
 
-    public void createSplotch(float x, float y, int colorIndex) {
+    public void createSplotch(float x, float y, int colorIndex, double angle) {
         state.splotches.add(new Splotch(
                 new java.awt.geom.Point2D.Float(x, y),
-                colorIndex % Colors.NUM_COLORS));
+                colorIndex % Colors.NUM_COLORS,
+                angle));
     }
 
     public void onGameScreenClose() {
@@ -1000,10 +1006,13 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     }
 
     public void onPlayerShockwave(float x, float y) {
+        // Pick a rotation once and send it so every client renders this splotch the same.
+        double angle = Math.random() * Math.PI * 2.0;
+
         state.shockwaves.add(new Shockwave(
                 new Point2D.Float(x, y),
                 Colors.COLORS[state.user.colorIndex % Colors.NUM_COLORS]));
-        createSplotch(x, y, state.user.colorIndex);
+        createSplotch(x, y, state.user.colorIndex, angle);
 
         JSONObject data = new JSONObject();
         data.put("op", "shockwave");
@@ -1011,6 +1020,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         posJson.put("x", x);
         posJson.put("y", y);
         posJson.put("teamCode", 0);
+        posJson.put("angle", angle);
         data.put("data", posJson);
 
         long playerMask = 0;

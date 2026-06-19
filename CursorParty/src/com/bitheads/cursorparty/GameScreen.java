@@ -13,7 +13,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -33,6 +40,36 @@ import java.util.TimerTask;
 class GameScreen extends Screen
 {
     private static final int SPLOTCH_RADIUS = 16;
+    private static final int SPLOTCH_SIZE   = 64;   // rendered diameter (px)
+
+    // Shared splotch art (white alpha-mask), loaded once and tinted opaque per player colour.
+    private static BufferedImage _splatBase;
+    private static final Map<Integer, BufferedImage> _splatTintCache = new HashMap<>();
+
+    // Returns PaintSplatter1.png tinted opaque to the given colour (cached by RGB).
+    private static BufferedImage getTintedSplat(Color color)
+    {
+        if (_splatBase == null)
+        {
+            try {
+                _splatBase = ImageIO.read(GameScreen.class.getResource("/resources/PaintSplatter1.png"));
+            } catch (IOException | IllegalArgumentException ex) {
+                return null;
+            }
+        }
+        if (_splatBase == null) return null;
+
+        return _splatTintCache.computeIfAbsent(color.getRGB(), rgb -> {
+            BufferedImage tinted = new BufferedImage(_splatBase.getWidth(), _splatBase.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D tg = tinted.createGraphics();
+            tg.drawImage(_splatBase, 0, 0, null);
+            tg.setComposite(AlphaComposite.SrcAtop);   // keep the mask's alpha, replace RGB with the player colour
+            tg.setColor(new Color(rgb));
+            tg.fillRect(0, 0, tinted.getWidth(), tinted.getHeight());
+            tg.dispose();
+            return tinted;
+        });
+    }
 
     private Timer  _refreshTimer = new Timer();
     private JLabel _lblGameTimer;
@@ -92,10 +129,25 @@ class GameScreen extends Screen
                 }
 
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-                g2.setColor(Colors.COLORS[s.colorIndex % Colors.NUM_COLORS]);
-                int px = (int)(s.pos.getX() * getWidth())  - SPLOTCH_RADIUS;
-                int py = (int)(s.pos.getY() * getHeight()) - SPLOTCH_RADIUS;
-                g2.fillOval(px, py, SPLOTCH_RADIUS * 2, SPLOTCH_RADIUS * 2);
+                Color splatColor = Colors.COLORS[s.colorIndex % Colors.NUM_COLORS];
+                double cx = s.pos.getX() * getWidth();
+                double cy = s.pos.getY() * getHeight();
+                BufferedImage splat = getTintedSplat(splatColor);
+                if (splat != null)
+                {
+                    // Opaque, player-coloured PaintSplatter1.png, rotated by the network-synced angle.
+                    AffineTransform prev = g2.getTransform();
+                    g2.translate(cx, cy);
+                    g2.rotate(s.angle);
+                    g2.drawImage(splat, -SPLOTCH_SIZE / 2, -SPLOTCH_SIZE / 2, SPLOTCH_SIZE, SPLOTCH_SIZE, null);
+                    g2.setTransform(prev);
+                }
+                else
+                {
+                    // Fallback if the splat image failed to load
+                    g2.setColor(splatColor);
+                    g2.fillOval((int)cx - SPLOTCH_RADIUS, (int)cy - SPLOTCH_RADIUS, SPLOTCH_RADIUS * 2, SPLOTCH_RADIUS * 2);
+                }
             }
             g2.setComposite(defaultComposite);
 
