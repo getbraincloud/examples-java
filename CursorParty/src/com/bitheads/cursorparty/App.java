@@ -719,13 +719,22 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         goToMatchSummaryScreen();
     }
 
-    public void onSetRematchReady(boolean ready) {
-        state.user.isReady = ready;
-        if (state.lobby != null) {
-            _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, ready,
-                    buildExtraJson(state.user.colorIndex), null);
+    // Called when the local player continues past Match Summary — either by clicking
+    // the button or via the 45s auto-timeout. The host's Start button in the Lobby has
+    // no readiness gate at all (always available as an early-start option), so the
+    // host never auto-readies here — they just land back in the Lobby where Start is
+    // waiting for them. Everyone else marks themselves ready (so the ready count the
+    // host sees builds up) and lands in the same place.
+    public void onContinueFromSummary() {
+        boolean isHost = state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId);
+        if (!isHost) {
+            state.user.isReady = true;
+            if (state.lobby != null) {
+                _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, true,
+                        buildExtraJson(state.user.colorIndex), null);
+            }
         }
-        onStateChanged();
+        goToLobbyScreen();
     }
 
     private void applyMatchResult(int round, JSONArray entries) {
@@ -923,18 +932,21 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             for (MatchResult.Entry e : state.matchResult.entries) {
                 if (!e.cxId.equals(member.cxId)) continue;
                 e.lbDelta.ready = true;
-                e.lbDelta.pointsLifetime.improved = r.optJSONObject("pointsLifetime") != null
-                        && r.getJSONObject("pointsLifetime").optBoolean("improved", false);
-                e.lbDelta.pointsQuarterly.improved = r.optJSONObject("pointsQuarterly") != null
-                        && r.getJSONObject("pointsQuarterly").optBoolean("improved", false);
-                e.lbDelta.coverageLifetime.improved = r.optJSONObject("coverageLifetime") != null
-                        && r.getJSONObject("coverageLifetime").optBoolean("improved", false);
-                e.lbDelta.coverageQuarterly.improved = r.optJSONObject("coverageQuarterly") != null
-                        && r.getJSONObject("coverageQuarterly").optBoolean("improved", false);
+                parsePeriodDelta(e.lbDelta.pointsLifetime, r.optJSONObject("pointsLifetime"));
+                parsePeriodDelta(e.lbDelta.pointsQuarterly, r.optJSONObject("pointsQuarterly"));
+                parsePeriodDelta(e.lbDelta.coverageLifetime, r.optJSONObject("coverageLifetime"));
+                parsePeriodDelta(e.lbDelta.coverageQuarterly, r.optJSONObject("coverageQuarterly"));
                 break;
             }
         }
         SwingUtilities.invokeLater(this::onStateChanged);
+    }
+
+    private void parsePeriodDelta(MatchResult.PeriodDelta delta, JSONObject period) {
+        if (period == null) return;
+        delta.improved = period.optBoolean("improved", false);
+        delta.rankBefore = period.optInt("before", -1);
+        delta.rankAfter = period.optInt("after", -1);
     }
 
     private User memberByCxId(String cxId) {
@@ -1231,6 +1243,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
         switch (protocolStr) {
             case "WEBSOCKET":
+            case "WS": // MainMenuScreen shows the abbreviated label
                 _connectionType = RelayConnectionType.WEBSOCKET;
                 break;
             case "TCP":

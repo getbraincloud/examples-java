@@ -1,11 +1,13 @@
 package com.bitheads.cursorparty;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -26,6 +28,11 @@ class MainMenuScreen extends Screen
     private static final String CARD_CHAT = "chat";
     private static final String CARD_LEADERBOARD = "leaderboard";
 
+    private static final Color CARD_BG = new Color(0x1D, 0x20, 0x2C);
+    private static final Color CARD_BORDER = new Color(0x33, 0x38, 0x45);
+    private static final Color DIM = new Color(140, 150, 160);
+    private static final Color GREEN = new Color(0x66, 0xEE, 0x88);
+
     public MainMenuScreen()
     {
         JFrame frame = App.getInstance().frame;
@@ -35,55 +42,98 @@ class MainMenuScreen extends Screen
         panel.setLayout(null);
         panel.setBackground(Colors.BG_COLOR);
 
-        int x = screenRes.width  / 2;
-        int y = screenRes.height / 2 - 120;
+        int setupW = 420;
+        int sideW = 380;
+        int gap = 24;
+        int groupW = setupW + gap + sideW;
+        int cardX = (screenRes.width - groupW) / 2;
+        int cardY = Math.max(60, screenRes.height / 2 - 260);
+        int cardH = 520;
 
-        JLabel lblTitle = new JLabel("Main Menu", SwingConstants.CENTER);
-        lblTitle.setSize(screenRes.width, 40);
-        lblTitle.setLocation(0, 40);
-        lblTitle.setFont(new Font(lblTitle.getFont().getName(), Font.PLAIN, 32));
+        // ── Setup card (left) ────────────────────────────────────────────────
+        JPanel setupCard = new JPanel(null);
+        setupCard.setBounds(cardX, cardY, setupW, cardH);
+        setupCard.setBackground(CARD_BG);
+        setupCard.setBorder(BorderFactory.createLineBorder(CARD_BORDER, 1));
+        panel.add(setupCard);
+
+        int pad = 28;
+        int y = 28;
+
+        JLabel lblTitle = new JLabel("Cursor Party", SwingConstants.CENTER);
+        lblTitle.setBounds(0, y, setupW, 40);
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 28));
         lblTitle.setForeground(Colors.TEXT_COLOR);
-        panel.add(lblTitle);
+        setupCard.add(lblTitle);
+        y += 46;
 
-        JLabel lblProtocol = new JLabel("Protocol", SwingConstants.CENTER);
-        lblProtocol.setSize(200, 20);
-        lblProtocol.setLocation(x - 100, y + 8);
-        lblProtocol.setForeground(Colors.TEXT_COLOR);
-        panel.add(lblProtocol);
+        JLabel lblTagline = new JLabel("<html><div style='text-align:center;'>Paint more of the board than "
+                + "anyone else &mdash; cover it,<br>and you win the party.</div></html>", SwingConstants.CENTER);
+        lblTagline.setBounds(pad, y, setupW - pad * 2, 34);
+        lblTagline.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblTagline.setForeground(GREEN);
+        setupCard.add(lblTagline);
+        y += 44;
 
-        _cboProtocol = new JComboBox<>(new String[]{"WEBSOCKET", "TCP", "UDP"});
-        _cboProtocol.setSize(200, 30);
-        _cboProtocol.setLocation(x - 100, y + 30);
-        panel.add(_cboProtocol);
+        setupCard.add(buildSeparator(pad, y, setupW - pad * 2));
+        y += 20;
 
-        JLabel lblLobby = new JLabel("Lobby Type", SwingConstants.CENTER);
-        lblLobby.setSize(200, 20);
-        lblLobby.setLocation(x - 100, y + 66);
-        lblLobby.setForeground(Colors.TEXT_COLOR);
-        panel.add(lblLobby);
+        JLabel lblLobby = new JLabel("LOBBY TYPE");
+        lblLobby.setBounds(pad, y, setupW - pad * 2, 16);
+        lblLobby.setFont(new Font("SansSerif", Font.BOLD, 10));
+        lblLobby.setForeground(DIM);
+        setupCard.add(lblLobby);
+        y += 20;
 
         _cboLobbyType = new JComboBox<>();
-        _cboLobbyType.setSize(200, 30);
-        _cboLobbyType.setLocation(x - 100, y + 88);
-        panel.add(_cboLobbyType);
+        _cboLobbyType.setBounds(pad, y, setupW - pad * 2, 30);
+        setupCard.add(_cboLobbyType);
         refreshLobbyList();
+        y += 42;
+
+        JLabel lblProtocol = new JLabel("NETWORK PROTOCOL");
+        lblProtocol.setBounds(pad, y, setupW - pad * 2, 16);
+        lblProtocol.setFont(new Font("SansSerif", Font.BOLD, 10));
+        lblProtocol.setForeground(DIM);
+        setupCard.add(lblProtocol);
+        y += 20;
+
+        // Displays abbreviated protocol names (WS/TCP/UDP); App.onPlayClicked maps
+        // "WS" back to RelayConnectionType.WEBSOCKET the same way it already
+        // handles "TCP"/"UDP" — no wire-protocol change, just a shorter label.
+        _cboProtocol = new JComboBox<>(new String[]{"WS", "TCP", "UDP"});
+        _cboProtocol.setBounds(pad, y, setupW - pad * 2, 30);
+        setupCard.add(_cboProtocol);
+        y += 42;
 
         _chkUsePingData = new JCheckBox("With Ping Region Data");
-        _chkUsePingData.setSize(200, 24);
-        _chkUsePingData.setLocation(x - 100, y + 126);
-        _chkUsePingData.setBackground(Colors.BG_COLOR);
+        _chkUsePingData.setBounds(pad, y, setupW - pad * 2, 24);
+        _chkUsePingData.setBackground(CARD_BG);
         _chkUsePingData.setForeground(Colors.TEXT_COLOR);
-        panel.add(_chkUsePingData);
+        setupCard.add(_chkUsePingData);
+        y += 34;
 
-        JButton btnPlay = new JButton("Play");
-        btnPlay.setSize(200, 30);
-        btnPlay.setLocation(x - 100, y + 158);
-        panel.add(btnPlay);
+        setupCard.add(buildSeparator(pad, y, setupW - pad * 2));
+        y += 16;
+
+        JLabel lblHelper = new JLabel("Not sure what any of this means? Just tap below.", SwingConstants.CENTER);
+        lblHelper.setBounds(pad, y, setupW - pad * 2, 16);
+        lblHelper.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        lblHelper.setForeground(DIM);
+        setupCard.add(lblHelper);
+        y += 26;
+
+        JButton btnPlay = new JButton("Find / Create Lobby");
+        btnPlay.setBounds(pad, y, setupW - pad * 2, 40);
+        btnPlay.setBackground(new Color(0x44, 0x66, 0xEE));
+        btnPlay.setForeground(Color.WHITE);
+        btnPlay.setFont(new Font("SansSerif", Font.BOLD, 14));
+        setupCard.add(btnPlay);
+        y += 52;
 
         JButton btnLogout = new JButton("Log Out");
-        btnLogout.setSize(200, 30);
-        btnLogout.setLocation(x - 100, y + 198);
-        panel.add(btnLogout);
+        btnLogout.setBounds(pad, y, setupW - pad * 2, 26);
+        setupCard.add(btnLogout);
 
         btnPlay.addActionListener(new ActionListener() {
             @Override
@@ -102,25 +152,34 @@ class MainMenuScreen extends Screen
             }
         });
 
-        // ── Chat / Leaderboard side panel (right side; the setup card above is
-        // centered in a 200px column, leaving this space clear) ────────────────
+        // ── Chat / Leaderboard card (right) ─────────────────────────────────
         {
-            int panelW = 300;
-            int panelX = screenRes.width - panelW - 24;
-            int panelY = 100;
-            int panelH = screenRes.height - panelY - 60;
+            int panelX = cardX + setupW + gap;
+            int panelY = cardY;
+            int panelW = sideW;
+            int panelH = cardH;
+
+            JPanel sideCard = new JPanel(null);
+            sideCard.setBounds(panelX, panelY, panelW, panelH);
+            sideCard.setBackground(CARD_BG);
+            sideCard.setBorder(BorderFactory.createLineBorder(CARD_BORDER, 1));
+            panel.add(sideCard);
+
+            int tabH = 30;
+            JButton btnLeaderboardTab = new JButton("LEADERBOARD");
+            btnLeaderboardTab.setBounds(0, 0, panelW / 2 - 1, tabH);
+            sideCard.add(btnLeaderboardTab);
 
             JButton btnChatTab = new JButton("CHAT");
-            btnChatTab.setBounds(panelX, panelY, panelW / 2 - 2, 26);
-            panel.add(btnChatTab);
-
-            JButton btnLeaderboardTab = new JButton("LEADERBOARD");
-            btnLeaderboardTab.setBounds(panelX + panelW / 2 + 2, panelY, panelW / 2 - 2, 26);
-            panel.add(btnLeaderboardTab);
+            btnChatTab.setBounds(panelW / 2 + 1, 0, panelW / 2 - 1, tabH);
+            sideCard.add(btnChatTab);
 
             JPanel cards = new JPanel(new CardLayout());
-            cards.setBounds(panelX, panelY + 30, panelW, panelH - 30);
-            panel.add(cards);
+            cards.setBounds(0, tabH, panelW, panelH - tabH);
+            sideCard.add(cards);
+
+            _leaderboardPanel = new LeaderboardPanel(panelW, panelH - tabH);
+            cards.add(_leaderboardPanel, CARD_LEADERBOARD);
 
             _globalChatPanel = new ChatPanel(new ChatPanel.Source() {
                 @Override
@@ -132,16 +191,22 @@ class MainMenuScreen extends Screen
                 public void sendMessage(String text) {
                     App.getInstance().sendGlobalChatMessage(text);
                 }
-            }, panelW, panelH - 30);
+            }, panelW, panelH - tabH);
             cards.add(_globalChatPanel, CARD_CHAT);
 
-            _leaderboardPanel = new LeaderboardPanel(panelW, panelH - 30);
-            cards.add(_leaderboardPanel, CARD_LEADERBOARD);
-
             CardLayout cardLayout = (CardLayout) cards.getLayout();
-            btnChatTab.addActionListener(e -> cardLayout.show(cards, CARD_CHAT));
+            cardLayout.show(cards, CARD_LEADERBOARD); // Leaderboard is the default tab
             btnLeaderboardTab.addActionListener(e -> cardLayout.show(cards, CARD_LEADERBOARD));
+            btnChatTab.addActionListener(e -> cardLayout.show(cards, CARD_CHAT));
         }
+    }
+
+    private JPanel buildSeparator(int x, int y, int width)
+    {
+        JPanel sep = new JPanel();
+        sep.setBounds(x, y, width, 1);
+        sep.setBackground(CARD_BORDER);
+        return sep;
     }
 
     @Override

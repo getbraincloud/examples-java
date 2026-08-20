@@ -9,6 +9,8 @@ public class MatchResult
     public static class PeriodDelta
     {
         public boolean improved = false;
+        public int rankBefore = -1;
+        public int rankAfter = -1;
     }
 
     public static class LeaderboardDelta
