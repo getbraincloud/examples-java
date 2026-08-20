@@ -1,5 +1,6 @@
 package com.bitheads.cursorparty;
 
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -19,6 +20,11 @@ class MainMenuScreen extends Screen
     private JComboBox<String> _cboProtocol;
     private JComboBox<String> _cboLobbyType;
     private JCheckBox _chkUsePingData;
+    private ChatPanel _globalChatPanel;
+    private LeaderboardPanel _leaderboardPanel;
+
+    private static final String CARD_CHAT = "chat";
+    private static final String CARD_LEADERBOARD = "leaderboard";
 
     public MainMenuScreen()
     {
@@ -95,12 +101,54 @@ class MainMenuScreen extends Screen
                 App.getInstance().onLogoutClicked();
             }
         });
+
+        // ── Chat / Leaderboard side panel (right side; the setup card above is
+        // centered in a 200px column, leaving this space clear) ────────────────
+        {
+            int panelW = 300;
+            int panelX = screenRes.width - panelW - 24;
+            int panelY = 100;
+            int panelH = screenRes.height - panelY - 60;
+
+            JButton btnChatTab = new JButton("CHAT");
+            btnChatTab.setBounds(panelX, panelY, panelW / 2 - 2, 26);
+            panel.add(btnChatTab);
+
+            JButton btnLeaderboardTab = new JButton("LEADERBOARD");
+            btnLeaderboardTab.setBounds(panelX + panelW / 2 + 2, panelY, panelW / 2 - 2, 26);
+            panel.add(btnLeaderboardTab);
+
+            JPanel cards = new JPanel(new CardLayout());
+            cards.setBounds(panelX, panelY + 30, panelW, panelH - 30);
+            panel.add(cards);
+
+            _globalChatPanel = new ChatPanel(new ChatPanel.Source() {
+                @Override
+                public java.util.ArrayList<ChatMessage> getMessages() {
+                    return App.getInstance().state.chatMessages;
+                }
+
+                @Override
+                public void sendMessage(String text) {
+                    App.getInstance().sendGlobalChatMessage(text);
+                }
+            }, panelW, panelH - 30);
+            cards.add(_globalChatPanel, CARD_CHAT);
+
+            _leaderboardPanel = new LeaderboardPanel(panelW, panelH - 30);
+            cards.add(_leaderboardPanel, CARD_LEADERBOARD);
+
+            CardLayout cardLayout = (CardLayout) cards.getLayout();
+            btnChatTab.addActionListener(e -> cardLayout.show(cards, CARD_CHAT));
+            btnLeaderboardTab.addActionListener(e -> cardLayout.show(cards, CARD_LEADERBOARD));
+        }
     }
 
     @Override
     public void onStateChanged(State state)
     {
         refreshLobbyList();
+        if (_globalChatPanel != null) _globalChatPanel.refresh();
     }
 
     private void refreshLobbyList()

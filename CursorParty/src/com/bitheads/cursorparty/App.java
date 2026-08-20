@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -35,7 +36,6 @@ import org.json.JSONArray;
 
 public class App implements IRelayCallback, IRelaySystemCallback {
     static final int MATCH_DURATION_SEC = 90;
-    static final int COUNTDOWN_FROM_SEC = 80;
 
     static App _instance = null;
 
@@ -49,7 +49,6 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     BrainCloudWrapper _bcWrapper;
     String clientVersion;
     JLabel _serverVersionLabel = null;
-    boolean _isConnectingRTT = false;
     boolean _disconnecting = false;
     RelayConnectionType _connectionType = RelayConnectionType.WEBSOCKET;
     long _lastMoveSendTime = System.currentTimeMillis();
@@ -57,6 +56,29 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     private java.util.Timer _autoEndTimer = null;
     private long _lastPingBroadcastTime = 0;
     private JPanel _versionOverlay = null;
+
+    // Shared RTT-enable mechanism. brainCloud's enableRTT() silently no-ops (its
+    // callback never fires) when RTT is already connected or already connecting,
+    // so anything that needs RTT (chat bootstrap from the Main Menu, matchmaking
+    // from the Play button) must funnel through here rather than each calling
+    // enableRTT() directly — otherwise whichever caller comes second gets stuck
+    // waiting on a callback that will never arrive.
+    private boolean _rttConnecting = false;
+    private ArrayList<Runnable> _rttEnableWaiters = new ArrayList<>();
+
+    // Global chat
+    private boolean _chatRTTRegistered = false;
+    private String _chatChannelId = null;
+    private boolean _chatChannelResolving = false;
+    private long _chatChannelRetryAtMs = 0;
+    private static final long CHAT_CHANNEL_RETRY_MS = 5000;
+
+    // Match summary / leaderboard posting
+    static final int RESULT_GRACE_SEC = 3; // package-visible: GameScreen's timer needs the true end-of-match time
+    private static final int MAX_RELAY_BYTES = 900;
+    private long _lastResultsPollMs = 0;
+    private static final long RESULTS_POLL_INTERVAL_MS = 1000;
+    private JSONArray _pendingMatchResult = new JSONArray();
 
     public static void main(String args[]) {
         System.setProperty("apple.awt.application.name", "Cursor Party");
@@ -289,6 +311,23 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                         }
                     }
 
+                    if (data.has("PointsLeaderboardId")) {
+                        String v = data.getJSONObject("PointsLeaderboardId").getString("value");
+                        if (!v.isEmpty()) state.pointsLeaderboardId = v;
+                    }
+                    if (data.has("PointsLeaderboardIdQuarterly")) {
+                        String v = data.getJSONObject("PointsLeaderboardIdQuarterly").getString("value");
+                        if (!v.isEmpty()) state.pointsLeaderboardIdQuarterly = v;
+                    }
+                    if (data.has("CoverageLeaderboardId")) {
+                        String v = data.getJSONObject("CoverageLeaderboardId").getString("value");
+                        if (!v.isEmpty()) state.coverageLeaderboardId = v;
+                    }
+                    if (data.has("CoverageLeaderboardIdQuarterly")) {
+                        String v = data.getJSONObject("CoverageLeaderboardIdQuarterly").getString("value");
+                        if (!v.isEmpty()) state.coverageLeaderboardIdQuarterly = v;
+                    }
+
                     onStateChanged();
                 } catch (Exception e) {
                     System.out.println("Failed to parse app properties: " + e.getMessage());
@@ -327,14 +366,22 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
     public void goToMainMenuScreen() {
         changeScreen(new MainMenuScreen());
+        enableChatRTT();
     }
 
     public void goToLobbyScreen() {
         changeScreen(new LobbyScreen());
     }
 
+    public void goToMatchSummaryScreen() {
+        changeScreen(new MatchSummaryScreen());
+    }
+
     public void goToGameScreen() {
         state.shockwaves.clear();
+        state.matchResult = new MatchResult();
+        state.coverage.clear();
+        state.coverageComputedGen = -1;
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
 
@@ -353,8 +400,21 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                     gameStartMsg.toString().getBytes(StandardCharsets.US_ASCII),
                     true, true, RelayService.CHANNEL_HIGH_PRIORITY_2);
 
-            // Schedule auto-end after MATCH_DURATION_SEC
+            // Schedule the results broadcast + cloud-code leaderboard post at
+            // MATCH_DURATION_SEC, then the actual endMatch() RESULT_GRACE_SEC later —
+            // mirrors the cpp reference client's Running -> ResultsBroadcast -> Ended
+            // timeline so every client gets match_result before the relay tears down.
             _autoEndTimer = new java.util.Timer();
+            _autoEndTimer.schedule(new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    synchronized (App.this) {
+                        if (_bcWrapper.getClient().isAuthenticated()) {
+                            broadcastMatchResults();
+                        }
+                    }
+                }
+            }, MATCH_DURATION_SEC * 1000L);
             _autoEndTimer.schedule(new java.util.TimerTask() {
                 @Override
                 public void run() {
@@ -364,7 +424,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                         }
                     }
                 }
-            }, MATCH_DURATION_SEC * 1000L);
+            }, (MATCH_DURATION_SEC + RESULT_GRACE_SEC) * 1000L);
         }
 
         changeScreen(new GameScreen());
@@ -376,6 +436,15 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         _bcWrapper.getRelayService().deregisterRelayCallback();
         _bcWrapper.getRTTService().deregisterAllCallbacks();
         _bcWrapper.getClient().resetCommunication();
+
+        // resetCommunication() tears down the whole session — reset the RTT/chat
+        // bootstrap flags too so a fresh login doesn't trust stale state.
+        _rttConnecting = false;
+        _rttEnableWaiters.clear();
+        _chatRTTRegistered = false;
+        _chatChannelId = null;
+        _chatChannelResolving = false;
+        _chatChannelRetryAtMs = 0;
 
         JOptionPane.showMessageDialog(frame, message, "ERROR", JOptionPane.ERROR_MESSAGE);
 
@@ -427,6 +496,19 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             }
             if (op.equals("clear_splotches")) {
                 state.splotches.clear();
+                state.splotchGeneration++;
+                return;
+            }
+            if (op.equals("match_result")) {
+                JSONObject d = json.getJSONObject("data");
+                int round = d.getInt("round");
+                if (d.getBoolean("first"))
+                    _pendingMatchResult = new JSONArray();
+                JSONArray entries = d.getJSONArray("e");
+                for (int i = 0; i < entries.length(); i++)
+                    _pendingMatchResult.put(entries.getJSONObject(i));
+                if (d.getBoolean("last"))
+                    applyMatchResult(round, _pendingMatchResult);
                 return;
             }
 
@@ -482,6 +564,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                         s.startTimeMs = t;
                         state.splotches.add(s);
                     }
+                    state.splotchGeneration++;
                     break;
                 }
             }
@@ -502,7 +585,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 }
             }
         } else if (sysOp.equals("END_MATCH")) {
-            SwingUtilities.invokeLater(() -> onGameScreenToLobby());
+            SwingUtilities.invokeLater(() -> onMatchEnded());
         } else if (sysOp.equals("CONNECT")) {
             // If we are the host, sync game start time and current splotches to the new
             // player
@@ -572,11 +655,469 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         }
     }
 
+    // ── Match end / summary / leaderboard posting ───────────────────────────────
+
+    // Called on every client when the relay server's END_MATCH system event
+    // arrives (either the natural post-timer end, or a host-initiated early end).
+    private void onMatchEnded() {
+        if (_autoEndTimer != null) {
+            _autoEndTimer.cancel();
+            _autoEndTimer = null;
+        }
+
+        // Fallback: if the host's match_result broadcast never arrived (dropped, or
+        // the host disconnected mid-broadcast), compute a local snapshot so the
+        // summary screen has something to show. No cloud posting from this
+        // fallback path — only the host posts to the leaderboards.
+        if ((!state.matchResult.valid || state.matchResult.round != state.roundNumber) && state.lobby != null) {
+            List<Coverage.CoverageEntry> coverage = Coverage.computeCoverage(state.splotches, state.lobby.members);
+            state.matchResult = buildMatchResult(state.roundNumber, coverage);
+        }
+
+        state.gameStartTime = 0;
+        state.lobbyStatusText = "";
+        state.lobbySubStatus = "";
+        state.lobbyStatusStartTime = 0;
+        state.shockwaves.clear();
+        state.splotches.clear();
+        state.splotchGeneration++;
+        state.coverage.clear();
+        state.user.isReady = false;
+        _pendingMoveSend = false;
+        _lastMoveSendTime = System.currentTimeMillis();
+        _disconnecting = false;
+
+        state.matchSummaryArrivalTime = System.currentTimeMillis();
+        _lastResultsPollMs = 0;
+
+        _bcWrapper.getRelayService().deregisterRelayCallback();
+        _bcWrapper.getRelayService().deregisterSystemCallback();
+        _bcWrapper.getRelayService().disconnect();
+
+        // RTT stays enabled — deregister all callbacks then re-register lobby (and
+        // chat, since deregisterAllCallbacks() cleared that registration too even
+        // though the underlying RTT connection and chat channel subscription stay up).
+        _bcWrapper.getRTTService().deregisterAllCallbacks();
+        _chatRTTRegistered = false;
+        enableChatRTT();
+
+        if (state.lobby != null) {
+            _bcWrapper.getLobbyService().updateReady(
+                    state.lobby.lobbyId, false,
+                    buildExtraJson(state.user.colorIndex), null);
+        }
+
+        synchronized (this) {
+            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback() {
+                @Override
+                public void rttCallback(JSONObject eventJson) {
+                    onLobbyEvent(eventJson);
+                }
+            });
+        }
+
+        goToMatchSummaryScreen();
+    }
+
+    public void onSetRematchReady(boolean ready) {
+        state.user.isReady = ready;
+        if (state.lobby != null) {
+            _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, ready,
+                    buildExtraJson(state.user.colorIndex), null);
+        }
+        onStateChanged();
+    }
+
+    private void applyMatchResult(int round, JSONArray entries) {
+        if (state.matchResult.valid && state.matchResult.round == round)
+            return; // idempotent — guards against a duplicate broadcast (e.g. a migrated host)
+        MatchResult result = new MatchResult();
+        result.round = round;
+        result.valid = true;
+        for (int i = 0; i < entries.length(); i++) {
+            JSONObject e = entries.getJSONObject(i);
+            MatchResult.Entry entry = new MatchResult.Entry();
+            entry.cxId = e.getString("cx");
+            entry.rank = e.getInt("r");
+            entry.coveragePct = e.getInt("c") / 100.0f; // basis points -> percent
+            entry.beaten = e.getInt("b");
+            result.entries.add(entry);
+        }
+        state.matchResult = result;
+        SwingUtilities.invokeLater(this::onStateChanged);
+    }
+
+    private MatchResult buildMatchResult(int round, List<Coverage.CoverageEntry> coverage) {
+        MatchResult result = new MatchResult();
+        result.round = round;
+        result.valid = true;
+        for (Coverage.CoverageEntry c : coverage) {
+            MatchResult.Entry e = new MatchResult.Entry();
+            e.cxId = c.cxId;
+            e.rank = c.rank;
+            e.coveragePct = c.coveragePct;
+            e.beaten = c.beaten;
+            result.entries.add(e);
+        }
+        return result;
+    }
+
+    // Host-only: computes the final coverage snapshot, broadcasts it to everyone
+    // (relay op match_result) and posts it to the leaderboards via cloud code.
+    // Guarded per-round since the points leaderboard is cumulative — a duplicate
+    // post would silently and permanently inflate a lifetime total.
+    private void broadcastMatchResults() {
+        if (state.lobby == null) return;
+        if (state.leaderboardPostedRound == state.roundNumber) return;
+        state.leaderboardPostedRound = state.roundNumber;
+
+        List<Coverage.CoverageEntry> coverage = Coverage.computeCoverage(state.splotches, state.lobby.members);
+        MatchResult result = buildMatchResult(state.roundNumber, coverage);
+        state.matchResult = result;
+        SwingUtilities.invokeLater(this::onStateChanged);
+
+        sendMatchResultToAll(result);
+        hostPostMatchResultsToCloud(result);
+    }
+
+    private void sendMatchResultToAll(MatchResult result) {
+        if (result.entries.isEmpty()) return;
+        boolean isFirst = true;
+        JSONArray batch = new JSONArray();
+        int currentSize = 80; // envelope overhead estimate
+
+        for (int i = 0; i <= result.entries.size(); i++) {
+            String entryStr = null;
+            JSONObject entry = null;
+            if (i < result.entries.size()) {
+                MatchResult.Entry e = result.entries.get(i);
+                entry = new JSONObject()
+                        .put("cx", e.cxId)
+                        .put("r", e.rank)
+                        .put("c", Math.round(e.coveragePct * 100.0f))
+                        .put("b", e.beaten);
+                entryStr = entry.toString();
+            }
+
+            boolean isLastIteration = (i == result.entries.size());
+            boolean flush = isLastIteration || (entry != null
+                    && currentSize + entryStr.length() + 1 > MAX_RELAY_BYTES && batch.length() > 0);
+            if (flush && batch.length() > 0) {
+                JSONObject msg = new JSONObject();
+                msg.put("op", "match_result");
+                msg.put("data", new JSONObject()
+                        .put("round", result.round)
+                        .put("first", isFirst)
+                        .put("last", isLastIteration)
+                        .put("e", batch));
+                // Reliable AND ordered (unlike splotch_sync's reliable/unordered) — a chunk-
+                // reassembly race is cosmetic for splotches but would corrupt a posted score here.
+                _bcWrapper.getRelayService().sendToAll(
+                        msg.toString().getBytes(StandardCharsets.US_ASCII),
+                        true, true, RelayService.CHANNEL_HIGH_PRIORITY_1);
+                isFirst = false;
+                batch = new JSONArray();
+                currentSize = 80;
+            }
+            if (entry != null) {
+                batch.put(entry);
+                currentSize += entryStr.length() + 1;
+            }
+        }
+    }
+
+    // The PostMatchResults cloud-code script itself is server-side (already
+    // deployed against this brainCloud app — the cpp/react/godot clients already
+    // call it) and posts on our behalf via postScoreToLeaderboardOnBehalfOf, since
+    // individual clients can no longer post directly (closes an "any client can
+    // post any score for itself" integrity hole).
+    private void hostPostMatchResultsToCloud(MatchResult result) {
+        JSONObject payload = new JSONObject();
+        payload.put("round", result.round);
+        payload.put("lobbyId", state.lobby.lobbyId);
+        payload.put("pointsLeaderboardId", state.pointsLeaderboardId);
+        payload.put("pointsLeaderboardIdQuarterly", state.pointsLeaderboardIdQuarterly);
+        payload.put("coverageLeaderboardId", state.coverageLeaderboardId);
+        payload.put("coverageLeaderboardIdQuarterly", state.coverageLeaderboardIdQuarterly);
+
+        JSONArray entries = new JSONArray();
+        for (MatchResult.Entry e : result.entries) {
+            User member = memberByCxId(e.cxId);
+            if (member == null || member.profileId.isEmpty())
+                continue; // can't post server-side without a profileId
+            entries.put(new JSONObject()
+                    .put("profileId", member.profileId)
+                    .put("name", member.name)
+                    .put("points", e.beaten + 1)
+                    .put("coverageBasisPoints", Math.round(e.coveragePct * 100.0f)));
+        }
+        payload.put("entries", entries);
+
+        final int round = result.round;
+        _bcWrapper.getScriptService().runScript("PostMatchResults", payload.toString(), new IServerCallback() {
+            @Override
+            public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject scriptResult) {
+                try {
+                    // The script's return value sits at data.response (a sibling of
+                    // runTimeData/success), not directly at data.results.
+                    JSONArray results = scriptResult.getJSONObject("data").getJSONObject("response").getJSONArray("results");
+                    applyLeaderboardResultsFromCloud(round, results);
+                } catch (Exception ex) {
+                    System.out.println("Failed to parse PostMatchResults response: " + ex.getMessage());
+                }
+            }
+
+            @Override
+            public void serverError(ServiceName sn, ServiceOperation so, int statusCode, int reasonCode, String jsonError) {
+                System.out.println("PostMatchResults failed: " + jsonError);
+            }
+        });
+    }
+
+    // Non-host clients don't get the leaderboard delta via relay (no such op
+    // exists) — they poll a GlobalEntity the cloud script writes, indexed by
+    // "<lobbyId>:<round>", since a host that disconnects right after posting
+    // would otherwise leave everyone else waiting forever even though the post
+    // itself already succeeded.
+    public void tickMatchResultsPoll() {
+        if (!state.matchResult.valid || state.lobby == null) return;
+        if (state.lobby.ownerCxId.equals(state.user.cxId)) return; // host posts directly, no need to poll
+
+        for (MatchResult.Entry e : state.matchResult.entries)
+            if (e.lbDelta.ready) return; // already applied this round
+
+        long now = System.currentTimeMillis();
+        if (now - _lastResultsPollMs < RESULTS_POLL_INTERVAL_MS) return;
+        _lastResultsPollMs = now;
+
+        String indexedId = state.lobby.lobbyId + ":" + state.matchResult.round;
+        final int round = state.matchResult.round;
+        _bcWrapper.getGlobalEntityService().getListByIndexedId(indexedId, 1, new IServerCallback() {
+            @Override
+            public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject result) {
+                try {
+                    JSONArray entityList = result.getJSONObject("data").getJSONArray("entityList");
+                    if (entityList.length() == 0) return;
+                    JSONArray results = entityList.getJSONObject(0).getJSONObject("data").getJSONArray("results");
+                    applyLeaderboardResultsFromCloud(round, results);
+                } catch (Exception ex) {
+                    System.out.println("Failed to parse match-results GlobalEntity: " + ex.getMessage());
+                }
+            }
+
+            @Override
+            public void serverError(ServiceName sn, ServiceOperation so, int statusCode, int reasonCode, String jsonError) {
+                // Silently retry next tick — MatchSummaryScreen shows "Leaderboard
+                // unavailable" once LEADERBOARD_TIMEOUT_MS has elapsed.
+            }
+        });
+    }
+
+    // Shared by both the host's direct script response and the GlobalEntity poll.
+    private void applyLeaderboardResultsFromCloud(int round, JSONArray results) {
+        if (!state.matchResult.valid || state.matchResult.round != round) return;
+        for (int i = 0; i < results.length(); i++) {
+            JSONObject r = results.getJSONObject(i);
+            User member = memberByProfileId(r.optString("profileId", ""));
+            if (member == null) continue;
+            for (MatchResult.Entry e : state.matchResult.entries) {
+                if (!e.cxId.equals(member.cxId)) continue;
+                e.lbDelta.ready = true;
+                e.lbDelta.pointsLifetime.improved = r.optJSONObject("pointsLifetime") != null
+                        && r.getJSONObject("pointsLifetime").optBoolean("improved", false);
+                e.lbDelta.pointsQuarterly.improved = r.optJSONObject("pointsQuarterly") != null
+                        && r.getJSONObject("pointsQuarterly").optBoolean("improved", false);
+                e.lbDelta.coverageLifetime.improved = r.optJSONObject("coverageLifetime") != null
+                        && r.getJSONObject("coverageLifetime").optBoolean("improved", false);
+                e.lbDelta.coverageQuarterly.improved = r.optJSONObject("coverageQuarterly") != null
+                        && r.getJSONObject("coverageQuarterly").optBoolean("improved", false);
+                break;
+            }
+        }
+        SwingUtilities.invokeLater(this::onStateChanged);
+    }
+
+    private User memberByCxId(String cxId) {
+        if (state.lobby == null) return null;
+        for (User m : state.lobby.members)
+            if (m.cxId.equals(cxId)) return m;
+        return null;
+    }
+
+    private User memberByProfileId(String profileId) {
+        if (state.lobby == null || profileId.isEmpty()) return null;
+        for (User m : state.lobby.members)
+            if (m.profileId.equals(profileId)) return m;
+        return null;
+    }
+
+    // ── Shared RTT enable (chat + matchmaking both fund through this) ──────────
+
+    private void ensureRTTEnabled(Runnable onReady) {
+        if (_bcWrapper.getRTTService().getRTTEnabled()) {
+            onReady.run();
+            return;
+        }
+        _rttEnableWaiters.add(onReady);
+        if (_rttConnecting) return;
+        _rttConnecting = true;
+
+        _bcWrapper.getRTTService().enableRTT(new IRTTConnectCallback() {
+            @Override
+            public void rttConnectSuccess() {
+                _rttConnecting = false;
+                state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
+                ArrayList<Runnable> waiters = new ArrayList<>(_rttEnableWaiters);
+                _rttEnableWaiters.clear();
+                for (Runnable r : waiters) r.run();
+            }
+
+            @Override
+            public void rttConnectFailure(String errorMessage) {
+                _rttConnecting = false;
+                _rttEnableWaiters.clear();
+                if (!_disconnecting) {
+                    dieWithMessage("Failed to enable RTT: " + errorMessage);
+                }
+            }
+        });
+    }
+
+    // ── Global chat ─────────────────────────────────────────────────────────────
+
+    private void enableChatRTT() {
+        if (!_chatRTTRegistered) {
+            _chatRTTRegistered = true;
+            _bcWrapper.getRTTService().registerRTTChatCallback(new IRTTCallback() {
+                @Override
+                public void rttCallback(JSONObject eventJson) {
+                    onChatRTTEvent(eventJson);
+                }
+            });
+        }
+        ensureRTTEnabled(this::ensureChatChannel);
+    }
+
+    private void ensureChatChannel() {
+        if (_chatChannelId != null || _chatChannelResolving) return;
+        if (System.currentTimeMillis() < _chatChannelRetryAtMs) return;
+        _chatChannelResolving = true;
+
+        _bcWrapper.getChatService().getChannelId("gl", "gl", new IServerCallback() {
+            @Override
+            public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject result) {
+                String channelId;
+                try {
+                    channelId = result.getJSONObject("data").getString("channelId");
+                } catch (Exception ex) {
+                    serverError(sn, so, 0, 0, ex.getMessage());
+                    return;
+                }
+
+                _bcWrapper.getChatService().channelConnect(channelId, 30, new IServerCallback() {
+                    @Override
+                    public void serverCallback(ServiceName sn2, ServiceOperation so2, JSONObject connectResult) {
+                        _chatChannelId = channelId;
+                        _chatChannelResolving = false;
+                        try {
+                            JSONArray messages = connectResult.getJSONObject("data").getJSONArray("messages");
+                            state.chatMessages.clear();
+                            for (int i = 0; i < messages.length(); i++)
+                                state.chatMessages.add(parseChatMessage(messages.getJSONObject(i)));
+                        } catch (Exception ex) {
+                            System.out.println("Failed to parse chat history: " + ex.getMessage());
+                        }
+                        SwingUtilities.invokeLater(App.this::onStateChanged);
+                    }
+
+                    @Override
+                    public void serverError(ServiceName sn2, ServiceOperation so2, int statusCode, int reasonCode, String jsonError) {
+                        _chatChannelResolving = false;
+                        _chatChannelRetryAtMs = System.currentTimeMillis() + CHAT_CHANNEL_RETRY_MS;
+                    }
+                });
+            }
+
+            @Override
+            public void serverError(ServiceName sn, ServiceOperation so, int statusCode, int reasonCode, String jsonError) {
+                _chatChannelResolving = false;
+                _chatChannelRetryAtMs = System.currentTimeMillis() + CHAT_CHANNEL_RETRY_MS;
+            }
+        });
+    }
+
+    private ChatMessage parseChatMessage(JSONObject m) {
+        ChatMessage msg = new ChatMessage();
+        msg.msgId = m.optString("msgId", "");
+        JSONObject from = m.optJSONObject("from");
+        String fromName = from != null ? from.optString("name", "") : "";
+        msg.fromName = fromName.isEmpty() ? "Player" : fromName;
+        JSONObject content = m.optJSONObject("content");
+        msg.text = content != null ? content.optString("text", "") : "";
+        return msg;
+    }
+
+    // operation: INCOMING (new message) / UPDATE (edited) / DELETE (removed), all
+    // keyed by msgId, exactly mirroring the reference cpp client.
+    private void onChatRTTEvent(JSONObject eventJson) {
+        try {
+            if (!"chat".equals(eventJson.optString("service"))) return;
+            String operation = eventJson.getString("operation"); // sibling of "data", not nested inside it
+            JSONObject data = eventJson.getJSONObject("data");
+
+            if (operation.equals("DELETE")) {
+                String msgId = data.getString("msgId");
+                state.chatMessages.removeIf(m -> m.msgId.equals(msgId));
+            } else {
+                ChatMessage msg = parseChatMessage(data);
+                boolean replaced = false;
+                for (int i = 0; i < state.chatMessages.size(); i++) {
+                    if (state.chatMessages.get(i).msgId.equals(msg.msgId)) {
+                        state.chatMessages.set(i, msg);
+                        replaced = true;
+                        break;
+                    }
+                }
+                if (!replaced) state.chatMessages.add(msg);
+            }
+            SwingUtilities.invokeLater(this::onStateChanged);
+        } catch (Exception e) {
+            System.out.println("Failed to parse chat RTT event: " + e.getMessage());
+        }
+    }
+
+    public void sendGlobalChatMessage(String text) {
+        if (_chatChannelId == null || text.isEmpty()) return;
+        _bcWrapper.getChatService().postChatMessageSimple(_chatChannelId, text, true, null);
+    }
+
+    // Sends a chat message to everyone currently in this lobby, via the Lobby
+    // service's SendSignal (not the Chat service — rides the RTT connection the
+    // lobby already has, no separate channel/registration needed). Appends
+    // locally right away; the receive handler (onLobbyEvent, "SIGNAL" operation)
+    // skips the echo of our own signal that the server sends back to us too.
+    public void sendLobbySignalChat(String text) {
+        if (text.isEmpty() || state.lobby == null) return;
+
+        JSONObject signal = new JSONObject();
+        signal.put("text", text);
+        _bcWrapper.getLobbyService().sendSignal(state.lobby.lobbyId, signal.toString(), null);
+
+        ChatMessage msg = new ChatMessage();
+        msg.fromName = state.user.name;
+        msg.text = text;
+        state.lobby.chatMessages.add(msg);
+        onStateChanged();
+    }
+
     void onLobbyEvent(JSONObject result) {
         JSONObject jsonData = result.getJSONObject("data");
 
         if (jsonData.has("lobby")) {
+            ArrayList<ChatMessage> carryForwardChat = state.lobby != null ? state.lobby.chatMessages : null;
             state.lobby = new Lobby(jsonData.getJSONObject("lobby"), jsonData.getString("lobbyId"));
+            if (carryForwardChat != null) state.lobby.chatMessages = carryForwardChat;
+            if (state.lobbyJoinedAtMs == 0) state.lobbyJoinedAtMs = System.currentTimeMillis();
             onStateChanged();
 
             if (state.screen instanceof LoadingScreen) {
@@ -586,7 +1127,28 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
         String operation = result.getString("operation");
 
-        if (operation.equals("DISBANDED")) {
+        if (operation.equals("SIGNAL")) {
+            // This-lobby chat, per the design direction: implemented via SendSignal
+            // (Lobby service), not the Chat service. Real wire shape: data: {
+            // lobbyId, from: {id,name,pic,cxId}, signalData: <our own payload> }.
+            // "from" is the server's authoritative sender info.
+            JSONObject fromJson = jsonData.optJSONObject("from");
+            String fromCxId = fromJson != null ? fromJson.optString("cxId", "") : "";
+            String fromName = fromJson != null ? fromJson.optString("name", "") : "";
+            JSONObject signalData = jsonData.optJSONObject("signalData");
+            String text = signalData != null ? signalData.optString("text", "") : "";
+
+            // Skip echoes of our own signal — sendLobbySignalChat already appended
+            // it locally on send. Compared by cxId (not name) since two players
+            // could share a display name.
+            if (!text.isEmpty() && !fromCxId.equals(state.user.cxId) && state.lobby != null) {
+                ChatMessage msg = new ChatMessage();
+                msg.fromName = fromName.isEmpty() ? "Player" : fromName;
+                msg.text = text;
+                state.lobby.chatMessages.add(msg);
+                onStateChanged();
+            }
+        } else if (operation.equals("DISBANDED")) {
             if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY) {
                 onGameScreenClose();
             }
@@ -689,14 +1251,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 }
             });
 
-            _isConnectingRTT = true;
             _disconnecting = false;
-            _bcWrapper.getRTTService().enableRTT(new IRTTConnectCallback() {
-                @Override
-                public void rttConnectSuccess() {
-                    state.user.cxId = _bcWrapper.getClient().getRttConnectionId();
-                    _isConnectingRTT = false;
-
+            ensureRTTEnabled(() -> {
                     if (usePingData) {
                         // Ping regions then use ping-aware matchmaking
                         _bcWrapper.getLobbyService().getRegionsForLobbies(
@@ -751,16 +1307,6 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                     } else {
                         fallbackFindLobby(lobbyType, lobbyAlgo);
                     }
-                }
-
-                @Override
-                public void rttConnectFailure(String errorMessage) {
-                    if (_isConnectingRTT) {
-                        dieWithMessage("Failed to enable RTT");
-                    } else if (!_disconnecting) {
-                        dieWithMessage("RTT Disconnected");
-                    }
-                }
             });
         }
     }
@@ -807,7 +1353,12 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         goToLoginScreen();
     }
 
-    // Host: end the match for all players and return to lobby for the next round
+    // Host: end the match for all players early. Note this skips the
+    // ResultsBroadcast phase entirely (no match_result, no leaderboard post) —
+    // only a full-duration match gets scored; an early/manual end forfeits it,
+    // matching the cpp reference client's behaviour. onMatchEnded() (triggered
+    // for all players, including the host, via the END_MATCH system callback)
+    // still shows a Match Summary with a local coverage snapshot.
     public void onEndMatch() {
         if (_autoEndTimer != null) {
             _autoEndTimer.cancel();
@@ -818,72 +1369,15 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 _bcWrapper.getRelayService().endMatch(new JSONObject());
             }
         }
-        // onGameScreenToLobby() will be triggered for all players (including host)
-        // via the END_MATCH system callback from the server
-    }
-
-    // Return to the lobby after a match — relay disconnects but RTT/lobby stay
-    // alive
-    public void onGameScreenToLobby() {
-        if (_autoEndTimer != null) {
-            _autoEndTimer.cancel();
-            _autoEndTimer = null;
-        }
-        state.gameStartTime = 0;
-        state.lobbyStatusText = "";
-        state.lobbySubStatus = "";
-        state.lobbyStatusStartTime = 0;
-        state.splotches.clear();
-        _pendingMoveSend = false;
-        _lastMoveSendTime = System.currentTimeMillis();
-        _disconnecting = false;
-
-        _bcWrapper.getRelayService().deregisterRelayCallback();
-        _bcWrapper.getRelayService().deregisterSystemCallback();
-        _bcWrapper.getRelayService().disconnect();
-
-        // RTT stays enabled — deregister all callbacks then re-register lobby
-        // so the next STARTING / ROOM_READY events are received
-        _bcWrapper.getRTTService().deregisterAllCallbacks();
-
-        state.user.isReady = false;
-        if (state.lobby != null) {
-            _bcWrapper.getLobbyService().updateReady(
-                    state.lobby.lobbyId, false,
-                    buildExtraJson(state.user.colorIndex), null);
-        }
-
-        synchronized (this) {
-            _bcWrapper.getRTTService().registerRTTLobbyCallback(new IRTTCallback() {
-                @Override
-                public void rttCallback(JSONObject eventJson) {
-                    onLobbyEvent(eventJson);
-                }
-            });
-        }
-
-        goToLobbyScreen();
     }
 
     // Host: clear all splotches for every player mid-game
-    public void onClearSplotches() {
-        state.splotches.clear();
-        synchronized (this) {
-            if (_bcWrapper.getClient().isAuthenticated()) {
-                JSONObject clearMsg = new JSONObject();
-                clearMsg.put("op", "clear_splotches");
-                _bcWrapper.getRelayService().sendToAll(
-                        clearMsg.toString().getBytes(StandardCharsets.US_ASCII),
-                        true, true, RelayService.CHANNEL_HIGH_PRIORITY_2);
-            }
-        }
-    }
-
     public void createSplotch(float x, float y, int colorIndex, double angle) {
         state.splotches.add(new Splotch(
                 new java.awt.geom.Point2D.Float(x, y),
                 colorIndex % Colors.NUM_COLORS,
                 angle));
+        state.splotchGeneration++;
     }
 
     public void onGameScreenClose() {
@@ -902,12 +1396,22 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         _bcWrapper.getRelayService().disconnect();
         _bcWrapper.getRTTService().deregisterAllCallbacks();
         _bcWrapper.getRTTService().disableRTT();
+        // disableRTT() drops the connection entirely, taking the chat channel
+        // subscription with it — reset both so goToMainMenuScreen() below
+        // re-resolves and re-subscribes fresh instead of trusting a stale channel id.
+        _chatRTTRegistered = false;
+        _chatChannelId = null;
+        _chatChannelResolving = false;
+        _chatChannelRetryAtMs = 0;
 
         state.lobby = null;
         state.user.isReady = false;
         state.lobbyStatusText = "";
         state.lobbySubStatus = "";
         state.lobbyStatusStartTime = 0;
+        state.matchResult = new MatchResult();
+        state.coverage.clear();
+        state.lobbyJoinedAtMs = 0;
         _pendingMoveSend = false;
         _lastMoveSendTime = System.currentTimeMillis();
         goToMainMenuScreen();
@@ -965,6 +1469,17 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         state.lobbyStatusText = "Starting...";
         state.lobbySubStatus = "";
         state.lobbyStatusStartTime = System.currentTimeMillis();
+        _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
+                buildExtraJson(state.user.colorIndex), null);
+        onStateChanged();
+    }
+
+    // Non-host ready toggle — mirrors cpp's app_toggleReady(). Starting the round is
+    // still host-only (via onGameStart/the Start button), but every other member
+    // needs a way to signal readiness; unlike onGameStart this only flips the local
+    // flag, it never forces true and never starts anything itself.
+    public void onToggleReady() {
+        state.user.isReady = !state.user.isReady;
         _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
                 buildExtraJson(state.user.colorIndex), null);
         onStateChanged();
