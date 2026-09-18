@@ -7,6 +7,7 @@ public class User
 {
     public String cxId = "";
     public String name = "";
+    public String profileId = ""; /* brainCloud profileId — needed server-side for leaderboard posting (not the same as cxId) */
     public int colorIndex = 7;
     public boolean isReady = false;
     public Point2D pos = null;
