@@ -13,6 +13,7 @@ public class User
     public Point2D pos = null;
     public boolean allowSendTo = true;
     public HashMap<String, Integer> pings = new HashMap<>(); /* Pre-game region latencies shared via lobby extra (ms) */
+    public int worldwideRank = -1; /* rank on the coverage leaderboard, shared via lobby extra; -1 = unranked */
     public int activePing = -1; /* Live relay-server RTT broadcast during gameplay (ms); -1 = not yet received */
 
     public User(String in_cxId, String in_name, int in_colorIndex, boolean in_isReady)

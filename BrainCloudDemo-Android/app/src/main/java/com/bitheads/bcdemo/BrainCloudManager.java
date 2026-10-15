@@ -29,17 +29,8 @@ public class BrainCloudManager {
 
             brainCloudWrapper = new BrainCloudWrapperAndroid();
 
-            /*
-             *  TODO:  Initialize with your app's IDs.
-             *         Found in the brainCloud portal (Design > Core App Info > Application IDs)
-             */
-            brainCloudWrapper.initialize(
-                    appContext,
-                    "",
-                    "",
-                    "2.0.0",
-                    "https://api.internal.braincloudservers.com/dispatcherv2"
-            );
+            // Reads braincloud.cfg from the brainCloud plugin.
+            brainCloudWrapper.init(appContext);
 
             // Run callbacks
             new CountDownTimer(10000, 1000) {

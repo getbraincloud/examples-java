@@ -2,88 +2,88 @@ package com.bitheads.cursorparty;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+// cpp loading dialog: 280x155 centred box; lobby searches add a timer, lobby id and Cancel.
 class LoadingScreen extends Screen
 {
     private static final int WARMUP_WARNING_SEC = 60;
 
-    private JLabel _lblStatus;
+    private final JLabel _lblStatus;
     private JLabel _lblTimer;
-    private long   _startTime;
+    private final long _startTime;
 
     public LoadingScreen(String text)
     {
-        JFrame frame = App.getInstance().frame;
-        Dimension screenRes = frame.getPreferredSize();
+        Dimension screenRes = App.getInstance().contentSize();
+        State appState = App.getInstance().state;
 
         panel = new JPanel();
         panel.setLayout(null);
-        panel.setBackground(Colors.BG_COLOR);
+        panel.setBackground(Theme.BG);
 
-        _startTime = App.getInstance().state.lobbySearchStartTime;
-        if (_startTime == 0) _startTime = System.currentTimeMillis();
+        int w = 280, h = 155;
+        Theme.Box box = Theme.box();
+        box.setBounds((screenRes.width - w) / 2, (screenRes.height - h) / 2, w, h);
+        panel.add(box);
 
-        Font base = new Font("SansSerif", Font.PLAIN, 16);
+        _startTime = appState.lobbySearchStartTime != 0 ? appState.lobbySearchStartTime : System.currentTimeMillis();
+        boolean searching = text.startsWith("Joining");
 
-        _lblStatus = new JLabel(text, SwingConstants.CENTER);
-        _lblStatus.setSize(screenRes.width, 26);
-        _lblStatus.setLocation(0, screenRes.height / 2 - 26);
-        _lblStatus.setFont(base);
-        _lblStatus.setForeground(Colors.TEXT_COLOR);
-        panel.add(_lblStatus);
+        int y = 14;
+        _lblStatus = centred(text, Theme.font(13), Theme.TEXT, y, w);
+        box.add(_lblStatus);
 
-        _lblTimer = new JLabel("", SwingConstants.CENTER);
-        _lblTimer.setSize(screenRes.width, 22);
-        _lblTimer.setLocation(0, screenRes.height / 2 + 4);
-        _lblTimer.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        _lblTimer.setForeground(Colors.TEXT_COLOR);
-        panel.add(_lblTimer);
-
-        // Show lobby ID when we already have one (joining server after lobby found)
-        State appState = App.getInstance().state;
-        if (appState.lobby != null)
+        if (searching)
         {
-            JLabel lblLobbyId = new JLabel(appState.lobby.lobbyId, SwingConstants.CENTER);
-            lblLobbyId.setSize(screenRes.width, 18);
-            lblLobbyId.setLocation(0, screenRes.height / 2 + 30);
-            lblLobbyId.setFont(new Font("Monospaced", Font.PLAIN, 11));
-            lblLobbyId.setForeground(new Color(130, 140, 160));
-            panel.add(lblLobbyId);
-        }
-
-        // Swing timer — fires on EDT, self-stops when screen changes
-        javax.swing.Timer uiTimer = new javax.swing.Timer(1000, null);
-        uiTimer.addActionListener(e -> {
-            if (App.getInstance().state.screen != LoadingScreen.this) {
-                uiTimer.stop();
-                return;
+            y += 22;
+            _lblTimer = centred("0:00", Theme.font(13), Theme.DIM, y, w);
+            box.add(_lblTimer);
+            if (appState.lobby != null)
+            {
+                y += 22;
+                box.add(centred(appState.lobby.lobbyId, Theme.font(11), Theme.DIM, y, w));
             }
-            updateTimer();
-        });
-        uiTimer.setInitialDelay(0);
-        uiTimer.start();
+
+            Theme.FlatButton btnCancel = Theme.button("Cancel");
+            btnCancel.setBounds((w - 120) / 2, h - 34, 120, 24);
+            btnCancel.addActionListener(e -> App.getInstance().onGameScreenClose());
+            box.add(btnCancel);
+
+            // Swing timer: fires on the EDT, stops itself once the screen changes.
+            javax.swing.Timer uiTimer = new javax.swing.Timer(1000, null);
+            uiTimer.addActionListener(e -> {
+                if (App.getInstance().state.screen != LoadingScreen.this) {
+                    uiTimer.stop();
+                    return;
+                }
+                updateTimer();
+            });
+            uiTimer.setInitialDelay(0);
+            uiTimer.start();
+        }
+    }
+
+    private static JLabel centred(String text, java.awt.Font font, Color color, int y, int w)
+    {
+        JLabel l = Theme.label(text, font, color);
+        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setBounds(0, y, w, 18);
+        return l;
     }
 
     private void updateTimer()
     {
         long elapsedSec = Math.max(0, (System.currentTimeMillis() - _startTime) / 1000);
-        long minutes = elapsedSec / 60;
-        long seconds = elapsedSec % 60;
-
         if (elapsedSec >= WARMUP_WARNING_SEC)
         {
-            Color warn = new Color(255, 200, 0);
-            _lblStatus.setForeground(warn);
-            _lblTimer.setForeground(warn);
+            _lblStatus.setForeground(Theme.WARN);
             _lblStatus.setText("Server may be warming up...");
         }
-        _lblTimer.setText(String.format("%d:%02d", minutes, seconds));
+        _lblTimer.setText(String.format("%d:%02d", elapsedSec / 60, elapsedSec % 60));
     }
 
     @Override

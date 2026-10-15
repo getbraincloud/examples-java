@@ -17,6 +17,8 @@ public class State
     public ArrayList<Splotch>  splotches     = new ArrayList<Splotch>();
     public boolean reliable = false;
     public boolean ordered  = true;
+    public int     channel  = 0;      // relay channel for movement (0-3), set from the in-game debug panel
+    public String  lobbyRegion = "";  // from ROOM_ASSIGNED
     public long    gameStartTime       = 0;   // epoch ms, 0 = not started
     public int     roundNumber         = 0;
     public long    lobbySearchStartTime = 0;  // epoch ms for loading screen timer

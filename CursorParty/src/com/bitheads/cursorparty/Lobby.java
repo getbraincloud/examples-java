@@ -30,7 +30,8 @@ public class Lobby
             User user = new User(jsonMember.getString("cxId"),
                                  jsonMember.getString("name"),
                                  extra.getInt("colorIndex"),
-                                 false);
+                                 jsonMember.optBoolean("isReady", false));
+            user.worldwideRank = extra.optInt("rank", -1);
             user.profileId = jsonMember.optString("profileId", "");
             if (user.cxId.equals(state.user.cxId)) user.allowSendTo = false;
             // Parse per-region ping data shared by this member via lobby extra

@@ -4,8 +4,8 @@ This is an Android application that demonstrates how some of the common brainClo
 ## Getting Setup
 This application uses the Java Client Library for brainCloud. It was created with Android Studio 2021.3.1 and uses Java 1.8.
 
-### Application IDs
-AppId, secretKey, and serverUrl will need to be filled in in the BrainCloudManager.java class in order to use this application.
+### Connecting to your brainCloud app
+Open this project in Android Studio, install the **brainCloud Java** plugin if prompted, then log in and pick your app in the **brainCloud** tool window. It writes `braincloud.cfg`, which `BrainCloudManager.java` reads with `brainCloudWrapper.init(appContext)`.
 
 ### Downloads
 - **The Java Client Library:** https://github.com/getbraincloud/braincloud-java

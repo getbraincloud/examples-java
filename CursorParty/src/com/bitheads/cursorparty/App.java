@@ -32,10 +32,21 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.json.JSONObject;
+import com.bitheads.braincloud.services.SocialLeaderboardService;
 import org.json.JSONArray;
 
 public class App implements IRelayCallback, IRelaySystemCallback {
-    static final int MATCH_DURATION_SEC = 90;
+    // BC_MATCH_SECONDS shortens rounds for unattended test runs.
+    static final int MATCH_DURATION_SEC = envSeconds("BC_MATCH_SECONDS", 90);
+
+    static int envSeconds(String name, int fallback) {
+        try {
+            int v = Integer.parseInt(System.getenv(name));
+            return v > 0 ? v : fallback;
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
 
     static App _instance = null;
 
@@ -66,6 +77,10 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     private boolean _rttConnecting = false;
     private ArrayList<Runnable> _rttEnableWaiters = new ArrayList<>();
 
+    // Set from every lobby RTT event, not just once state.lobby is populated, so a clean
+    // leave can always send LEAVE_LOBBY.
+    private String _currentLobbyId = null;
+
     // Global chat
     private boolean _chatRTTRegistered = false;
     private String _chatChannelId = null;
@@ -80,8 +95,24 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     private static final long RESULTS_POLL_INTERVAL_MS = 1000;
     private JSONArray _pendingMatchResult = new JSONArray();
 
+    // `<index> <count>` launch args: tile the windows and log each instance in as its own user, like the C++ client.
+    static int instanceIndex = -1;
+    static int instanceCount = 1;
+    static boolean autoJoin = false;
+    static boolean autoStart = "1".equals(System.getenv("BC_AUTOSTART"));
+
     public static void main(String args[]) {
+        if (args.length >= 2) {
+            try {
+                instanceIndex = Integer.parseInt(args[args.length - 2]);
+                instanceCount = Integer.parseInt(args[args.length - 1]);
+                autoJoin = instanceCount > 1;
+            } catch (NumberFormatException e) {
+                instanceIndex = -1;
+            }
+        }
         System.setProperty("apple.awt.application.name", "Cursor Party");
+        Theme.install();
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Cursor Party");
         _instance = new App();
     }
@@ -90,8 +121,12 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         File dir1 = new File(".");
         System.out.println("current directory: " + dir1.getAbsolutePath());
 
-        _bcWrapper = new BrainCloudWrapper();
-        _bcWrapper.initialize(ids.appId, ids.appSecret, ids.version, ids.url);
+        _bcWrapper = instanceIndex >= 0 ? new BrainCloudWrapper("cursorparty_" + instanceIndex) : new BrainCloudWrapper();
+        // Reads braincloud.cfg from the brainCloud plugin.
+        if (!_bcWrapper.init()) {
+            System.out.println("No braincloud.cfg found. Open the brainCloud tool window and pick an app, then run again.");
+            System.exit(1);
+        }
         _bcWrapper.getClient().enableLogging(true);
 
         clientVersion = _bcWrapper.getClient().getBrainCloudVersion();
@@ -139,9 +174,57 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         bcThread.start();
     }
 
+    private JLabel _menuUser;
+
+    // Top menu bar on every screen, like cpp: SDK version left, you (in your colour) right.
+    void buildMenuBar() {
+        javax.swing.JMenuBar bar = new javax.swing.JMenuBar() {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                g.setColor(Theme.WINDOW);
+                g.fillRect(0, 0, getWidth(), getHeight());
+                g.setColor(Theme.BORDER);
+                g.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
+            }
+        };
+        bar.setLayout(new java.awt.BorderLayout());
+        bar.setBorder(BorderFactory.createEmptyBorder(3, 12, 3, 12));
+        bar.add(Theme.label("brainCloud " + clientVersion, Theme.font(12), Theme.TEXT), java.awt.BorderLayout.WEST);
+        _menuUser = Theme.label("", Theme.font(12), Theme.TEXT);
+        bar.add(_menuUser, java.awt.BorderLayout.EAST);
+        frame.setJMenuBar(bar);
+    }
+
+    void refreshMenuBar() {
+        if (_menuUser == null)
+            return;
+        boolean loggedIn = state.user != null && !(state.screen instanceof LoginScreen);
+        String name = loggedIn ? state.user.name : "";
+        if (loggedIn && instanceIndex >= 0)
+            name = "[" + (instanceIndex + 1) + "] " + name;
+        _menuUser.setText(name);
+        if (loggedIn)
+            _menuUser.setForeground(Colors.COLORS[state.user.colorIndex % Colors.NUM_COLORS]);
+    }
+
+    // Drawable area (excludes the title bar and menu bar).
+    java.awt.Dimension contentSize() {
+        return frame.getContentPane().getPreferredSize();
+    }
+
+    void layoutOverlays() {
+        if (_versionOverlay == null)
+            return;
+        java.awt.Dimension d = _versionOverlay.getPreferredSize();
+        int h = frame.getRootPane().getLayeredPane().getHeight();
+        if (h <= 0)
+            h = frame.getContentPane().getPreferredSize().height;
+        _versionOverlay.setBounds(8, h - d.height - 8, d.width, d.height);
+    }
+
     void createAndShowGUI() {
         frame = new JFrame("Cursor Party");
-        frame.getContentPane().setPreferredSize(new Dimension(1024, 768));
+        frame.getContentPane().setPreferredSize(new Dimension(1280, 760));
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -168,8 +251,14 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 }
             }
         });
+        buildMenuBar();
         frame.pack();
         frame.setLocationRelativeTo(null);
+        if (instanceIndex >= 0) {
+            frame.setTitle("Cursor Party [" + (instanceIndex + 1) + "]");
+            int cols = (int) Math.ceil(Math.sqrt(instanceCount));
+            frame.setLocation((instanceIndex % cols) * frame.getWidth(), (instanceIndex / cols) * frame.getHeight());
+        }
 
         java.net.URL iconURL = App.class.getResource("/resources/icon.png");
         if (iconURL != null) {
@@ -192,33 +281,27 @@ public class App implements IRelayCallback, IRelaySystemCallback {
         frame.validate();
         frame.repaint();
 
-        // Persistent stacked version overlay — lower left corner, matches JS/CPP style
-        _versionOverlay = new JPanel();
+        // Persistent version overlay, bottom-left on every screen (same spot and lines as cpp).
+        _versionOverlay = Theme.box(new Color(0x14, 0x16, 0x1F));
         _versionOverlay.setLayout(new BoxLayout(_versionOverlay, BoxLayout.Y_AXIS));
-        _versionOverlay.setBackground(new Color(0, 0, 0, 140));
-        _versionOverlay.setOpaque(true);
-        _versionOverlay.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-
-        Font overlayFont = new Font("SansSerif", Font.PLAIN, 10);
-        Color overlayText = new Color(190, 190, 190);
-
+        _versionOverlay.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
         for (String line : new String[] {
-                "App:    " + ids.version,
+                "App:    " + _bcWrapper.getClient().getAppVersion(),
                 "Client: " + clientVersion,
                 "Server: ..." }) {
-            JLabel lbl = new JLabel(line);
-            lbl.setFont(overlayFont);
-            lbl.setForeground(overlayText);
+            JLabel lbl = Theme.label(line, new Font("Monospaced", Font.PLAIN, 11), Theme.TEXT);
             _versionOverlay.add(lbl);
             if (line.startsWith("Server:"))
                 _serverVersionLabel = lbl;
         }
 
         frame.getRootPane().getLayeredPane().add(_versionOverlay, JLayeredPane.POPUP_LAYER);
-        int contentH = frame.getContentPane().getPreferredSize().height;
-        _versionOverlay.setBounds(6, contentH - 58, 130, 52);
+        layoutOverlays();
 
-        if (_bcWrapper.canReconnect()) {
+        if (instanceIndex >= 0) {
+            String user = "java_" + (instanceIndex + 1);
+            brainCloudConnect(user, user);
+        } else if (_bcWrapper.canReconnect()) {
             _bcWrapper.reconnect(new IServerCallback() {
                 @Override
                 public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
@@ -255,7 +338,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                     if (_serverVersionLabel != null) {
                         SwingUtilities.invokeLater(() -> {
                             _serverVersionLabel.setText("Server: " + sv);
-                            _versionOverlay.revalidate();
+                            layoutOverlays();
                             _versionOverlay.repaint();
                         });
                     }
@@ -351,6 +434,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
     public void onStateChanged() {
         state.screen.onStateChanged(state);
+        refreshMenuBar();
         frame.pack();
         frame.validate();
         frame.repaint();
@@ -367,6 +451,38 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     public void goToMainMenuScreen() {
         changeScreen(new MainMenuScreen());
         enableChatRTT();
+        fetchWorldwideRank();
+    }
+
+    // Own rank on the coverage leaderboard, shared with lobby-mates via extra.rank (like cpp).
+    private boolean _rankFetchInFlight = false;
+
+    void fetchWorldwideRank() {
+        if (_rankFetchInFlight || state.coverageLeaderboardId == null || state.coverageLeaderboardId.isEmpty())
+            return;
+        _rankFetchInFlight = true;
+        synchronized (this) {
+            _bcWrapper.getSocialLeaderboardService().getGlobalLeaderboardView(state.coverageLeaderboardId,
+                    SocialLeaderboardService.SortOrder.HIGH_TO_LOW, 0, 0, new IServerCallback() {
+                        @Override
+                        public void serverCallback(ServiceName sn, ServiceOperation so, JSONObject result) {
+                            _rankFetchInFlight = false;
+                            JSONArray arr = result.getJSONObject("data").optJSONArray("leaderboard");
+                            int rank = arr != null && arr.length() > 0 ? arr.getJSONObject(0).optInt("rank", -1) : -1;
+                            if (rank == state.user.worldwideRank)
+                                return;
+                            state.user.worldwideRank = rank;
+                            if (state.lobby != null)
+                                _bcWrapper.getLobbyService().updateReady(state.lobby.lobbyId, state.user.isReady,
+                                        buildExtraJson(state.user.colorIndex), null);
+                        }
+
+                        @Override
+                        public void serverError(ServiceName sn, ServiceOperation so, int status, int reason, String err) {
+                            _rankFetchInFlight = false;
+                        }
+                    });
+        }
     }
 
     public void goToLobbyScreen() {
@@ -452,7 +568,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     }
 
     public void brainCloudConnect(String username, String password) {
-        goToLoadingScreen("Connecting...");
+        goToLoadingScreen("Logging in ...");
 
         synchronized (this) {
             _bcWrapper.authenticateUniversal(username, password, true, new IServerCallback() {
@@ -460,11 +576,16 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
                         JSONObject result) {
                     _bcWrapper.getPlayerStateService().updateUserName(username, null);
-                    state.user = new User("", username, 7, false);
+                    state.user = new User("", username, instanceIndex >= 0 ? instanceIndex % Colors.NUM_COLORS : 7, false);
                     state.user.allowSendTo = false;
                     fetchAppProperties();
                     fetchServerVersion();
                     goToMainMenuScreen();
+                    if (autoJoin) {
+                        // multi-instance: straight into the default lobby type, like the C++ client
+                        autoJoin = false;
+                        onPlayClicked("WEBSOCKET", "CursorPartyV2", false);
+                    }
                 }
 
                 @Override
@@ -1125,6 +1246,11 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     void onLobbyEvent(JSONObject result) {
         JSONObject jsonData = result.getJSONObject("data");
 
+        // Not gated on "lobby" so a cancel before the first full snapshot still leaves.
+        if (jsonData.has("lobbyId")) {
+            _currentLobbyId = jsonData.getString("lobbyId");
+        }
+
         if (jsonData.has("lobby")) {
             ArrayList<ChatMessage> carryForwardChat = state.lobby != null ? state.lobby.chatMessages : null;
             state.lobby = new Lobby(jsonData.getJSONObject("lobby"), jsonData.getString("lobbyId"));
@@ -1162,6 +1288,8 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             }
         } else if (operation.equals("DISBANDED")) {
             if (jsonData.getJSONObject("reason").getInt("code") != ReasonCodes.RTT_ROOM_READY) {
+                // Already gone server-side — clear so onGameScreenClose skips the leave call.
+                _currentLobbyId = null;
                 onGameScreenClose();
             }
         } else if (operation.equals("STARTING")) {
@@ -1180,6 +1308,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
             SwingUtilities.invokeLater(() -> onStateChanged());
         } else if (operation.equals("ROOM_ASSIGNED")) {
             state.lobbySubStatus = "Server assigned...";
+            state.lobbyRegion = jsonData.optString("region", state.lobbyRegion);
             SwingUtilities.invokeLater(() -> onStateChanged());
         } else if (operation.equals("ROOM_READY")) {
             // Update text only — timer continues from when STARTING fired (matches JS/C++)
@@ -1239,7 +1368,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     public void onPlayClicked(String protocolStr, String lobbyType, boolean usePingData) {
         state.usePingData = usePingData;
         state.lobbySearchStartTime = System.currentTimeMillis();
-        goToLoadingScreen("Joining...");
+        goToLoadingScreen("Joining lobby ...");
 
         switch (protocolStr) {
             case "WEBSOCKET":
@@ -1343,6 +1472,18 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     public void onLogoutClicked() {
         goToLoadingScreen("Logging out...");
 
+        // logout() doesn't tear down relay/RTT itself — do it here, same as dieWithMessage().
+        _bcWrapper.getRelayService().disconnect();
+        _bcWrapper.getRelayService().deregisterSystemCallback();
+        _bcWrapper.getRelayService().deregisterRelayCallback();
+        _bcWrapper.getRTTService().deregisterAllCallbacks();
+        _bcWrapper.getRTTService().disableRTT();
+        _chatRTTRegistered = false;
+        _chatChannelId = null;
+        _chatChannelResolving = false;
+        _chatChannelRetryAtMs = 0;
+        _currentLobbyId = null;
+
         _bcWrapper.logout(true, new IServerCallback() {
             @Override
             public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation,
@@ -1404,18 +1545,15 @@ public class App implements IRelayCallback, IRelaySystemCallback {
 
         _disconnecting = true;
 
+        if (_currentLobbyId != null) {
+            _bcWrapper.getLobbyService().leaveLobby(_currentLobbyId, null);
+            _currentLobbyId = null;
+        }
+
         _bcWrapper.getRelayService().deregisterRelayCallback();
         _bcWrapper.getRelayService().deregisterSystemCallback();
         _bcWrapper.getRelayService().disconnect();
-        _bcWrapper.getRTTService().deregisterAllCallbacks();
-        _bcWrapper.getRTTService().disableRTT();
-        // disableRTT() drops the connection entirely, taking the chat channel
-        // subscription with it — reset both so goToMainMenuScreen() below
-        // re-resolves and re-subscribes fresh instead of trusting a stale channel id.
-        _chatRTTRegistered = false;
-        _chatChannelId = null;
-        _chatChannelResolving = false;
-        _chatChannelRetryAtMs = 0;
+        // RTT stays enabled — only logout/dieWithMessage disable it.
 
         state.lobby = null;
         state.user.isReady = false;
@@ -1435,6 +1573,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
     private String buildExtraJson(int colorIndex) {
         JSONObject extra = new JSONObject();
         extra.put("colorIndex", colorIndex);
+        extra.put("rank", state.user.worldwideRank);
         if (!state.pingData.isEmpty()) {
             JSONObject pingsJson = new JSONObject();
             for (java.util.Map.Entry<String, Integer> entry : state.pingData.entrySet()) {
@@ -1510,7 +1649,7 @@ public class App implements IRelayCallback, IRelaySystemCallback {
                 data.toString().getBytes(StandardCharsets.US_ASCII),
                 state.reliable,
                 state.ordered,
-                RelayService.CHANNEL_HIGH_PRIORITY_1);
+                state.channel);
 
         _lastMoveSendTime = System.currentTimeMillis();
     }

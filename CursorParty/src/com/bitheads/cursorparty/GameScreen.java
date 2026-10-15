@@ -43,8 +43,9 @@ class GameScreen extends Screen
     private static final int SIDEBAR_W = 220;
     private static final int PLAY_AREA_W = 800;
     private static final int PLAY_AREA_H = 600;
-    private static final int PLAY_AREA_Y = 90;
-    private static final int SIDEBAR_ROW_H = 40;
+    private static final int HEADER_H = 56;
+    private static final int PAD = 14;
+    private static final int SIDEBAR_ROW_H = 18;
 
     private static final long COVERAGE_RECOMPUTE_MS = 250;
     private static final long AUTO_PAINT_INTERVAL_MS = 150; // matches the cpp/js/Godot cross-client standard for hold-to-paint
@@ -112,6 +113,13 @@ class GameScreen extends Screen
             g2.fillOval(0, 0, getWidth() - 1, getHeight() - 1);
             g2.dispose();
         }
+    }
+
+    private static float coverageFor(State state, String cxId)
+    {
+        for (Coverage.CoverageEntry e : state.coverage)
+            if (e.cxId.equals(cxId)) return e.coveragePct;
+        return 0f;
     }
 
     // Draw an arrow cursor at pixel (x, y) in the given colour
@@ -214,10 +222,14 @@ class GameScreen extends Screen
                 User member = state.lobby.members.get(i);
                 if (member.pos != null)
                 {
-                    drawCursor(g2,
-                        (int)(member.pos.getX() * getWidth()),
-                        (int)(member.pos.getY() * getHeight()),
-                        Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
+                    int px = (int)(member.pos.getX() * getWidth());
+                    int py = (int)(member.pos.getY() * getHeight());
+                    Color c = Colors.COLORS[member.colorIndex % Colors.NUM_COLORS];
+                    drawCursor(g2, px, py, c);
+                    // cpp labels each cursor with that player's live coverage %
+                    g2.setFont(Theme.font(11));
+                    g2.setColor(c);
+                    g2.drawString(String.format("%.0f%%", coverageFor(state, member.cxId)), px + 12, py - 2);
                 }
             }
         }
@@ -227,7 +239,7 @@ class GameScreen extends Screen
     {
         panel = new JPanel();
         panel.setLayout(null);
-        panel.setBackground(Colors.BG_COLOR);
+        panel.setBackground(Theme.BG);
         refreshUI();
     }
 
@@ -237,186 +249,197 @@ class GameScreen extends Screen
         refreshUI();
     }
 
+    private static <T extends java.awt.Component> T at(T c, int x, int y, int w, int h)
+    {
+        c.setBounds(x, y, w, h);
+        return c;
+    }
+
     void refreshUI()
     {
         _refreshTimer.cancel();
         _refreshTimer = new Timer();
         panel.removeAll();
-        panel.setBackground(Colors.BG_COLOR);
+        panel.setBackground(Theme.BG);
 
         State state = App.getInstance().state;
-        JFrame frame = App.getInstance().frame;
-        Dimension screenRes = frame.getPreferredSize();
+        Dimension screenRes = App.getInstance().contentSize();
 
-        int playAreaX = SIDEBAR_W + Math.max(0, (screenRes.width - SIDEBAR_W - PLAY_AREA_W) / 2);
+        // Board centred right of the sidebar, inside cpp's framed "Game" window.
+        int areaW = screenRes.width - SIDEBAR_W;
+        int playAreaX = SIDEBAR_W + (areaW - PLAY_AREA_W) / 2;
+        int playAreaY = (screenRes.height - PLAY_AREA_H) / 2 + HEADER_H / 2;
+        int headerY = playAreaY - HEADER_H;
 
-        // ── Sidebar (left): live RANK / PLAYER / COVERAGE board ─────────────────
+        // ── Sidebar (left): live RANK / PLAYER | COVERAGE, one line per player ──
+        JPanel sidebar = new JPanel(null) {
+            @Override
+            protected void paintComponent(Graphics g)
+            {
+                super.paintComponent(g);
+                g.setColor(Theme.BORDER);
+                g.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight());
+            }
+        };
+        sidebar.setBounds(0, 0, SIDEBAR_W, screenRes.height);
+        sidebar.setBackground(Theme.WINDOW);
         {
-            JPanel sidebar = new JPanel(null);
-            sidebar.setBounds(0, 0, SIDEBAR_W, screenRes.height);
-            sidebar.setBackground(new Color(0x1A, 0x1D, 0x24));
-            panel.add(sidebar);
-
-            JLabel lblRank = new JLabel("RANK / PLAYER");
-            lblRank.setBounds(8, 8, 140, 16);
-            lblRank.setFont(new Font("SansSerif", Font.BOLD, 10));
-            lblRank.setForeground(new Color(140, 150, 160));
-            sidebar.add(lblRank);
-
-            JLabel lblCoverage = new JLabel("COVERAGE", SwingConstants.RIGHT);
-            lblCoverage.setBounds(SIDEBAR_W - 68, 8, 60, 16);
-            lblCoverage.setFont(new Font("SansSerif", Font.BOLD, 10));
-            lblCoverage.setForeground(new Color(140, 150, 160));
-            sidebar.add(lblCoverage);
+            JPanel header = new JPanel(null);
+            header.setBackground(new Color(0x29, 0x2B, 0x3A));
+            sidebar.add(at(header, 8, 10, SIDEBAR_W - 16, 18));
+            header.add(at(Theme.label("RANK / PLAYER", Theme.font(11), Theme.TEXT), 6, 1, 120, 16));
+            header.add(at(Theme.label("COVERAGE", Theme.font(11), Theme.TEXT), SIDEBAR_W - 84, 1, 70, 16));
 
             _sidebarRowsPanel = new JPanel(null);
-            _sidebarRowsPanel.setBounds(0, 32, SIDEBAR_W, screenRes.height - 32);
             _sidebarRowsPanel.setOpaque(false);
-            sidebar.add(_sidebarRowsPanel);
-
+            sidebar.add(at(_sidebarRowsPanel, 8, 30, SIDEBAR_W - 16, 300));
             rebuildSidebarRows();
+
+            sidebar.add(buildDebugPanel(state, screenRes.height));
         }
 
-        // ── Header (timer, ping, exit button) above the play area ───────────────
+        // ── Game window: timer, ping and Exit Match above the board ────────────
+        _lblGameTimer = Theme.label("", Theme.font(13), Theme.TEXT);
+        panel.add(at(_lblGameTimer, playAreaX, headerY, 200, 18));
+
+        _lblPing = Theme.label("", Theme.font(11), Theme.DIM);
+        panel.add(at(_lblPing, playAreaX, headerY + 22, 200, 16));
+
+        Theme.FlatButton btnExit = Theme.button("Exit Match");
+        btnExit.setFont(Theme.font(11));
+        panel.add(at(btnExit, playAreaX + PLAY_AREA_W - 92, headerY - 2, 92, 22));
+        btnExit.addActionListener(e -> {
+            boolean isHost = state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId);
+            if (isHost) App.getInstance().onEndMatch();
+            else App.getInstance().onGameScreenClose();
+        });
+        updateGameTimer();
+        updatePing();
+
+        // ── Play area ─────────────────────────────────────────────────────────
+        JPanel playArea = new PlayArea();
+        playArea.setBackground(Theme.BOARD);
+        panel.add(at(playArea, playAreaX, playAreaY, PLAY_AREA_W, PLAY_AREA_H));
+
+        Theme.Box frame = Theme.box();
+        panel.add(at(frame, playAreaX - PAD, headerY - PAD, PLAY_AREA_W + PAD * 2, PLAY_AREA_H + HEADER_H + PAD * 2));
+        panel.add(sidebar);
+
+        playArea.addMouseMotionListener(new MouseMotionListener()
         {
-            _lblGameTimer = new JLabel("");
-            _lblGameTimer.setBounds(playAreaX, 12, 200, 36);
-            _lblGameTimer.setFont(new Font("SansSerif", Font.BOLD, 28));
-            panel.add(_lblGameTimer);
-
-            _lblPing = new JLabel("");
-            _lblPing.setBounds(playAreaX, 52, 200, 20);
-            _lblPing.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            panel.add(_lblPing);
-
-            JButton btnExit = new JButton("↩ Exit Match");
-            btnExit.setBounds(playAreaX + PLAY_AREA_W - 140, 16, 140, 32);
-            panel.add(btnExit);
-            btnExit.addActionListener(e -> {
-                boolean isHost = state.lobby != null && state.lobby.ownerCxId.equals(state.user.cxId);
-                if (isHost) App.getInstance().onEndMatch();
-                else App.getInstance().onGameScreenClose();
-            });
-
-            updateGameTimer();
-            updatePing();
-        }
-
-        // ── Play area ────────────────────────────────────────────────────────────
-        {
-            JPanel playArea = new PlayArea();
-            playArea.setSize(PLAY_AREA_W, PLAY_AREA_H);
-            playArea.setLocation(playAreaX, PLAY_AREA_Y);
-            playArea.setBackground(Colors.BG_COLOR);
-            panel.add(playArea);
-
-            playArea.addMouseMotionListener(new MouseMotionListener()
+            @Override
+            public void mouseMoved(MouseEvent e)
             {
-                @Override
-                public void mouseMoved(MouseEvent e)
-                {
-                    App.getInstance().onPlayerMove(
-                        (float)e.getX() / playArea.getWidth(),
-                        (float)e.getY() / playArea.getHeight());
-                }
-                @Override
-                public void mouseDragged(MouseEvent e)
-                {
-                    App.getInstance().onPlayerMove(
-                        (float)e.getX() / playArea.getWidth(),
-                        (float)e.getY() / playArea.getHeight());
-                }
-            });
-
-            playArea.addMouseListener(new MouseListener()
-            {
-                @Override
-                public void mousePressed(MouseEvent e)
-                {
-                    _mouseDown = true;
-                    _lastAutoPaintMs = System.currentTimeMillis();
-                    App.getInstance().onPlayerShockwave(
-                        (float)e.getX() / playArea.getWidth(),
-                        (float)e.getY() / playArea.getHeight());
-                }
-                @Override
-                public void mouseReleased(MouseEvent e)
-                {
-                    _mouseDown = false;
-                }
-                @Override public void mouseClicked(MouseEvent e)  {}
-                @Override public void mouseEntered(MouseEvent e)  {}
-                @Override public void mouseExited(MouseEvent e)   {}
-            });
-
-            _refreshTimer.schedule(new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    playArea.repaint();
-                    updateGameTimer();
-                    updatePing();
-                    tickAutoPaint();
-                    tickCoverageRecompute();
-                }
-            }, 0, 1000 / 30);
-        }
-
-        // ── Debug strip (below the play area): reliable/ordered + send-to mask.
-        // Not part of the primary HUD mockup, but this app exists to test relay
-        // configs, so these stay available in a low-profile row rather than being
-        // deleted outright — mirrors cpp's own separate debug panel.
-        {
-            int debugY = PLAY_AREA_Y + PLAY_AREA_H + 8;
-
-            JCheckBox chkReliable = new JCheckBox("Reliable", state.reliable);
-            chkReliable.setBounds(playAreaX, debugY, 90, 20);
-            chkReliable.setForeground(Colors.TEXT_COLOR);
-            chkReliable.addChangeListener(new ChangeListener()
-            {
-                public void stateChanged(ChangeEvent e)
-                {
-                    state.reliable = ((AbstractButton)e.getSource()).getModel().isSelected();
-                }
-            });
-            panel.add(chkReliable);
-
-            JCheckBox chkOrdered = new JCheckBox("Ordered", state.ordered);
-            chkOrdered.setBounds(playAreaX + 90, debugY, 90, 20);
-            chkOrdered.setForeground(Colors.TEXT_COLOR);
-            chkOrdered.addChangeListener(new ChangeListener()
-            {
-                public void stateChanged(ChangeEvent e)
-                {
-                    state.ordered = ((AbstractButton)e.getSource()).getModel().isSelected();
-                }
-            });
-            panel.add(chkOrdered);
-
-            JLabel lblMask = new JLabel("Send to:");
-            lblMask.setBounds(playAreaX + 190, debugY, 60, 20);
-            lblMask.setForeground(new Color(140, 150, 160));
-            lblMask.setFont(new Font("SansSerif", Font.PLAIN, 11));
-            panel.add(lblMask);
-
-            int maskX = playAreaX + 250;
-            for (User member : state.lobby.members)
-            {
-                JCheckBox chk = new JCheckBox(member.name, member.allowSendTo);
-                chk.setBounds(maskX, debugY, 90, 20);
-                chk.setForeground(Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
-                chk.addChangeListener(new ChangeListener()
-                {
-                    public void stateChanged(ChangeEvent e)
-                    {
-                        member.allowSendTo = ((AbstractButton)e.getSource()).getModel().isSelected();
-                    }
-                });
-                panel.add(chk);
-                maskX += 92;
+                App.getInstance().onPlayerMove(
+                    (float)e.getX() / playArea.getWidth(),
+                    (float)e.getY() / playArea.getHeight());
             }
+            @Override
+            public void mouseDragged(MouseEvent e)
+            {
+                App.getInstance().onPlayerMove(
+                    (float)e.getX() / playArea.getWidth(),
+                    (float)e.getY() / playArea.getHeight());
+            }
+        });
+
+        playArea.addMouseListener(new MouseListener()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                _mouseDown = true;
+                _lastAutoPaintMs = System.currentTimeMillis();
+                App.getInstance().onPlayerShockwave(
+                    (float)e.getX() / playArea.getWidth(),
+                    (float)e.getY() / playArea.getHeight());
+            }
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
+                _mouseDown = false;
+            }
+            @Override public void mouseClicked(MouseEvent e)  {}
+            @Override public void mouseEntered(MouseEvent e)  {}
+            @Override public void mouseExited(MouseEvent e)   {}
+        });
+
+        _refreshTimer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                playArea.repaint();
+                updateGameTimer();
+                updatePing();
+                tickAutoPaint();
+                tickCoverageRecompute();
+            }
+        }, 0, 1000 / 30);
+    }
+
+    // cpp's debug panel, kept at the foot of the sidebar: relay options for movement
+    // (channel / reliable / ordered), the shockwave send mask, round and lobby.
+    private JPanel buildDebugPanel(State state, int screenH)
+    {
+        int pw = SIDEBAR_W - 16;
+        int maskRows = state.lobby.members.size();
+        int ph = 236 + maskRows * 20;
+        Theme.Box box = Theme.box(new Color(0x1F, 0x21, 0x2E));
+        box.setBounds(8, screenH - ph - 84, pw, ph);
+
+        int y = 8;
+        if (!state.lobbyRegion.isEmpty())
+        {
+            box.add(at(Theme.label("Region: " + state.lobbyRegion, Theme.font(11), Theme.DIM), 10, y, pw - 20, 16));
+            y += 16;
         }
+        box.add(at(Theme.label("Reliable options", Theme.font(11), Theme.TEXT), 10, y, pw - 20, 16));
+        box.add(at(Theme.label("Only affect position", Theme.font(11), Theme.DIM), 10, y + 14, pw - 20, 16));
+        y += 34;
+        box.add(at(Theme.label("Channel", Theme.font(11), Theme.TEXT), 10, y, 60, 16));
+        javax.swing.ButtonGroup group = new javax.swing.ButtonGroup();
+        for (int i = 0; i < 4; i++)
+        {
+            final int ch = i;
+            javax.swing.JRadioButton rb = new javax.swing.JRadioButton(String.valueOf(i), state.channel == i);
+            rb.setOpaque(false);
+            rb.setForeground(Theme.TEXT);
+            rb.setFont(Theme.font(11));
+            rb.addActionListener(e -> state.channel = ch);
+            group.add(rb);
+            box.add(at(rb, 66 + (i % 2) * 56, y - 2 + (i / 2) * 20, 50, 20));
+        }
+        y += 44;
+
+        JCheckBox chkReliable = new JCheckBox("Reliable", state.reliable);
+        chkReliable.setOpaque(false);
+        chkReliable.addChangeListener(e -> state.reliable = ((AbstractButton) e.getSource()).getModel().isSelected());
+        box.add(at(chkReliable, 6, y, pw - 12, 20));
+        y += 22;
+        JCheckBox chkOrdered = new JCheckBox("Ordered", state.ordered);
+        chkOrdered.setOpaque(false);
+        chkOrdered.addChangeListener(e -> state.ordered = ((AbstractButton) e.getSource()).getModel().isSelected());
+        box.add(at(chkOrdered, 6, y, pw - 12, 20));
+        y += 26;
+
+        box.add(at(Theme.label("Shockwaves to", Theme.font(11), Theme.TEXT), 10, y, pw - 20, 16));
+        y += 18;
+        for (User member : state.lobby.members)
+        {
+            JCheckBox chk = new JCheckBox(member.name, member.allowSendTo);
+            chk.setOpaque(false);
+            chk.setFont(Theme.font(11));
+            chk.setForeground(Colors.COLORS[member.colorIndex % Colors.NUM_COLORS]);
+            chk.addChangeListener(e -> member.allowSendTo = ((AbstractButton) e.getSource()).getModel().isSelected());
+            box.add(at(chk, 6, y, pw - 12, 20));
+            y += 20;
+        }
+        y += 6;
+        box.add(at(Theme.label("Round: " + state.roundNumber, Theme.font(11), Theme.DIM), 10, y, pw - 20, 16));
+        box.add(at(Theme.label("Lobby:", Theme.font(11), Theme.DIM), 10, y + 16, pw - 20, 16));
+        box.add(at(Theme.label(state.lobby.lobbyId, Theme.font(11), Theme.DIM), 10, y + 30, pw - 20, 16));
+        return box;
     }
 
     // Repeatedly fires onPlayerShockwave while the mouse is held down, throttled
@@ -453,8 +476,12 @@ class GameScreen extends Screen
                 : ping < 100 ? new Color(0x66, 0xEE, 0x88)
                 : ping < 200 ? new Color(0xEE, 0xCC, 0x44)
                 : new Color(0xEE, 0x66, 0x66);
-        _lblPing.setText("● " + text);
-        _lblPing.setForeground(color);
+        _lblPing.setText("<html><font color='" + hex(color) + "'>●</font> " + text + "</html>");
+    }
+
+    private static String hex(Color c)
+    {
+        return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     }
 
     // Recomputes state.coverage only when the splotch set has actually changed
@@ -487,6 +514,7 @@ class GameScreen extends Screen
                 : Coverage.computeCoverage(state.splotches, state.lobby.members);
 
         int y = 0;
+        int w = SIDEBAR_W - 16;
         for (Coverage.CoverageEntry entry : entries)
         {
             boolean isMe = entry.cxId.equals(state.user.cxId);
@@ -495,33 +523,24 @@ class GameScreen extends Screen
             {
                 if (m.cxId.equals(entry.cxId)) { name = m.name; break; }
             }
+            Color textColor = isMe ? Theme.GOOD : Theme.TEXT;
 
             JPanel row = new JPanel(null);
-            row.setBounds(0, y, SIDEBAR_W, SIDEBAR_ROW_H);
-            row.setOpaque(true);
-            row.setBackground(isMe ? new Color(0x24, 0x36, 0x28) : new Color(0x1A, 0x1D, 0x24));
+            row.setOpaque(isMe);
+            row.setBackground(Theme.ROW_ME);
+            row.setBounds(0, y, w, SIDEBAR_ROW_H);
 
-            JLabel lblRank = new JLabel("#" + entry.rank);
-            lblRank.setBounds(8, 0, 26, SIDEBAR_ROW_H);
-            lblRank.setFont(new Font("SansSerif", Font.BOLD, 12));
-            lblRank.setForeground(new Color(0xEE, 0xAA, 0x44));
-            row.add(lblRank);
-
-            ColorDot dot = new ColorDot(Colors.COLORS[entry.colorIndex % Colors.NUM_COLORS], 14);
-            dot.setBounds(34, (SIDEBAR_ROW_H - 14) / 2, 14, 14);
-            row.add(dot);
-
-            JLabel lblName = new JLabel(name + (isMe ? "  YOU" : ""));
-            lblName.setBounds(54, 0, SIDEBAR_W - 54 - 50, SIDEBAR_ROW_H);
-            lblName.setFont(new Font("SansSerif", Font.BOLD, 12));
-            lblName.setForeground(isMe ? new Color(0x66, 0xEE, 0x88) : Colors.TEXT_COLOR);
-            row.add(lblName);
-
-            JLabel lblCoveragePct = new JLabel(String.format("%.0f%%", entry.coveragePct), SwingConstants.RIGHT);
-            lblCoveragePct.setBounds(SIDEBAR_W - 54, 0, 46, SIDEBAR_ROW_H);
-            lblCoveragePct.setFont(new Font("SansSerif", Font.BOLD, 12));
-            lblCoveragePct.setForeground(Colors.TEXT_COLOR);
-            row.add(lblCoveragePct);
+            row.add(at(Theme.label("#" + entry.rank, Theme.font(11), Theme.rankColor(entry.rank)), 6, 0, 26, SIDEBAR_ROW_H));
+            row.add(at(new ColorDot(Colors.COLORS[entry.colorIndex % Colors.NUM_COLORS], 8), 32, (SIDEBAR_ROW_H - 8) / 2, 8, 8));
+            JLabel lblName = Theme.label(name, Theme.font(11), textColor);
+            int nameW = Math.min(lblName.getPreferredSize().width, w - 76 - 46 - (isMe ? 34 : 0));
+            row.add(at(lblName, 46, 0, nameW, SIDEBAR_ROW_H));
+            if (isMe)
+            {
+                JLabel you = Theme.badge("YOU", Theme.FRAME_HOVER, Theme.TEXT);
+                row.add(at(you, 46 + nameW + 6, 1, you.getWidth(), SIDEBAR_ROW_H - 2));
+            }
+            row.add(at(Theme.label(String.format("%.0f%%", entry.coveragePct), Theme.font(11), textColor), w - 76, 0, 60, SIDEBAR_ROW_H));
 
             _sidebarRowsPanel.add(row);
             y += SIDEBAR_ROW_H;
@@ -562,11 +581,11 @@ class GameScreen extends Screen
         }
         else
         {
-            _lblGameTimer.setText(String.format("%02d:%02d", remaining / 60, remaining % 60));
+            _lblGameTimer.setText(String.format("%d:%02d", remaining / 60, remaining % 60));
             _lblGameTimer.setForeground(
                     remaining <= TIMER_URGENT_SEC ? new Color(0xEE, 0x55, 0x55)
                     : remaining <= TIMER_WARN_SEC ? new Color(0xEE, 0xAA, 0x44)
-                    : Colors.TEXT_COLOR);
+                    : Theme.TEXT);
         }
     }
 }

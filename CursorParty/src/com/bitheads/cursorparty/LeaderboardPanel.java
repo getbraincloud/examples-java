@@ -34,38 +34,41 @@ public class LeaderboardPanel extends JPanel
     private LeaderboardEntry _self = null;
 
     private final int _width;
-    private JButton _btnPoints, _btnCoverage, _btnLifetime, _btnQuarterly;
+    private Theme.FlatButton _btnPoints, _btnCoverage, _btnLifetime, _btnQuarterly;
     private JPanel _listPanel;
 
-    private static final Color ACTIVE_BG = new Color(0x40, 0x8C, 0x59);
-
+    // cpp layout: board pills, period pills, separator, then the ranked rows.
     public LeaderboardPanel(int width, int height)
     {
         _width = width;
         setLayout(null);
-        setBackground(Colors.BG_COLOR);
+        setOpaque(false);
         setPreferredSize(new Dimension(width, height));
 
-        _btnPoints = new JButton("Most Opponents Beaten");
-        _btnPoints.setBounds(0, 0, width, 26);
-        add(_btnPoints);
-
-        _btnCoverage = new JButton("Highest Coverage %");
-        _btnCoverage.setBounds(0, 28, width, 26);
-        add(_btnCoverage);
-
-        _btnLifetime = new JButton("Lifetime");
-        _btnLifetime.setBounds(0, 60, width / 2 - 2, 24);
-        add(_btnLifetime);
-
-        _btnQuarterly = new JButton("Quarterly");
-        _btnQuarterly.setBounds(width / 2 + 2, 60, width / 2 - 2, 24);
-        add(_btnQuarterly);
+        _btnPoints = Theme.tab("Most Opponents Beaten");
+        _btnCoverage = Theme.tab("Highest Coverage %");
+        _btnLifetime = Theme.pill("Lifetime");
+        _btnQuarterly = Theme.pill("Quarterly");
+        int x = 0;
+        for (Theme.FlatButton b : new Theme.FlatButton[] { _btnPoints, _btnCoverage }) {
+            int w = b.getPreferredSize().width;
+            b.setBounds(x, 0, w, 22);
+            add(b);
+            x += w + 8;
+        }
+        x = 0;
+        for (Theme.FlatButton b : new Theme.FlatButton[] { _btnLifetime, _btnQuarterly }) {
+            int w = b.getPreferredSize().width;
+            b.setBounds(x, 28, w, 22);
+            add(b);
+            x += w + 8;
+        }
+        add(Theme.separator(0, 58, width));
 
         _listPanel = new JPanel();
         _listPanel.setLayout(null);
-        _listPanel.setBounds(0, 92, width, Math.max(0, height - 92));
-        _listPanel.setBackground(Colors.BG_COLOR);
+        _listPanel.setBounds(0, 66, width, Math.max(0, height - 66));
+        _listPanel.setOpaque(false);
         add(_listPanel);
 
         ActionListener boardListener = e -> {
@@ -90,10 +93,10 @@ public class LeaderboardPanel extends JPanel
 
     private void updateToggleStyles()
     {
-        _btnPoints.setBackground(_boardType == 0 ? ACTIVE_BG : null);
-        _btnCoverage.setBackground(_boardType == 1 ? ACTIVE_BG : null);
-        _btnLifetime.setBackground(_period == 0 ? ACTIVE_BG : null);
-        _btnQuarterly.setBackground(_period == 1 ? ACTIVE_BG : null);
+        _btnPoints.setSelectedPill(_boardType == 0);
+        _btnCoverage.setSelectedPill(_boardType == 1);
+        _btnLifetime.setSelectedPill(_period == 0);
+        _btnQuarterly.setSelectedPill(_period == 1);
     }
 
     private String currentLeaderboardId()
@@ -197,31 +200,31 @@ public class LeaderboardPanel extends JPanel
     private void renderList()
     {
         _listPanel.removeAll();
-        int rowH = 20;
+        int rowH = 21;
         int y = 0;
 
         if (_fetchedKey < 0)
         {
-            addRow("Loading...", "", y, new Color(140, 150, 160));
+            addRow(0, "Loading...", "", y, Theme.DIM);
         }
         else if (_top.isEmpty())
         {
-            addRow("No scores yet", "", y, new Color(140, 150, 160));
+            addRow(0, "No scores yet", "", y, Theme.DIM);
         }
         else
         {
             for (LeaderboardEntry e : _top)
             {
-                addRow(e.rank + ". " + e.name, formatBoardScore(e.score), y, Colors.TEXT_COLOR);
+                addRow(e.rank, e.name, formatBoardScore(e.score), y, Theme.TEXT);
                 y += rowH;
             }
 
             boolean selfInTop = _self != null && _top.stream().anyMatch(e -> e.rank == _self.rank);
             if (_self != null && !selfInTop)
             {
-                addRow("...", "", y, new Color(110, 118, 130));
+                addRow(0, "...", "", y, Theme.DIM);
                 y += rowH;
-                addRow(_self.rank + ". " + _self.name + " (you)", formatBoardScore(_self.score), y, new Color(0x66, 0xCC, 0xFF));
+                addRow(_self.rank, _self.name + " (you)", formatBoardScore(_self.score), y, Theme.GOOD);
                 y += rowH;
             }
         }
@@ -230,23 +233,30 @@ public class LeaderboardPanel extends JPanel
         _listPanel.repaint();
     }
 
-    private void addRow(String left, String right, int y, Color color)
+    private void addRow(int rank, String left, String right, int y, Color color)
     {
-        Font font = new Font("SansSerif", Font.PLAIN, 12);
-
-        JLabel lblLeft = new JLabel(left);
-        lblLeft.setBounds(0, y, _width - 80, 18);
-        lblLeft.setFont(font);
-        lblLeft.setForeground(color);
-        _listPanel.add(lblLeft);
+        Font font = Theme.font(12);
+        if (rank > 0)
+        {
+            _listPanel.add(bounded(Theme.label("#" + rank, font, Theme.rankColor(rank)), 0, y, 34));
+            _listPanel.add(bounded(Theme.label(left, font, color), 34, y, _width - 34 - 80));
+        }
+        else
+        {
+            _listPanel.add(bounded(Theme.label(left, font, color), 0, y, _width - 80));
+        }
 
         if (!right.isEmpty())
         {
-            JLabel lblRight = new JLabel(right, SwingConstants.RIGHT);
-            lblRight.setBounds(_width - 80, y, 80, 18);
-            lblRight.setFont(font);
-            lblRight.setForeground(color);
-            _listPanel.add(lblRight);
+            JLabel lblRight = Theme.label(right, font, color);
+            lblRight.setHorizontalAlignment(SwingConstants.RIGHT);
+            _listPanel.add(bounded(lblRight, _width - 90, y, 80));
         }
+    }
+
+    private static JLabel bounded(JLabel l, int x, int y, int w)
+    {
+        l.setBounds(x, y, w, 18);
+        return l;
     }
 }

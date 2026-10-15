@@ -1,19 +1,12 @@
 package com.bitheads.cursorparty;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
+// cpp login window: centred box, fields with labels to the right.
 class LoginScreen extends Screen
 {
     JTextField    _txtUsername;
@@ -21,68 +14,40 @@ class LoginScreen extends Screen
 
     public LoginScreen()
     {
-        JFrame frame = App.getInstance().frame;
-        Dimension screenRes = frame.getPreferredSize();
+        Dimension screenRes = App.getInstance().contentSize();
 
         panel = new JPanel();
         panel.setLayout(null);
-        panel.setBackground(Colors.BG_COLOR);
+        panel.setBackground(Theme.BG);
 
-        int x = screenRes.width  / 2 - 100;
-        int y = screenRes.height / 2 - 120;
+        int w = 400, h = 150;
+        Theme.Box box = Theme.box();
+        box.setBounds((screenRes.width - w) / 2, (screenRes.height - h) / 2, w, h);
+        panel.add(box);
 
-        JLabel lblTitle = new JLabel("brainCloud Cursor Party", SwingConstants.CENTER);
-        lblTitle.setSize(screenRes.width, 40);
-        lblTitle.setLocation(0, 40);
-        lblTitle.setFont(new Font(lblTitle.getFont().getName(), Font.PLAIN, 32));
-        lblTitle.setForeground(Colors.TEXT_COLOR);
-        panel.add(lblTitle);
-
-        JLabel lblUsername = new JLabel("Username");
-        lblUsername.setSize(200, 20);
-        lblUsername.setLocation(x, y);
-        lblUsername.setForeground(Colors.TEXT_COLOR);
-        lblUsername.setToolTipText("Usernames are unique");
-        panel.add(lblUsername);
+        box.add(at(Theme.label("Cursor Party " + App.getInstance()._bcWrapper.getClient().getAppVersion(), Theme.font(12), Theme.TEXT), 6, 4, w - 12, 18));
+        box.add(at(Theme.label("A new user will be created if it doesn't exist.", Theme.font(12), Theme.TEXT), 16, 32, w - 32, 18));
 
         _txtUsername = new JTextField();
-        _txtUsername.setSize(200, 30);
-        _txtUsername.setLocation(x, y + 22);
-        _txtUsername.setToolTipText("Usernames are unique");
-        panel.add(_txtUsername);
-
-        JLabel lblPassword = new JLabel("Password");
-        lblPassword.setSize(200, 20);
-        lblPassword.setLocation(x, y + 60);
-        lblPassword.setForeground(Colors.TEXT_COLOR);
-        lblPassword.setToolTipText("Will create a new user if it doesn't exist");
-        panel.add(lblPassword);
+        box.add(at(_txtUsername, 16, 56, 260, 20));
+        box.add(at(Theme.label("Username", Theme.font(12), Theme.TEXT), 284, 56, 100, 20));
 
         _txtPassword = new JPasswordField();
-        _txtPassword.setSize(200, 30);
-        _txtPassword.setLocation(x, y + 82);
-        _txtPassword.setToolTipText("Will create a new user if it doesn't exist");
-        panel.add(_txtPassword);
+        box.add(at(_txtPassword, 16, 83, 260, 20));
+        box.add(at(Theme.label("Password", Theme.font(12), Theme.TEXT), 284, 83, 100, 20));
 
-        JButton btnConnect = new JButton("Connect");
-        btnConnect.setSize(200, 30);
-        btnConnect.setLocation(x, y + 130);
-        panel.add(btnConnect);
+        Theme.FlatButton btnConnect = Theme.button("Login");
+        box.add(at(btnConnect, 16, 110, 60, 20));
 
-        JLabel lblVersion = new JLabel("v" + App.getInstance().clientVersion);
-        lblVersion.setSize(200, 20);
-        lblVersion.setLocation(x, y + 180);
-        lblVersion.setForeground(Color.GRAY);
-        panel.add(lblVersion);
+        btnConnect.addActionListener(e -> connect());
+        _txtPassword.addActionListener(e -> connect());
+        _txtUsername.addActionListener(e -> _txtPassword.requestFocusInWindow());
+    }
 
-        btnConnect.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                connect();
-            }
-        });
+    private static <T extends java.awt.Component> T at(T c, int x, int y, int w, int h)
+    {
+        c.setBounds(x, y, w, h);
+        return c;
     }
 
     void connect()

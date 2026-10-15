@@ -10,7 +10,7 @@
 	  <dependency>
 		  <groupId>com.bitheads</groupId>
 		  <artifactId>braincloud-java</artifactId>
-		  <version>6.0.0</version>
+		  <version>6.1.0-SNAPSHOT</version>
 	  </dependency>
   </dependencies>
   
@@ -20,6 +20,13 @@
       <resource>
         <directory>src/resources</directory>
         <targetPath>resources</targetPath>
+      </resource>
+      <!-- braincloud.cfg at the jar root for init(). -->
+      <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>braincloud.cfg</include>
+        </includes>
       </resource>
     </resources>
     <plugins>
@@ -72,4 +79,12 @@
     </plugins>
   </build>
 
+  <repositories>
+    <repository>
+      <id>central-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
 </project>

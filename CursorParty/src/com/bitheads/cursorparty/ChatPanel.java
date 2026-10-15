@@ -37,28 +37,30 @@ public class ChatPanel extends JPanel
     {
         _source = source;
         setLayout(null);
-        setBackground(Colors.BG_COLOR);
+        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(width, height));
 
         _log = new JTextArea();
         _log.setEditable(false);
         _log.setLineWrap(true);
         _log.setWrapStyleWord(true);
-        _log.setBackground(new Color(0x20, 0x24, 0x2b));
-        _log.setForeground(Colors.TEXT_COLOR);
-        _log.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        _log.setBackground(Theme.WINDOW);
+        _log.setForeground(Theme.TEXT);
+        _log.setFont(Theme.font(12));
+        _log.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
         int logHeight = height - 32;
         JScrollPane scroll = new JScrollPane(_log);
         scroll.setBounds(0, 0, width, logHeight);
+        scroll.setBorder(javax.swing.BorderFactory.createLineBorder(Theme.BORDER));
         add(scroll);
 
         _input = new JTextField();
-        _input.setBounds(0, logHeight + 6, width - 70, 26);
+        _input.setBounds(0, logHeight + 6, width - 70, 24);
         add(_input);
 
-        JButton btnSend = new JButton("Send");
-        btnSend.setBounds(width - 64, logHeight + 6, 64, 26);
+        JButton btnSend = Theme.button("Send");
+        btnSend.setBounds(width - 64, logHeight + 6, 64, 24);
         add(btnSend);
 
         ActionListener sendAction = e -> {

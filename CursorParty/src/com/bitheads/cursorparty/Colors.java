@@ -5,8 +5,8 @@ import java.awt.Color;
 public class Colors
 {
     public static final int NUM_COLORS = 40;
-    public static final Color BG_COLOR   = Color.decode("#282c34");
-    public static final Color TEXT_COLOR = new Color(204, 204, 204);
+    public static final Color BG_COLOR   = Theme.BG;
+    public static final Color TEXT_COLOR = Theme.TEXT;
 
     public static Color[] COLORS = new Color[]{
         // Row 1: vivid saturated (0-9)
