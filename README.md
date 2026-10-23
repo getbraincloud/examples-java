@@ -2,7 +2,11 @@
 
 This repository contains examples projects using the [Java brainCloud client](https://github.com/getbraincloud/braincloud-java).
 
-In order to get these projects up and running, you will need to create an app via the [brainCloud portal](https://portalx.braincloudservers.com/). The ***App ID*** and ***App Secret*** associated with the created app will be needed to initialize the brainCloud client SDK: `_bc.initialize(appId, secret, "1.0.0", serverUrl);`
+To run these projects you need a brainCloud app. Connect each one with the **brainCloud Java** plugin for IntelliJ IDEA / Android Studio:
+
+1. Open the project and install the plugin when the IDE offers it.
+2. In the **brainCloud** tool window, log in and pick your team and app (or create one).
+3. The plugin writes `braincloud.cfg` (gitignored), which the examples read with `init()` / `init(context)`. No app ID or secret in the code.
 
 ---
 

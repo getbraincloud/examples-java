@@ -3,8 +3,7 @@ This application is a multiplayer game where you see other players' mouse moveme
 ![](readme_images/screencap.jpg)
 
 ## How to setup the app
-1. Create a new app in the portal: https://portal.braincloudservers.com/
-   Take note of the **app id** and **app secret**.
+1. Create a new app in the portal: https://portal.braincloudservers.com/ (or from the plugin in step 4).
 
 2. Create a new server with the following settings:
    ![](readme_images/relayserver.jpg)
@@ -17,15 +16,8 @@ This application is a multiplayer game where you see other players' mouse moveme
    ![](readme_images/lobby2.jpg)
    Those settings will start the game as soon as at least 1 player is ready. The application is built in a such way that only the room owner can ready up.
 
-4. In the main application file `App.java`, replace the following line:
-   ```
-   //_bcWrapper.initialize("appId", "secretKey", "appVersion", "serverUrl");
-   ```
-   With your own:
-   ```
-   _bcWrapper.initialize(your_appId, your_appSecret, Version.version);
-   ```
+4. Open `CursorParty` in IntelliJ IDEA, install the **brainCloud Java** plugin if prompted, then log in and pick your app in the **brainCloud** tool window. It writes `braincloud.cfg`, which `App.java` reads with `_bcWrapper.init()`.
 
-5. To run the project via CLI:
+5. Run `main` in `App.java` from the IDE, or via CLI:
       - Clean the package and create and executable JAR: `mvn clean package`
       - Execute the created JAR: `java -jar target/cursor-party-1.jar`
