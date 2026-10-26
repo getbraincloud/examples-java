@@ -11,3 +11,15 @@ ConcentrationGame/.project
 *.prefs
 ConcentrationGame/app/.classpath
 ConcentrationGame/app/.project
+ConcentrationGame/.settings/org.eclipse.buildship.core.prefs
+CursorParty/CursorParty_internal_win.zip
+CursorParty/CursorParty_internal_mac.zip
+/CursorParty/CursorParty.app
+# brainCloud app config (generated)
+/CursorParty/braincloud.cfg
+# brainCloud app config (generated)
+/ConcentrationGame/app/src/main/resources/braincloud.cfg
+# brainCloud app config (generated)
+/BrainCloudDemo-Android/app/src/main/resources/braincloud.cfg
+# IDE state
+.idea/

@@ -17,6 +17,10 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {
+            url 'https://central.sonatype.com/repository/maven-snapshots/'
+            mavenContent { snapshotsOnly() }
+        }
         google()
         jcenter()
         mavenCentral()

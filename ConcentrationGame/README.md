@@ -2,6 +2,10 @@
 
 This is a simple matching game for Android using the brainCloud client in Java. 
 
+### Connecting to your brainCloud app
+
+Open this project in Android Studio, install the **brainCloud Java** plugin if prompted, then log in and pick your app in the **brainCloud** tool window. It writes `braincloud.cfg`, which `BrainCloudManager.java` reads with `brainCloudWrapper.init(appContext)`.
+
 ### To Play 
 
 Do one of the following:
