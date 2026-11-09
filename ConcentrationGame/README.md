@@ -1,6 +1,6 @@
-# Match-Game Java Example
+# Concentration Java Example
 
-This is a simple matching game for Android using the brainCloud client in Java. 
+Concentration is a simple tile-matching game for Android using the brainCloud client in Java. 
 
 ### Connecting to your brainCloud app
 
