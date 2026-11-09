@@ -3,4 +3,14 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="cardBack">#3F51B5</color>
+    <color name="cardBackFill">#E8EAF6</color>
+    <color name="cardOutline">#9FA8DA</color>
+    <!-- Site icons are white/yellow, so flipped tiles need a dark face -->
+    <color name="cardFace">#1A2340</color>
+    <color name="cardLabel">#FFFFFF</color>
+    <color name="flipBlue">#2979FF</color>
+    <color name="matchGreen">#43A047</color>
+    <color name="missRed">#E53935</color>
+    <color name="pipEmpty">#C5CAE9</color>
 </resources>

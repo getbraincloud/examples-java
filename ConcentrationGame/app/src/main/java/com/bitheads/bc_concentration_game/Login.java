@@ -52,6 +52,7 @@ public class Login extends AppCompatActivity implements  IServerCallback
                     //change the app activity
                     Intent loadApp = new Intent(getApplication(), theGame.class);
                     startActivity(loadApp);
+                    finish();
                 }
 
                 @Override
@@ -122,6 +123,12 @@ public class Login extends AppCompatActivity implements  IServerCallback
     //callback functions
     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData)
     {
+        //push token registration shares this callback; only auth should open the game
+        if(serviceOperation != ServiceOperation.AUTHENTICATE)
+        {
+            return;
+        }
+
         TextView statusTextView = findViewById(R.id.statusTextView);
         //convert the result to a string
         statusTextView.setText("Success!");
@@ -129,6 +136,7 @@ public class Login extends AppCompatActivity implements  IServerCallback
         //change the app activity
         Intent loadApp = new Intent(getApplication(), theGame.class);
         startActivity(loadApp);
+        finish();
     }
 
     public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError)

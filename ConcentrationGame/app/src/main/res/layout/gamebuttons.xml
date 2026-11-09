@@ -11,22 +11,9 @@
         android:layout_weight="1"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/card1"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/card2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-        <Button
-            android:id="@+id/card3"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <Button android:id="@+id/card1" style="@style/CardButton" />
+        <Button android:id="@+id/card2" style="@style/CardButton" />
+        <Button android:id="@+id/card3" style="@style/CardButton" />
     </LinearLayout>
 
     <LinearLayout
@@ -35,72 +22,31 @@
         android:layout_weight="1"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/card4"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/card5"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-        <Button
-            android:id="@+id/card6"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <Button android:id="@+id/card4" style="@style/CardButton" />
+        <Button android:id="@+id/card5" style="@style/CardButton" />
+        <Button android:id="@+id/card6" style="@style/CardButton" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:weightSum="3"
         android:layout_weight="1"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/card7"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/card8"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-        <Button
-            android:id="@+id/card9"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <Button android:id="@+id/card7" style="@style/CardButton" />
+        <Button android:id="@+id/card8" style="@style/CardButton" />
+        <Button android:id="@+id/card9" style="@style/CardButton" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:weightSum="3"
         android:layout_weight="1"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/card10"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/card11"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-        <Button
-            android:id="@+id/card12"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <Button android:id="@+id/card10" style="@style/CardButton" />
+        <Button android:id="@+id/card11" style="@style/CardButton" />
+        <Button android:id="@+id/card12" style="@style/CardButton" />
     </LinearLayout>
-
-
-
-
 
 </LinearLayout>

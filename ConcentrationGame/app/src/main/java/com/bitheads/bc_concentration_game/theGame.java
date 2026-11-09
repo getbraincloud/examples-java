@@ -1,16 +1,24 @@
 package com.bitheads.bc_concentration_game;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Random;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bitheads.braincloud.client.IServerCallback;
@@ -24,19 +32,45 @@ public class theGame extends AppCompatActivity implements IServerCallback
 {
     BrainCloudManager brainCloudManager;
 
-    IServerCallback theCallback;
+    static final int MAX_TURNS = 20;
+    static final int FLIP_HALF_MS = 150;
+    static final int UNFLIP_DELAY_MS = 1250;
 
-    //need cards which will be buttons
-    Button card1, card2, card3, card4, card5, card6, card7, card8, card9, card10, card11, card12;
-    //want to keep track of the first and second i press
-    Button[] cardChoices;
+    static final int[] CARD_IDS = {
+            R.id.card1, R.id.card2, R.id.card3, R.id.card4, R.id.card5, R.id.card6,
+            R.id.card7, R.id.card8, R.id.card9, R.id.card10, R.id.card11, R.id.card12
+    };
 
-    Button logoutButton;
-    int chances = 20;
+    //brainCloud feature icons from getbraincloud.com, one per pair
+    static final int[] TILE_ICONS = {
+            R.drawable.tile_authentication, R.drawable.tile_leaderboards, R.drawable.tile_multiplayer,
+            R.drawable.tile_cloud_code, R.drawable.tile_gamification, R.drawable.tile_chat
+    };
+    static final String[] TILE_LABELS = {
+            "Authentication", "Leaderboards", "Multiplayer", "Cloud Code", "Gamification", "Chat"
+    };
+
+    Button[] cards;
+    View[] pips;
+    //index into TILE_ICONS for each card
+    int[] cardValues;
+    boolean[] matched;
+    int matchedCount;
+    int turn;
+
+    //index of the first face-up card of the current turn, or -1
+    int firstChoice = -1;
+    //true while a turn is resolving, so taps are ignored
+    boolean busy = false;
+    boolean gameOver = false;
+
+    final Handler handler = new Handler(Looper.getMainLooper());
+
+    TextView statusText;
+    TextView playAgainText;
+    int directionsColor;
+
     int winsForAchievement = 0;
-
-    //use a map to easily find the value on a card based on its name
-    Map<String, Integer> cardValues;
 
     //the callback that this class will work with
     IServerCallback theGameCallback;
@@ -51,375 +85,377 @@ public class theGame extends AppCompatActivity implements IServerCallback
         //set the callback
         theGameCallback = this;
 
+        statusText = findViewById(R.id.statusTextView);
+        playAgainText = findViewById(R.id.playAgainTextView);
+        directionsColor = statusText.getCurrentTextColor();
+
+        TextView versionText = findViewById(R.id.versionTextView);
+        versionText.setText("v" + GetAppVersion() + " · brainCloud " + brainCloudManager.getBrainCloudWrapper().getClient().getBrainCloudVersion());
+
+        if(getSupportActionBar() != null)
+        {
+            getSupportActionBar().setTitle("");
+        }
+
         CheckAchievements();
 
-        //read the stats off braincloud and display them in the text. (the callback success will update the ui)
+        //read the player's name for the banner, and their stats for the record line (the callback success will update the ui)
+        brainCloudManager.getBrainCloudWrapper().getPlayerStateService().readUserState(theGameCallback);
         brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
 
-        //handle local ui
-        TextView chancestext = findViewById(R.id.chancesTextView);
-        chancestext.setText("Chances Left: " + chances);
-
-        //setup cards tha will flip
-        card1 = (Button) findViewById(R.id.card1);
-        card2 = (Button) findViewById(R.id.card2);
-        card3 = (Button) findViewById(R.id.card3);
-        card4 = (Button) findViewById(R.id.card4);
-        card5 = (Button) findViewById(R.id.card5);
-        card6 = (Button) findViewById(R.id.card6);
-        card7 = (Button) findViewById(R.id.card7);
-        card8 = (Button) findViewById(R.id.card8);
-        card9 = (Button) findViewById(R.id.card9);
-        card10 = (Button) findViewById(R.id.card10);
-        card11= (Button) findViewById(R.id.card11);
-        card12 = (Button) findViewById(R.id.card12);
-
-        //set up tags for easy access later
-        card1.setTag("card1");
-        card2.setTag("card2");
-        card3.setTag("card3");
-        card4.setTag("card4");
-        card5.setTag("card5");
-        card6.setTag("card6");
-        card7.setTag("card7");
-        card8.setTag("card8");
-        card9.setTag("card9");
-        card10.setTag("card10");
-        card11.setTag("card11");
-        card12.setTag("card12");
-
-        //set up an array to store the first and second choice
-        cardChoices = new Button[2];
-        cardChoices[0] = null;
-        cardChoices[1] = null;
-
-        //created a map to keep track of cards and their values.
-        cardValues = new HashMap<>();
-
-        //make another array of points and matches of the same length
-        int[] points = {5, 5, 15, 15, 25, 25, 50, 50, 75, 75, 100, 100};
-
-        //shuffle the array, then add add the array to the map.
-        Shuffle(points, 2);
-
-        //add the shuffled array to the map
-        for(int i = 0; i < points.length; i++)
+        cards = new Button[CARD_IDS.length];
+        for(int i = 0; i < CARD_IDS.length; i++)
         {
-            String temp = "card" + (i+1);
-            cardValues.put(temp, points[i]);
+            final int index = i;
+            cards[i] = findViewById(CARD_IDS[i]);
+            cards[i].setOnClickListener(v -> HandleCardChoice(index));
         }
 
-        //check when buttons are pressed
-        card1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice((card1));
-            }
-        });
-
-        card2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card2);
-            }
-        });
-
-        card3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card3);
-            }
-        });
-
-        card4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card4);
-            }
-        });
-
-        card5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card5);
-            }
-        });
-
-        card6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card6);
-            }
-        });
-
-        card7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card7);
-            }
-        });
-
-        card8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card8);
-            }
-        });
-
-        card9.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card9);
-            }
-        });
-
-        card10.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card10);
-            }
-        });
-
-        card11.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card11);
-            }
-        });
-
-        card12.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HandleCardChoice(card12);
-            }
-        });
-
-        logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(view -> {
-            brainCloudManager.getBrainCloudWrapper().logout(true, new IServerCallback() {
-
-                @Override
-                public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
-                    Intent myIntent = new Intent(getApplication(), Login.class);
-                    startActivity(myIntent);
-                }
-
-                @Override
-                public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
-                    if(brainCloudManager.getBrainCloudWrapper().getClient().isAuthenticated()){
-                        System.out.println("Logout failed: " + jsonError);
-                        Log.e("brainCloud Request Error", "Logout failed: " + jsonError);
-                    }
-                    else{
-                        Intent myIntent = new Intent(getApplication(), Login.class);
-                        startActivity(myIntent);
-                    }
-                }
-            });
-        });
-    }
-
-    //a simple shuffle algorithm
-    void Shuffle(int[] arr, int numShuffles)
-    {
-        for(int k = 0; k < numShuffles; k++)
+        int pipSize = Dp(12);
+        LinearLayout pipRow = findViewById(R.id.turnPips);
+        pips = new View[MAX_TURNS];
+        for(int i = 0; i < MAX_TURNS; i++)
         {
-            int index;
-            int temp;
-            Random rand = new Random();
-            for (int i = 0; i < arr.length; i++) {
-                //generate the index I'm swapping
-                index = rand.nextInt(arr.length);
-                temp = arr[index];
-                arr[index] = arr[i];
-                arr[i] = temp;
-            }
+            pips[i] = new View(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(pipSize, pipSize);
+            lp.setMargins(Dp(2), 0, Dp(2), 0);
+            pipRow.addView(pips[i], lp);
         }
-    }
 
-    void HandleCardChoice(Button btn)
-    {
-        //Are they onto their second choice?
-        if(cardChoices[0] != null && btn != cardChoices[0])
-        {
-            //make the choice equal the chosen button then show its value.
-            cardChoices[1] = btn;
-            String buttonTag = btn.getTag().toString();
-            String value = cardValues.get(buttonTag).toString();
-            btn.setText(value);
-
-            //now lets check to see if card 1 and 2 are the same
-            if(cardValues.get(cardChoices[0].getTag().toString()) == cardValues.get(cardChoices[1].getTag().toString()))
+        //once the game ends, tapping anywhere starts a new one
+        findViewById(R.id.gameRoot).setOnClickListener(v -> {
+            if(gameOver)
             {
-                //disable the button of choice 1
-                cardChoices[0].setEnabled(false);
-                cardChoices[0].setClickable(false);
-                //disable the button of choice 2
-                cardChoices[1].setEnabled(false);
-                cardChoices[1].setClickable(false);
+                NewGame();
             }
-            else
-            {
-                //otherwise they were not equal and I need to set the buttons back to null and text to nothing. then lower their chances left.
-                cardChoices[0].setText("");
-                cardChoices[1].setText("");
-                cardChoices[0] = null;
-                cardChoices[1] = null;
-                chances--;
-                TextView chancestext = findViewById(R.id.chancesTextView);
-                chancestext.setText("Chances Left: " + chances);
-            }
-        }
-        //they're making their first choice
-        if(cardChoices[0] == null)
-        {
-            cardChoices[0] = btn;
-            String buttonTag = btn.getTag().toString();
-            String value = cardValues.get(buttonTag).toString();
-            btn.setText(value);
-        }
+        });
 
-        if(chances <= 0)
-        {
-            //increment losses on braincloud. They did not get all the matches before running out of chances.
-            try {
-                JSONObject obj = new JSONObject();
-                obj.put("Lose", 1);
-                brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
-            }
-            catch(JSONException e) {
-                e.printStackTrace();
-            }
-            //reset the game
-            ResetGame();
-        }
+        //tiles need their laid-out size to scale the icons
+        cards[0].post(this::NewGame);
+    }
 
-        //check game state
-        if(
-                !card1.isEnabled()
-                && !card2.isEnabled()
-                && !card3.isEnabled()
-                && !card4.isEnabled()
-                && !card5.isEnabled()
-                && !card6.isEnabled()
-                && !card7.isEnabled()
-                && !card8.isEnabled()
-                && !card9.isEnabled()
-                && !card10.isEnabled()
-                && !card11.isEnabled()
-                && !card12.isEnabled())
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.game_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.action_logout)
         {
-            //increment wins on braincloud. They got all the matches.
-            try {
-                JSONObject obj = new JSONObject();
-                obj.put("Win", 1);
-                brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theCallback);
+            Logout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    void Logout()
+    {
+        brainCloudManager.getBrainCloudWrapper().logout(true, new IServerCallback() {
+
+            @Override
+            public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData) {
+                ReturnToLogin();
             }
-            catch(JSONException e) {
-                e.printStackTrace();
+
+            @Override
+            public void serverError(ServiceName serviceName, ServiceOperation serviceOperation, int statusCode, int reasonCode, String jsonError) {
+                if(brainCloudManager.getBrainCloudWrapper().getClient().isAuthenticated()){
+                    System.out.println("Logout failed: " + jsonError);
+                    Log.e("brainCloud Request Error", "Logout failed: " + jsonError);
+                }
+                else{
+                    ReturnToLogin();
+                }
             }
-            ResetGame();
+        });
+    }
+
+    void ReturnToLogin()
+    {
+        startActivity(new Intent(getApplication(), Login.class));
+        finish();
+    }
+
+    //Fisher-Yates shuffle
+    void Shuffle(int[] arr)
+    {
+        Random rand = new Random();
+        for(int i = arr.length - 1; i > 0; i--)
+        {
+            int index = rand.nextInt(i + 1);
+            int temp = arr[index];
+            arr[index] = arr[i];
+            arr[i] = temp;
         }
     }
-    void ResetGame()
+
+    void HandleCardChoice(int index)
     {
-        chances = 20;
+        if(gameOver)
+        {
+            NewGame();
+            return;
+        }
+        if(busy || matched[index] || index == firstChoice)
+        {
+            return;
+        }
 
-        CheckAchievements();
+        //first card of the turn stays blue until the second is revealed
+        if(firstChoice < 0)
+        {
+            firstChoice = index;
+            Flip(index, () -> ShowFace(index, R.color.flipBlue), () -> {});
+            return;
+        }
 
-        TextView chancestext = findViewById(R.id.chancesTextView);
-        chancestext.setText("Chances Left: " + chances);
+        int first = firstChoice;
+        firstChoice = -1;
+        busy = true;
+
+        boolean isMatch = cardValues[first] == cardValues[index];
+        int resultColor = isMatch ? R.color.matchGreen : R.color.missRed;
+        int pip = turn++;
+
+        Flip(index, () -> {
+            ShowFace(first, resultColor);
+            ShowFace(index, resultColor);
+            FillPip(pip, resultColor);
+        }, () -> {
+            if(isMatch)
+            {
+                matched[first] = true;
+                matched[index] = true;
+                matchedCount += 2;
+                EndTurn();
+                return;
+            }
+
+            //leave both cards visible briefly so the player can remember them
+            handler.postDelayed(() -> {
+                Flip(first, () -> ShowBack(first), () -> {});
+                Flip(index, () -> ShowBack(index), this::EndTurn);
+            }, UNFLIP_DELAY_MS);
+        });
+    }
+
+    void EndTurn()
+    {
+        if(matchedCount == cards.length)
+        {
+            EndGame(true);
+        }
+        else if(turn >= MAX_TURNS)
+        {
+            EndGame(false);
+        }
+        else
+        {
+            busy = false;
+            MarkCurrentPip();
+        }
+    }
+
+    void EndGame(boolean won)
+    {
+        gameOver = true;
+        busy = false;
+
+        statusText.setText(won ? "You win!" : "Out of turns. You lose!");
+        statusText.setTextColor(ContextCompat.getColor(this, won ? R.color.matchGreen : R.color.missRed));
+        playAgainText.setVisibility(View.VISIBLE);
+
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put(won ? "Win" : "Lose", 1);
+            brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().incrementUserStats(obj.toString(), theGameCallback);
+        }
+        catch(JSONException e) {
+            e.printStackTrace();
+        }
 
         //read the new stats off braincloud and display them in the text.
         brainCloudManager.getBrainCloudWrapper().getPlayerStatisticsService().readAllUserStats(theGameCallback);
+    }
 
-        //Reset the game
-        card1.setEnabled(true);
-        card1.setClickable(true);
-        card1.setText("");
-        card2.setEnabled(true);
-        card2.setClickable(true);
-        card2.setText("");
-        card3.setEnabled(true);
-        card3.setClickable(true);
-        card3.setText("");
-        card4.setEnabled(true);
-        card4.setClickable(true);
-        card4.setText("");
-        card5.setEnabled(true);
-        card5.setClickable(true);
-        card5.setText("");
-        card6.setEnabled(true);
-        card6.setClickable(true);
-        card6.setText("");
-        card7.setEnabled(true);
-        card7.setClickable(true);
-        card7.setText("");
-        card8.setEnabled(true);
-        card8.setClickable(true);
-        card8.setText("");
-        card9.setEnabled(true);
-        card9.setClickable(true);
-        card9.setText("");
-        card10.setEnabled(true);
-        card10.setClickable(true);
-        card10.setText("");
-        card11.setEnabled(true);
-        card11.setClickable(true);
-        card11.setText("");
-        card12.setEnabled(true);
-        card12.setClickable(true);
-        card12.setText("");
+    void NewGame()
+    {
+        CheckAchievements();
 
-        //set up an array to store the first and second choice
-        cardChoices = new Button[2];
-        cardChoices[0] = null;
-        cardChoices[1] = null;
+        handler.removeCallbacksAndMessages(null);
+        firstChoice = -1;
+        busy = false;
+        gameOver = false;
+        turn = 0;
 
-        //created a map to keep track of cards and their values.
-        cardValues = new HashMap<>();
+        statusText.setText("Find the matching tiles");
+        statusText.setTextColor(directionsColor);
+        playAgainText.setVisibility(View.INVISIBLE);
 
-        //make another array of points and matches of the same length
-        int[] points = {5, 5, 15, 15, 25, 25, 50, 50, 75, 75, 100, 100};
-
-        //shuffle the array, then add add the array to the map.
-        Shuffle(points, 2);
-
-        //add the shuffled array to the map
-        for(int i = 0; i < points.length; i++)
+        cardValues = new int[cards.length];
+        for(int i = 0; i < cards.length; i++)
         {
-            String temp = "card" + (i+1);
-            cardValues.put(temp, points[i]);
+            cardValues[i] = i / 2;
+        }
+        Shuffle(cardValues);
+
+        matched = new boolean[cards.length];
+        matchedCount = 0;
+        for(int i = 0; i < cards.length; i++)
+        {
+            cards[i].animate().cancel();
+            cards[i].setScaleX(1f);
+            ShowBack(i);
+        }
+
+        for(int i = 0; i < MAX_TURNS; i++)
+        {
+            StylePip(i, R.color.pipEmpty, false);
+        }
+        MarkCurrentPip();
+    }
+
+    //squash the tile to its edge with a blue border, swap faces, then expand
+    void Flip(int index, Runnable atMidpoint, Runnable onDone)
+    {
+        Button card = cards[index];
+        SetBorder(index, GetFill(index), R.color.flipBlue, 5);
+        card.animate().scaleX(0f).setDuration(FLIP_HALF_MS).withEndAction(() -> {
+            atMidpoint.run();
+            card.animate().scaleX(1f).setDuration(FLIP_HALF_MS).withEndAction(onDone).start();
+        }).start();
+    }
+
+    void ShowBack(int index)
+    {
+        Button card = cards[index];
+        card.setTag(R.color.cardBackFill);
+        SetBorder(index, R.color.cardBackFill, R.color.cardOutline, 2);
+        card.setCompoundDrawables(null, null, null, null);
+        card.setPadding(Dp(4), Dp(4), Dp(4), Dp(4));
+        card.setTextSize(TypedValue.COMPLEX_UNIT_SP, 48);
+        card.setTextColor(ContextCompat.getColor(this, R.color.cardBack));
+        card.setText("?");
+    }
+
+    void ShowFace(int index, int borderColor)
+    {
+        Button card = cards[index];
+        card.setTag(R.color.cardFace);
+        SetBorder(index, R.color.cardFace, borderColor, 5);
+
+        int labelHeight = Dp(16);
+        int iconSize = Math.max(Dp(28), Math.min(card.getHeight() - labelHeight - Dp(12), card.getWidth() - Dp(12)));
+        Drawable icon = ContextCompat.getDrawable(this, TILE_ICONS[cardValues[index]]).mutate();
+        icon.setBounds(0, 0, iconSize, iconSize);
+        card.setCompoundDrawables(null, icon, null, null);
+        card.setCompoundDrawablePadding(0);
+        //centre icon + label vertically; drawableTop otherwise pins to the top edge
+        int top = Math.max(Dp(4), (card.getHeight() - iconSize - labelHeight) / 2);
+        card.setPadding(Dp(4), top, Dp(4), Dp(4));
+
+        card.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        card.setTextColor(ContextCompat.getColor(this, R.color.cardLabel));
+        card.setText(TILE_LABELS[cardValues[index]]);
+    }
+
+    int GetFill(int index)
+    {
+        Object tag = cards[index].getTag();
+        return tag instanceof Integer ? (Integer) tag : R.color.cardBackFill;
+    }
+
+    void SetBorder(int index, int fillColor, int strokeColor, int strokeDp)
+    {
+        GradientDrawable bg = new GradientDrawable();
+        bg.setCornerRadius(Dp(10));
+        bg.setColor(ContextCompat.getColor(this, fillColor));
+        bg.setStroke(Dp(strokeDp), ContextCompat.getColor(this, strokeColor));
+        cards[index].setBackground(bg);
+    }
+
+    void MarkCurrentPip()
+    {
+        if(turn < MAX_TURNS)
+        {
+            StylePip(turn, R.color.flipBlue, false);
+        }
+    }
+
+    void FillPip(int index, int color)
+    {
+        StylePip(index, color, true);
+    }
+
+    void StylePip(int index, int color, boolean filled)
+    {
+        GradientDrawable dot = new GradientDrawable();
+        dot.setShape(GradientDrawable.OVAL);
+        int c = ContextCompat.getColor(this, color);
+        dot.setColor(filled ? c : 0);
+        dot.setStroke(Dp(2), c);
+        pips[index].setBackground(dot);
+    }
+
+    int Dp(int dp)
+    {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
+    }
+
+    String GetAppVersion()
+    {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        }
+        catch(PackageManager.NameNotFoundException e) {
+            return "?";
         }
     }
 
     //callback functions
     public void serverCallback(ServiceName serviceName, ServiceOperation serviceOperation, JSONObject jsonData)
     {
-        //compare the service operation so the call back knows what operations to perform
-        if(serviceOperation.equals(ServiceOperation.READ))
+        if(serviceOperation != ServiceOperation.READ)
         {
-            try {
-                //read the data passed back by braincloud and parse it down
-                JSONObject jsonReader = new JSONObject(jsonData.toString());
-                JSONObject data = jsonReader.getJSONObject("data");
-                JSONObject stats = data.getJSONObject("statistics");
+            return;
+        }
 
+        try {
+            JSONObject data = jsonData.getJSONObject("data");
+
+            //player identity for the banner
+            if(serviceName == ServiceName.playerState)
+            {
+                String name = data.optString("playerName");
+                if(name.isEmpty()) name = data.optString("emailAddress");
+                if(name.isEmpty()) name = data.optString("profileId");
+                if(getSupportActionBar() != null)
+                {
+                    getSupportActionBar().setTitle(name);
+                }
+            }
+            else if(serviceName == ServiceName.playerStatistics)
+            {
                 //update the ui based on the stats
-                //Wins
+                JSONObject stats = data.getJSONObject("statistics");
                 String numWins = stats.getString("Win");
-                TextView wintext = findViewById(R.id.winTextView);
-                wintext.setText("Career Wins: " + numWins);
+                String numLose = stats.getString("Lose");
                 winsForAchievement = Integer.parseInt(numWins);
 
-                //Lose
-                String numLose = stats.getString("Lose");
-                TextView losetext = findViewById(R.id.lossTextView);
-                losetext.setText("Career Losses: " + numLose);
+                TextView recordText = findViewById(R.id.recordTextView);
+                recordText.setText("Wins: " + numWins + "    Losses: " + numLose);
             }
-            catch(JSONException e) {
-                e.printStackTrace();
-            }
+        }
+        catch(JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -433,7 +469,7 @@ public class theGame extends AppCompatActivity implements IServerCallback
     {
         if(winsForAchievement >= 5)
         {
-            //very bare bones, but can pass in much more to affect specific values of the achievement when you award it. 
+            //very bare bones, but can pass in much more to affect specific values of the achievement when you award it.
             String[] achievementArr = new String[1];
             achievementArr[0] = "Win5Games";
             brainCloudManager.getBrainCloudWrapper().getGamificationService().awardAchievements(achievementArr, theGameCallback);
